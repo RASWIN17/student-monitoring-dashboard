@@ -141,6 +141,7 @@ export class ScanEngine {
               const contestDateIso = new Date(c.startTime * 1000).toISOString();
               await saveContestRecord({
                 platform_account_id: account.id,
+                platform_contest_id: c.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
                 contest_name: c.title,
                 contest_date: contestDateIso,
                 participation_status: 'attended',

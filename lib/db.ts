@@ -7,6 +7,8 @@ import {
   PlatformProfileSnapshot,
   DailyActivitySnapshot,
   ContestRecord,
+  Contest,
+  StudentContestAttendanceRow,
   ScanJob,
   ScanJobItem,
   StudentPerformanceOverview,
@@ -715,6 +717,324 @@ export async function getContestsForAccount(platformAccountId: string, limit = 2
   if (error || !data) return [];
   return data as ContestRecord[];
 }
+
+// ----------------------------------------------------
+// CONTEST MANAGEMENT & CLASSROOM ANALYTICS
+// ----------------------------------------------------
+
+export async function upsertContest(contest: {
+  id: string;
+  platform: 'leetcode' | 'codechef';
+  contest_code: string;
+  title: string;
+  start_time: string;
+  end_time: string;
+  duration_seconds: number;
+  status: 'upcoming' | 'live' | 'completed';
+  card_image_url?: string | null;
+  scan_status?: 'not_started' | 'scheduled' | 'scanning' | 'completed' | 'retrying' | 'failed';
+  scan_message?: string | null;
+}): Promise<Contest> {
+  const supabase = getSupabase();
+  const now = new Date().toISOString();
+
+  // Check if existing to preserve scan_status and last_scanned_at
+  const { data: existing } = await supabase
+    .from('contests')
+    .select('*')
+    .eq('id', contest.id)
+    .maybeSingle();
+
+  const payload: any = {
+    id: contest.id,
+    platform: contest.platform,
+    contest_code: contest.contest_code,
+    title: contest.title,
+    start_time: contest.start_time,
+    end_time: contest.end_time,
+    duration_seconds: contest.duration_seconds,
+    status: contest.status,
+    card_image_url: contest.card_image_url ?? null,
+    scan_status: existing?.scan_status || contest.scan_status || 'not_started',
+    last_scanned_at: existing?.last_scanned_at || null,
+    scan_message: existing?.scan_message || contest.scan_message || null,
+    retry_count: existing?.retry_count || 0,
+    updated_at: now,
+  };
+
+  if (!existing) {
+    payload.created_at = now;
+  }
+
+  const { data: saved, error } = await supabase
+    .from('contests')
+    .upsert(payload, { onConflict: 'id' })
+    .select()
+    .single();
+
+  if (error || !saved) {
+    console.error('Failed to upsert contest:', error);
+    return {
+      ...payload,
+      created_at: existing?.created_at || now,
+    } as Contest;
+  }
+
+  return saved as Contest;
+}
+
+export async function getContestById(id: string): Promise<Contest | null> {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from('contests')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  return data as Contest;
+}
+
+export async function getContests(filters?: {
+  platform?: 'leetcode' | 'codechef' | 'all';
+  status?: string;
+  limit?: number;
+}): Promise<Contest[]> {
+  const supabase = getSupabase();
+  let query = supabase
+    .from('contests')
+    .select('*')
+    .order('start_time', { ascending: false });
+
+  if (filters?.platform && filters.platform !== 'all') {
+    query = query.eq('platform', filters.platform);
+  }
+
+  if (filters?.status && filters.status !== 'all') {
+    query = query.eq('status', filters.status);
+  }
+
+  if (filters?.limit) {
+    query = query.limit(filters.limit);
+  } else {
+    query = query.limit(50);
+  }
+
+  const { data, error } = await query;
+  if (error || !data) return [];
+  return data as Contest[];
+}
+
+export async function updateContest(id: string, updates: Partial<Contest>): Promise<Contest | null> {
+  const supabase = getSupabase();
+  const now = new Date().toISOString();
+  const payload = { ...updates, updated_at: now };
+
+  const { data, error } = await supabase
+    .from('contests')
+    .update(payload)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error || !data) return null;
+  return data as Contest;
+}
+
+export async function getContestAnalyticsForClassroom(contestId: string, classroomId?: string | null) {
+  const supabase = getSupabase();
+  const contest = await getContestById(contestId);
+  if (!contest) return null;
+
+  // 1. Get enrolled students
+  let students: UserProfile[] = [];
+  if (classroomId) {
+    students = await getEnrolledStudents(classroomId);
+  } else {
+    const { data: allStudents } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('role', 'student')
+      .order('display_name', { ascending: true });
+    students = (allStudents || []) as UserProfile[];
+  }
+
+  if (students.length === 0) {
+    return {
+      contest,
+      linkedAccounts: [],
+      attended: [],
+      notAttended: [],
+      pendingVerification: [],
+      summary: {
+        totalLinked: 0,
+        attendedCount: 0,
+        notAttendedCount: 0,
+        pendingCount: 0,
+      },
+    };
+  }
+
+  const studentIds = students.map((s) => s.id);
+
+  // 2. Fetch platform accounts for these students for the contest's platform
+  const { data: accounts } = await supabase
+    .from('platform_accounts')
+    .select('*')
+    .in('student_id', studentIds)
+    .eq('platform', contest.platform);
+
+  if (!accounts || accounts.length === 0) {
+    return {
+      contest,
+      linkedAccounts: [],
+      attended: [],
+      notAttended: [],
+      pendingVerification: [],
+      summary: {
+        totalLinked: 0,
+        attendedCount: 0,
+        notAttendedCount: 0,
+        pendingCount: 0,
+      },
+    };
+  }
+
+  const accountIds = accounts.map((a) => a.id);
+
+  // 3. Batch fetch latest snapshots
+  const { data: snapshots } = await supabase
+    .from('platform_profile_snapshots')
+    .select('*')
+    .in('platform_account_id', accountIds)
+    .order('observed_at', { ascending: false });
+
+  const latestSnapByAccount: Record<string, PlatformProfileSnapshot> = {};
+  for (const s of (snapshots || []) as PlatformProfileSnapshot[]) {
+    if (!latestSnapByAccount[s.platform_account_id]) {
+      latestSnapByAccount[s.platform_account_id] = s;
+    }
+  }
+
+  // 4. Batch fetch contest records matching contest_name or platform_contest_id
+  const { data: records } = await supabase
+    .from('contest_records')
+    .select('*')
+    .in('platform_account_id', accountIds);
+
+  const contestRecordByAccount: Record<string, ContestRecord> = {};
+  for (const r of (records || []) as ContestRecord[]) {
+    const matchName = r.contest_name && (
+      r.contest_name.toLowerCase() === contest.title.toLowerCase() ||
+      r.contest_name.toLowerCase().includes(contest.title.toLowerCase()) ||
+      contest.title.toLowerCase().includes(r.contest_name.toLowerCase())
+    );
+    const matchCode = r.platform_contest_id && (
+      r.platform_contest_id.toLowerCase() === contest.contest_code.toLowerCase()
+    );
+    if (matchName || matchCode) {
+      contestRecordByAccount[r.platform_account_id] = r;
+    }
+  }
+
+  const studentMap: Record<string, UserProfile> = {};
+  for (const st of students) {
+    studentMap[st.id] = st;
+  }
+
+  // 5. Construct rows
+  const linkedRows: StudentContestAttendanceRow[] = [];
+  const attendedRows: StudentContestAttendanceRow[] = [];
+  const notAttendedRows: StudentContestAttendanceRow[] = [];
+  const pendingRows: StudentContestAttendanceRow[] = [];
+
+  for (const acc of accounts as PlatformAccount[]) {
+    const st = studentMap[acc.student_id];
+    if (!st) continue;
+    const snap = latestSnapByAccount[acc.id] || null;
+    const cRec = contestRecordByAccount[acc.id] || null;
+
+    let partStatus: 'attended' | 'not_attended' | 'pending_verification' = 'not_attended';
+    let problemsSolved: number | null = null;
+    let totalProblems: number | null = null;
+    let rank: number | null = null;
+    let ratingAfter: number | null = null;
+
+    if (cRec && cRec.participation_status === 'attended') {
+      partStatus = 'attended';
+      problemsSolved = cRec.problems_solved ?? null;
+      totalProblems = cRec.total_problems ?? (contest.platform === 'leetcode' ? 4 : null);
+      rank = cRec.rank ?? null;
+      ratingAfter = cRec.rating_after ?? null;
+    } else if (cRec && cRec.participation_status === 'pending_verification') {
+      partStatus = 'pending_verification';
+    } else if (contest.status === 'upcoming' || contest.status === 'live') {
+      partStatus = 'pending_verification';
+    } else if (contest.scan_status === 'retrying' || contest.scan_status === 'not_started' || contest.scan_status === 'scheduled') {
+      partStatus = 'pending_verification';
+    } else {
+      partStatus = 'not_attended';
+    }
+
+    const row: StudentContestAttendanceRow = {
+      student_id: st.id,
+      student_name: st.display_name,
+      username: acc.username,
+      public_profile_url: acc.public_profile_url,
+      platform: acc.platform,
+      verification_status: acc.ownership_verification_status,
+      account_status: acc.account_status,
+      participation_status: partStatus,
+      contest_problems_solved: problemsSolved,
+      contest_total_problems: totalProblems,
+      contest_rank: rank,
+      contest_rating_after: ratingAfter,
+      lifetime_total_solved: snap?.total_solved ?? null,
+      easy_solved: snap?.easy_solved ?? null,
+      medium_solved: snap?.medium_solved ?? null,
+      hard_solved: snap?.hard_solved ?? null,
+      accepted_submissions: snap?.accepted_submissions ?? null,
+      acceptance_rate: snap?.acceptance_rate ?? null,
+      contest_rating: snap?.contest_rating ?? null,
+      highest_rating: snap?.highest_rating ?? null,
+      profile_rank: snap?.global_rank ?? null,
+      country_rank: snap?.country_rank ?? null,
+      last_sync: acc.last_successful_sync_at || snap?.observed_at || null,
+    };
+
+    linkedRows.push(row);
+    if (partStatus === 'attended') {
+      attendedRows.push(row);
+    } else if (partStatus === 'pending_verification') {
+      pendingRows.push(row);
+    } else {
+      notAttendedRows.push(row);
+    }
+  }
+
+  // Sort attended by rank ascending or problems solved descending
+  attendedRows.sort((a, b) => {
+    if (a.contest_rank && b.contest_rank) return a.contest_rank - b.contest_rank;
+    if (a.contest_rank) return -1;
+    if (b.contest_rank) return 1;
+    return (b.contest_problems_solved || 0) - (a.contest_problems_solved || 0);
+  });
+
+  return {
+    contest,
+    linkedAccounts: linkedRows,
+    attended: attendedRows,
+    notAttended: notAttendedRows,
+    pendingVerification: pendingRows,
+    summary: {
+      totalLinked: linkedRows.length,
+      attendedCount: attendedRows.length,
+      notAttendedCount: notAttendedRows.length,
+      pendingCount: pendingRows.length,
+    },
+  };
+}
+
 
 // ----------------------------------------------------
 // SCAN JOBS

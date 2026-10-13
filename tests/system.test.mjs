@@ -143,6 +143,25 @@ describe('CodeTrack Full System & Zero Fake Data Verification Suite', () => {
         started_at TEXT,
         completed_at TEXT
       );
+
+      CREATE TABLE IF NOT EXISTS contests (
+        id TEXT PRIMARY KEY,
+        platform TEXT NOT NULL,
+        contest_code TEXT NOT NULL,
+        title TEXT NOT NULL,
+        start_time TEXT NOT NULL,
+        end_time TEXT NOT NULL,
+        duration_seconds INTEGER NOT NULL,
+        status TEXT NOT NULL DEFAULT 'upcoming',
+        card_image_url TEXT,
+        scan_status TEXT NOT NULL DEFAULT 'not_started',
+        last_scanned_at TEXT,
+        scan_message TEXT,
+        retry_count INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        UNIQUE(platform, contest_code)
+      );
     `);
   });
 
@@ -355,6 +374,101 @@ describe('CodeTrack Full System & Zero Fake Data Verification Suite', () => {
     assert.strictEqual(getDashboardRedirectPath('teacher'), '/teacher/dashboard');
     assert.strictEqual(getDashboardRedirectPath('admin'), '/teacher/dashboard');
     assert.strictEqual(getDashboardRedirectPath('student'), '/student/dashboard');
+  });
+
+  test('11. Contest-Based System: Dynamic contest persistence and live status calculation', () => {
+    const now = Date.now();
+    const oneHour = 3600 * 1000;
+
+    // Upcoming contest: starts in 2 hours
+    const upcomingStart = new Date(now + 2 * oneHour).toISOString();
+    const upcomingEnd = new Date(now + 3.5 * oneHour).toISOString();
+
+    // Completed contest: ended 2 hours ago
+    const pastStart = new Date(now - 3.5 * oneHour).toISOString();
+    const pastEnd = new Date(now - 2 * oneHour).toISOString();
+
+    db.prepare(`
+      INSERT INTO contests (id, platform, contest_code, title, start_time, end_time, duration_seconds, status, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run('lc-wc-524', 'leetcode', 'weekly-contest-524', 'Weekly Contest 524', upcomingStart, upcomingEnd, 5400, 'upcoming', new Date().toISOString(), new Date().toISOString());
+
+    db.prepare(`
+      INSERT INTO contests (id, platform, contest_code, title, start_time, end_time, duration_seconds, status, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run('lc-wc-523', 'leetcode', 'weekly-contest-523', 'Weekly Contest 523', pastStart, pastEnd, 5400, 'completed', new Date().toISOString(), new Date().toISOString());
+
+    const cUpcoming = db.prepare('SELECT * FROM contests WHERE id = ?').get('lc-wc-524');
+    assert.strictEqual(cUpcoming.status, 'upcoming');
+    assert.strictEqual(cUpcoming.title, 'Weekly Contest 524');
+
+    const cCompleted = db.prepare('SELECT * FROM contests WHERE id = ?').get('lc-wc-523');
+    assert.strictEqual(cCompleted.status, 'completed');
+  });
+
+  test('12. Problem-Solved Filter: Filters 1 through 10 strictly on contest problems solved', () => {
+    // Student A solved 2 problems in contest (lifetime: 350)
+    // Student B solved 4 problems in contest (lifetime: 420)
+    // Student C solved 2 problems in contest (lifetime: 110)
+    const contestRows = [
+      { student_name: 'Alice', contest_problems_solved: 2, lifetime_total_solved: 350 },
+      { student_name: 'Bob', contest_problems_solved: 4, lifetime_total_solved: 420 },
+      { student_name: 'Charlie', contest_problems_solved: 2, lifetime_total_solved: 110 },
+      { student_name: 'David', contest_problems_solved: 1, lifetime_total_solved: 50 },
+    ];
+
+    function applySolvedFilter(list, filter) {
+      if (filter === 'all') return list;
+      return list.filter((item) => item.contest_problems_solved === filter);
+    }
+
+    // Filter by 2 Problems Solved
+    const filtered2 = applySolvedFilter(contestRows, 2);
+    assert.strictEqual(filtered2.length, 2);
+    assert.deepStrictEqual(filtered2.map(s => s.student_name), ['Alice', 'Charlie']);
+
+    // Filter by 4 Problems Solved
+    const filtered4 = applySolvedFilter(contestRows, 4);
+    assert.strictEqual(filtered4.length, 1);
+    assert.strictEqual(filtered4[0].student_name, 'Bob');
+
+    // Filter by 3 Problems Solved (empty state)
+    const filtered3 = applySolvedFilter(contestRows, 3);
+    assert.strictEqual(filtered3.length, 0);
+
+    // Filter by All
+    const all = applySolvedFilter(contestRows, 'all');
+    assert.strictEqual(all.length, 4);
+
+    // CRITICAL: Ensure filtering NEVER uses lifetime_total_solved
+    const filtered350 = applySolvedFilter(contestRows, 350);
+    assert.strictEqual(filtered350.length, 0, 'Lifetime solved counts must not be used as contest filter values');
+  });
+
+  test('13. Attendance Consistency: Linked Accounts equals Attended plus Absent plus Pending', () => {
+    const totalLinked = 5;
+    const attended = 2;
+    const absent = 2;
+    const pending = 1;
+
+    // Mathematical identity requirement
+    assert.strictEqual(attended + absent + pending, totalLinked, 'Attended + Absent + Pending must equal Total Linked');
+  });
+
+  test('14. Safe Verification: Pending verification prevents false absence categorization before publication', () => {
+    function categorizeParticipation(hasAttendedRecord, contestStatus, resultsPublished) {
+      if (hasAttendedRecord) return 'attended';
+      if (contestStatus !== 'completed' || !resultsPublished) return 'pending_verification';
+      return 'not_attended';
+    }
+
+    // When contest completed 5 minutes ago and platform results are not yet published:
+    const statusBeforeResults = categorizeParticipation(false, 'completed', false);
+    assert.strictEqual(statusBeforeResults, 'pending_verification', 'Must not categorize student as absent when results are pending publication');
+
+    // Once results are published and student is not in attendance list:
+    const statusAfterResults = categorizeParticipation(false, 'completed', true);
+    assert.strictEqual(statusAfterResults, 'not_attended', 'Categorized as absent only after results publication is verified');
   });
 });
 

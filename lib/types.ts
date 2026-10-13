@@ -109,6 +109,59 @@ export interface ContestRecord {
   observed_at: string;
 }
 
+export type ContestStatus = 'upcoming' | 'live' | 'completed';
+export type ContestScanStatus = 'not_started' | 'scheduled' | 'scanning' | 'completed' | 'retrying' | 'failed';
+
+export interface Contest {
+  id: string;
+  platform: PlatformType;
+  contest_code: string;
+  title: string;
+  start_time: string;
+  end_time: string;
+  duration_seconds: number;
+  status: ContestStatus;
+  card_image_url?: string | null;
+  scan_status: ContestScanStatus;
+  last_scanned_at?: string | null;
+  scan_message?: string | null;
+  retry_count: number;
+  created_at: string;
+  updated_at: string;
+  // Computed / joined counts for classroom
+  linked_accounts_count?: number;
+  attended_count?: number;
+  not_attended_count?: number;
+  pending_verification_count?: number;
+}
+
+export interface StudentContestAttendanceRow {
+  student_id: string;
+  student_name: string;
+  username: string;
+  public_profile_url: string;
+  platform: PlatformType;
+  verification_status: string;
+  account_status: string;
+  participation_status: 'attended' | 'not_attended' | 'pending_verification';
+  contest_problems_solved: number | null;
+  contest_total_problems: number | null;
+  contest_rank: number | null;
+  contest_rating_after: number | null;
+  lifetime_total_solved: number | null;
+  easy_solved: number | null;
+  medium_solved: number | null;
+  hard_solved: number | null;
+  accepted_submissions: number | null;
+  acceptance_rate: number | null;
+  contest_rating: number | null;
+  highest_rating: number | null;
+  profile_rank: number | null;
+  country_rank: number | null;
+  last_sync: string | null;
+}
+
+
 export interface ScanJob {
   id: string;
   classroom_id: string | null;
