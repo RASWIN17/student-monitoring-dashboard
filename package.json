@@ -9,7 +9,9 @@
     "lint": "next lint",
     "test": "node --test tests/system.test.mjs",
     "migrate:data": "node --env-file=.env.local scripts/migrate_sqlite_to_supabase.mjs",
-    "worker": "node --env-file=.env.local scripts/scan_worker.mjs"
+    "worker": "node --env-file=.env.local scripts/scan_worker.mjs",
+    "roles:list": "node --env-file=.env.local scripts/test_roles.mjs list",
+    "roles:set": "node --env-file=.env.local scripts/test_roles.mjs set"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",

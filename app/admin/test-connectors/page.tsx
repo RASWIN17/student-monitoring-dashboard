@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
+import { useAuth } from '@/components/AuthContext';
 import {
   Terminal,
   Play,
@@ -13,10 +15,33 @@ import {
 } from 'lucide-react';
 
 export default function TestConnectorsPage() {
+  const { user } = useAuth();
   const [platform, setPlatform] = useState<'leetcode' | 'codechef'>('leetcode');
   const [username, setUsername] = useState('neal_wu');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
+
+  const isTeacher = user?.role === 'teacher' || user?.role === 'admin';
+
+  if (user && !isTeacher) {
+    return (
+      <div className="max-w-md mx-auto my-12 bg-white rounded-xl border border-red-200 p-8 text-center shadow-xs">
+        <div className="h-12 w-12 bg-red-100 text-red-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+          <AlertTriangle className="w-6 h-6" />
+        </div>
+        <h2 className="text-lg font-bold text-slate-900 mb-2">Access Restricted</h2>
+        <p className="text-xs text-slate-500 mb-6">
+          Diagnostic connector verification consoles are restricted to teachers and administrators.
+        </p>
+        <Link
+          href="/student/dashboard"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition"
+        >
+          Go to Student Dashboard
+        </Link>
+      </div>
+    );
+  }
 
   const handleTest = async (e: React.FormEvent) => {
     e.preventDefault();

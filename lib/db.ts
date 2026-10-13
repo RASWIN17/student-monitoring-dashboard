@@ -70,6 +70,20 @@ export async function updateUserAuthId(id: string, authUserId: string): Promise<
   return data as UserProfile;
 }
 
+export async function updateUserRole(id: string, role: 'teacher' | 'student' | 'admin'): Promise<UserProfile | null> {
+  const supabase = getSupabase();
+  const now = new Date().toISOString();
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .update({ role, updated_at: now })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error || !data) return null;
+  return data as UserProfile;
+}
+
 export async function createUser(profile: {
   id?: string;
   auth_user_id?: string | null;

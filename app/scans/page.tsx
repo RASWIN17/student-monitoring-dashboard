@@ -14,11 +14,14 @@ import {
 } from 'lucide-react';
 
 export default function ScansPage() {
-  const { selectedClassroom } = useAuth();
+  const { selectedClassroom, user } = useAuth();
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const isTeacher = user?.role === 'teacher' || user?.role === 'admin';
+
   const fetchScanHistory = async () => {
+    if (!isTeacher) return;
     setLoading(true);
     try {
       const url = selectedClassroom
@@ -34,8 +37,30 @@ export default function ScansPage() {
   };
 
   useEffect(() => {
-    fetchScanHistory();
-  }, [selectedClassroom]);
+    if (isTeacher) {
+      fetchScanHistory();
+    }
+  }, [selectedClassroom, isTeacher]);
+
+  if (user && !isTeacher) {
+    return (
+      <div className="max-w-md mx-auto my-12 bg-white rounded-xl border border-red-200 p-8 text-center shadow-xs">
+        <div className="h-12 w-12 bg-red-100 text-red-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+          <AlertTriangle className="w-6 h-6" />
+        </div>
+        <h2 className="text-lg font-bold text-slate-900 mb-2">Access Restricted</h2>
+        <p className="text-xs text-slate-500 mb-6">
+          Background scraping history is only accessible to verified teachers and administrators.
+        </p>
+        <a
+          href="/student/dashboard"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition"
+        >
+          Go to Student Dashboard
+        </a>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

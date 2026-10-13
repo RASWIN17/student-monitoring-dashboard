@@ -15,6 +15,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  if (user.role === 'student') {
+    return NextResponse.json({ error: 'Only teachers can access the classroom student roster' }, { status: 403 });
+  }
+
   const classroom = await getClassroomById(id);
   if (!classroom) {
     return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });

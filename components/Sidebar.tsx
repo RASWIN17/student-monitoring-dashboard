@@ -25,7 +25,12 @@ export function Sidebar() {
   const isTeacher = user?.role === 'teacher' || user?.role === 'admin';
 
   const navItems = [
-    { label: 'Dashboard', href: '/', icon: LayoutDashboard, roles: ['teacher', 'admin', 'student'] },
+    {
+      label: 'Dashboard',
+      href: isTeacher ? '/teacher/dashboard' : '/student/dashboard',
+      icon: LayoutDashboard,
+      roles: ['teacher', 'admin', 'student'],
+    },
     { label: 'Classrooms', href: '/classrooms', icon: GraduationCap, roles: ['teacher', 'admin', 'student'] },
     { label: 'Students', href: '/students', icon: Users, roles: ['teacher', 'admin'] },
     { label: 'LeetCode Analytics', href: '/leetcode', icon: Code2, roles: ['teacher', 'admin', 'student'] },
@@ -61,7 +66,13 @@ export function Sidebar() {
             <div className="text-xs text-white font-medium truncate">{user.display_name}</div>
             <div className="text-[11px] text-slate-400 capitalize">{user.role}</div>
           </div>
-          <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30">
+          <span
+            className={`text-[10px] uppercase font-semibold px-2 py-0.5 rounded border ${
+              isTeacher
+                ? 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+                : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+            }`}
+          >
             {user.role}
           </span>
         </div>
@@ -71,11 +82,14 @@ export function Sidebar() {
       <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
         {visibleItems.map((item) => {
           const Icon = item.icon;
-          const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+          const isDashboard = item.label === 'Dashboard';
+          const isActive = isDashboard
+            ? pathname === '/' || pathname === '/teacher/dashboard' || pathname === '/student/dashboard'
+            : pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
 
           return (
             <Link
-              key={item.href}
+              key={item.label}
               href={item.href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
                 isActive

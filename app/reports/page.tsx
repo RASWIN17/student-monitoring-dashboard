@@ -13,17 +13,39 @@ import {
 } from 'lucide-react';
 
 export default function ReportsPage() {
-  const { selectedClassroom, classrooms } = useAuth();
+  const { selectedClassroom, classrooms, user } = useAuth();
   const [downloading, setDownloading] = useState<string | null>(null);
 
+  const isTeacher = user?.role === 'teacher' || user?.role === 'admin';
+
   const handleDownload = async (type: 'overview' | 'leetcode' | 'codechef') => {
-    if (!selectedClassroom) return;
+    if (!selectedClassroom || !isTeacher) return;
     setDownloading(type);
     try {
       window.location.href = `/api/export?classroomId=${selectedClassroom.id}&type=${type}`;
     } catch {}
     setTimeout(() => setDownloading(null), 1500);
   };
+
+  if (user && !isTeacher) {
+    return (
+      <div className="max-w-md mx-auto my-12 bg-white rounded-xl border border-red-200 p-8 text-center shadow-xs">
+        <div className="h-12 w-12 bg-red-100 text-red-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+          <AlertCircle className="w-6 h-6" />
+        </div>
+        <h2 className="text-lg font-bold text-slate-900 mb-2">Access Restricted</h2>
+        <p className="text-xs text-slate-500 mb-6">
+          Institutional CSV exports and grade reports are restricted to verified faculty members.
+        </p>
+        <a
+          href="/student/dashboard"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition"
+        >
+          Go to Student Dashboard
+        </a>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-5xl">
