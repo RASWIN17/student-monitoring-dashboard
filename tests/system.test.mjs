@@ -470,5 +470,48 @@ describe('CodeTrack Full System & Zero Fake Data Verification Suite', () => {
     const statusAfterResults = categorizeParticipation(false, 'completed', true);
     assert.strictEqual(statusAfterResults, 'not_attended', 'Categorized as absent only after results publication is verified');
   });
+
+  test('15. Student Platform Sorting: Problems solved and rank filters for CodeChef and LeetCode', () => {
+    const studentsData = [
+      { name: 'Student A', total_solved: 120, global_rank: 45000 },
+      { name: 'Student B', total_solved: 340, global_rank: 1200 },
+      { name: 'Student C', total_solved: 50, global_rank: 150000 },
+      { name: 'Student D', total_solved: 0, global_rank: null },
+    ];
+
+    // 1. Problems Solved: Highest to Lowest
+    const sortedSolvedDesc = [...studentsData].sort((a, b) => {
+      const aVal = a.total_solved ?? -1;
+      const bVal = b.total_solved ?? -1;
+      return bVal - aVal;
+    });
+    assert.strictEqual(sortedSolvedDesc[0].name, 'Student B'); // 340
+    assert.strictEqual(sortedSolvedDesc[1].name, 'Student A'); // 120
+    assert.strictEqual(sortedSolvedDesc[2].name, 'Student C'); // 50
+    assert.strictEqual(sortedSolvedDesc[3].name, 'Student D'); // 0
+
+    // 2. Problems Solved: Lowest to Highest
+    const sortedSolvedAsc = [...studentsData].sort((a, b) => {
+      const aVal = a.total_solved ?? 9999999;
+      const bVal = b.total_solved ?? 9999999;
+      return aVal - bVal;
+    });
+    assert.strictEqual(sortedSolvedAsc[0].name, 'Student D'); // 0
+    assert.strictEqual(sortedSolvedAsc[1].name, 'Student C'); // 50
+    assert.strictEqual(sortedSolvedAsc[2].name, 'Student A'); // 120
+    assert.strictEqual(sortedSolvedAsc[3].name, 'Student B'); // 340
+
+    // 3. Rank: Highest Rank to Lowest Rank (Rank 1 is best, followed by 1200, 45000...)
+    const sortedRankAsc = [...studentsData].sort((a, b) => {
+      const aRank = a.global_rank && a.global_rank > 0 ? a.global_rank : 999999999;
+      const bRank = b.global_rank && b.global_rank > 0 ? b.global_rank : 999999999;
+      return aRank - bRank;
+    });
+    assert.strictEqual(sortedRankAsc[0].name, 'Student B'); // Rank 1200 is highest/best
+    assert.strictEqual(sortedRankAsc[1].name, 'Student A'); // Rank 45000
+    assert.strictEqual(sortedRankAsc[2].name, 'Student C'); // Rank 150000
+    assert.strictEqual(sortedRankAsc[3].name, 'Student D'); // Unranked / null at bottom
+  });
 });
+
 
