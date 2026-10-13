@@ -185,10 +185,8 @@ export default function TeacherDashboardPage() {
           <Link
             href="/students"
             className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition"
-            title="Open Students Monitoring Hub"
           >
-            <Users className="w-3.5 h-3.5 text-blue-600" />
-            <span>Students</span>
+            <span>View Roster</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -196,26 +194,19 @@ export default function TeacherDashboardPage() {
 
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Total Enrolled - Clickable to Students */}
-        <Link
-          href="/students"
-          className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs hover:border-blue-400 hover:shadow-xs transition block group"
-          title="Click to view Students"
-        >
+        {/* Total Enrolled */}
+        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
           <div className="flex items-center justify-between text-slate-500 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider group-hover:text-blue-600 transition-colors">
-              Enrolled Students
-            </span>
-            <div className="p-2 bg-slate-100 group-hover:bg-blue-50 group-hover:text-blue-600 rounded-lg text-slate-600 transition-colors">
+            <span className="text-xs font-semibold uppercase tracking-wider">Enrolled Students</span>
+            <div className="p-2 bg-slate-100 rounded-lg text-slate-600">
               <Users className="w-4 h-4" />
             </div>
           </div>
           <div className="text-2xl font-bold text-slate-900">{kpis.totalEnrolled}</div>
-          <div className="text-[11px] text-slate-400 mt-1 flex items-center justify-between">
-            <span>{kpis.totalEnrolled === 0 ? 'No students enrolled' : 'Verified database enrollment'}</span>
-            <span className="text-blue-600 font-semibold group-hover:translate-x-0.5 transition-transform">→</span>
+          <div className="text-[11px] text-slate-400 mt-1">
+            {kpis.totalEnrolled === 0 ? 'No students enrolled' : 'Verified database enrollment'}
           </div>
-        </Link>
+        </div>
 
         {/* Active Today */}
         <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
@@ -260,113 +251,16 @@ export default function TeacherDashboardPage() {
         </div>
       </div>
 
-      {/* Student Platform Monitoring Cards (Two Separate Boxes: CodeChef and LeetCode) */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-2xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div>
-            <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <Users className="w-4 h-4 text-blue-600" />
-              <span>Students Performance Portals</span>
-            </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Select a platform below to view the complete student roster, problem solved counts, ratings, and rankings.
-            </p>
-          </div>
-          <Link
-            href="/students"
-            className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 transition"
-          >
-            <span>Open Students Hub</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* CodeChef Box */}
-          <Link
-            href="/students/codechef"
-            className="group relative bg-white hover:bg-orange-50/20 border-2 border-slate-200 hover:border-orange-500 rounded-xl p-5 transition shadow-2xs hover:shadow-md flex flex-col justify-between"
-          >
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-xl bg-orange-50 text-orange-600 border border-orange-200/60 flex items-center justify-center font-bold">
-                    <ChefHat className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="text-base font-bold text-slate-900 group-hover:text-orange-600 transition-colors">
-                      CodeChef
-                    </h3>
-                    <div className="text-[11px] text-slate-400">
-                      {platforms.codechefCount} linked student profiles
-                    </div>
-                  </div>
-                </div>
-                <span className="text-[11px] font-bold text-orange-700 bg-orange-100/70 px-2.5 py-0.5 rounded-full border border-orange-200">
-                  Separate Page
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                Display the complete list of students with all verified CodeChef details, global & country rankings, and problem solved filters.
-              </p>
-            </div>
-            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-orange-600 group-hover:text-orange-700">
-              <span>View CodeChef Students</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </Link>
-
-          {/* LeetCode Box */}
-          <Link
-            href="/students/leetcode"
-            className="group relative bg-white hover:bg-amber-50/20 border-2 border-slate-200 hover:border-amber-500 rounded-xl p-5 transition shadow-2xs hover:shadow-md flex flex-col justify-between"
-          >
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 border border-amber-200/60 flex items-center justify-center font-bold">
-                    <Code2 className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="text-base font-bold text-slate-900 group-hover:text-amber-600 transition-colors">
-                      LeetCode
-                    </h3>
-                    <div className="text-[11px] text-slate-400">
-                      {platforms.leetcodeCount} linked student profiles
-                    </div>
-                  </div>
-                </div>
-                <span className="text-[11px] font-bold text-amber-700 bg-amber-100/70 px-2.5 py-0.5 rounded-full border border-amber-200">
-                  Separate Page
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                Display the complete list of students with all verified LeetCode details, easy/medium/hard breakdown, and ranking filters.
-              </p>
-            </div>
-            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-amber-600 group-hover:text-amber-700">
-              <span>View LeetCode Students</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </Link>
-        </div>
-      </div>
-
       {/* Platform Solved & Contest Totals Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* LeetCode Total Solved */}
-        <Link
-          href="/students/leetcode"
-          className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs hover:border-amber-400 hover:shadow-xs transition block group"
-        >
+        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <div className="p-1.5 bg-amber-50 text-amber-600 rounded-md">
                 <Code2 className="w-4 h-4" />
               </div>
-              <span className="text-xs font-bold text-slate-800 group-hover:text-amber-600 transition-colors">
-                LeetCode Solved
-              </span>
+              <span className="text-xs font-bold text-slate-800">LeetCode Solved</span>
             </div>
             <span className="text-xs text-slate-400 font-medium">
               {platforms.leetcodeCount} linked
@@ -376,21 +270,16 @@ export default function TeacherDashboardPage() {
           <p className="text-[11px] text-slate-500 mt-1">
             Unique problems solved across all verified LeetCode profiles.
           </p>
-        </Link>
+        </div>
 
         {/* CodeChef Total Solved */}
-        <Link
-          href="/students/codechef"
-          className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs hover:border-orange-400 hover:shadow-xs transition block group"
-        >
+        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <div className="p-1.5 bg-orange-50 text-orange-600 rounded-md">
                 <ChefHat className="w-4 h-4" />
               </div>
-              <span className="text-xs font-bold text-slate-800 group-hover:text-orange-600 transition-colors">
-                CodeChef Solved
-              </span>
+              <span className="text-xs font-bold text-slate-800">CodeChef Solved</span>
             </div>
             <span className="text-xs text-slate-400 font-medium">
               {platforms.codechefCount} linked
@@ -400,7 +289,7 @@ export default function TeacherDashboardPage() {
           <p className="text-[11px] text-slate-500 mt-1">
             Total verified problems solved on CodeChef (reported separately).
           </p>
-        </Link>
+        </div>
 
         {/* Contest Participations */}
         <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
