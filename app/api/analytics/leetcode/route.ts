@@ -1,0 +1,153 @@
+import { NextResponse } from 'next/server';
+import { getCurrentUser } from '@/lib/auth';
+import { createAdminClient } from '@/lib/supabase/admin';
+
+export async function GET(req: Request) {
+  const user = await getCurrentUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { searchParams } = new URL(req.url);
+  const classroomId = searchParams.get('classroomId');
+
+  const supabase = createAdminClient();
+
+  // Find enrolled students if classroomId is provided
+  let studentIds: string[] | null = null;
+  if (classroomId) {
+    const { data: memberships } = await supabase
+      .from('classroom_memberships')
+      .select('student_id')
+      .eq('classroom_id', classroomId)
+      .eq('membership_status', 'enrolled');
+
+    studentIds = (memberships || []).map((m) => m.student_id);
+    if (studentIds.length === 0) {
+      return NextResponse.json({
+        students: [],
+        aggregates: {
+          totalAccounts: 0,
+          totalSolvedSum: 0,
+          totalEasy: 0,
+          totalMedium: 0,
+          totalHard: 0,
+          averageRating: null,
+          ratedUsersCount: 0,
+        },
+      });
+    }
+  }
+
+  let accQuery = supabase
+    .from('platform_accounts')
+    .select('id, student_id, username, public_profile_url, last_successful_sync_at, account_status')
+    .eq('platform', 'leetcode');
+
+  if (studentIds) {
+    accQuery = accQuery.in('student_id', studentIds);
+  }
+
+  const { data: accounts } = await accQuery;
+  if (!accounts || accounts.length === 0) {
+    return NextResponse.json({
+      students: [],
+      aggregates: {
+        totalAccounts: 0,
+        totalSolvedSum: 0,
+        totalEasy: 0,
+        totalMedium: 0,
+        totalHard: 0,
+        averageRating: null,
+        ratedUsersCount: 0,
+      },
+    });
+  }
+
+  // Get user display names
+  const allStudentIds = accounts.map((a) => a.student_id);
+  const { data: profiles } = await supabase
+    .from('user_profiles')
+    .select('id, display_name')
+    .in('id', allStudentIds);
+
+  const profileMap: Record<string, string> = {};
+  for (const p of profiles || []) {
+    profileMap[p.id] = p.display_name;
+  }
+
+  // Get snapshots
+  const accountIds = accounts.map((a) => a.id);
+  const { data: snapshots } = await supabase
+    .from('platform_profile_snapshots')
+    .select('*')
+    .in('platform_account_id', accountIds)
+    .order('observed_at', { ascending: false });
+
+  const latestSnapMap: Record<string, any> = {};
+  for (const s of snapshots || []) {
+    if (!latestSnapMap[s.platform_account_id]) {
+      latestSnapMap[s.platform_account_id] = s;
+    }
+  }
+
+  const rows = accounts.map((p) => {
+    const s = latestSnapMap[p.id] || {};
+    return {
+      display_name: profileMap[p.student_id] || 'Student',
+      username: p.username,
+      public_profile_url: p.public_profile_url,
+      last_successful_sync_at: p.last_successful_sync_at,
+      account_status: p.account_status,
+      total_solved: s.total_solved || 0,
+      easy_solved: s.easy_solved ?? null,
+      medium_solved: s.medium_solved ?? null,
+      hard_solved: s.hard_solved ?? null,
+      total_questions: s.total_questions ?? null,
+      total_submissions: s.total_submissions ?? null,
+      accepted_submissions: s.accepted_submissions ?? null,
+      acceptance_rate: s.acceptance_rate ?? null,
+      global_rank: s.global_rank ?? null,
+      contest_rating: s.contest_rating ?? null,
+      contests_attended: s.contests_attended ?? null,
+      validation_status: s.validation_status ?? 'pending',
+      observed_at: s.observed_at ?? null,
+    };
+  });
+
+  // Sort descending by total_solved
+  rows.sort((a, b) => (b.total_solved || 0) - (a.total_solved || 0));
+
+  let totalSolvedSum = 0;
+  let totalEasy = 0;
+  let totalMedium = 0;
+  let totalHard = 0;
+  let ratedUsersCount = 0;
+  let contestRatingSum = 0;
+
+  for (const r of rows) {
+    if (r.total_solved) totalSolvedSum += r.total_solved;
+    if (r.easy_solved) totalEasy += r.easy_solved;
+    if (r.medium_solved) totalMedium += r.medium_solved;
+    if (r.hard_solved) totalHard += r.hard_solved;
+    if (r.contest_rating) {
+      ratedUsersCount++;
+      contestRatingSum += r.contest_rating;
+    }
+  }
+
+  const averageRating = ratedUsersCount > 0 ? Number((contestRatingSum / ratedUsersCount).toFixed(1)) : null;
+
+  return NextResponse.json({
+    students: rows,
+    aggregates: {
+      totalAccounts: rows.length,
+      totalSolvedSum,
+      totalEasy,
+      totalMedium,
+      totalHard,
+      averageRating,
+      ratedUsersCount,
+    },
+  });
+}

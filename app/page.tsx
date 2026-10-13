@@ -1,0 +1,373 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useAuth } from '@/components/AuthContext';
+import {
+  Users,
+  CheckCircle2,
+  AlertTriangle,
+  Code2,
+  ChefHat,
+  Trophy,
+  ArrowRight,
+  TrendingUp,
+  RefreshCw,
+  Plus,
+  HelpCircle,
+  Clock,
+  Layers,
+} from 'lucide-react';
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
+
+export default function DashboardPage() {
+  const { user, selectedClassroom, classrooms, loading: authLoading } = useAuth();
+  const [stats, setStats] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchStats = async () => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      const url = selectedClassroom
+        ? `/api/dashboard/stats?classroomId=${selectedClassroom.id}`
+        : '/api/dashboard/stats';
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        setStats(data);
+      }
+    } catch {
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchStats();
+    }
+  }, [user, selectedClassroom]);
+
+  if (authLoading || (loading && !stats)) {
+    return (
+      <div className="flex items-center justify-center py-24 text-slate-400 gap-2">
+        <RefreshCw className="w-5 h-5 animate-spin" />
+        <span className="text-sm font-medium">Loading real-time classroom analytics...</span>
+      </div>
+    );
+  }
+
+  // Not logged in empty state
+  if (!user) {
+    return (
+      <div className="max-w-2xl mx-auto my-12 bg-white rounded-xl border border-slate-200 p-8 text-center shadow-xs">
+        <div className="h-12 w-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+          <Users className="w-6 h-6" />
+        </div>
+        <h2 className="text-lg font-bold text-slate-900 mb-2">Welcome to CodeTrack</h2>
+        <p className="text-xs text-slate-500 mb-6 max-w-md mx-auto">
+          Monitor your students&apos; real-world problem-solving progress and contest ratings on LeetCode and CodeChef.
+        </p>
+        <div className="flex justify-center gap-3">
+          <Link
+            href="/login"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition"
+          >
+            Sign In
+          </Link>
+          <Link
+            href="/register"
+            className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-200 transition"
+          >
+            Register Account
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Teacher has no classrooms yet
+  if (user.role === 'teacher' && classrooms.length === 0) {
+    return (
+      <div className="max-w-xl mx-auto my-12 bg-white rounded-xl border border-slate-200 p-8 text-center shadow-xs">
+        <div className="h-12 w-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+          <Layers className="w-6 h-6" />
+        </div>
+        <h2 className="text-lg font-bold text-slate-900 mb-2">No Classrooms Found</h2>
+        <p className="text-xs text-slate-500 mb-6">
+          You haven&apos;t created any classrooms yet. Create your first classroom to generate a join code and begin monitoring students.
+        </p>
+        <Link
+          href="/classrooms"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition shadow-xs"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Create Classroom</span>
+        </Link>
+      </div>
+    );
+  }
+
+  const kpis = stats?.kpis || {
+    totalEnrolled: 0,
+    activeToday: 0,
+    activeYesterday: 0,
+    noActivityToday: 0,
+    dataUnavailableCount: 0,
+    staleCount: 0,
+    unlinkedCount: 0,
+    leetcodeTotalSolved: 0,
+    codechefTotalSolved: 0,
+    totalContestsParticipated: 0,
+  };
+
+  const trends = stats?.trends || [];
+  const platforms = stats?.platforms || { leetcodeCount: 0, codechefCount: 0 };
+
+  return (
+    <div className="space-y-6">
+      {/* Top Banner / Classroom Overview */}
+      <div className="bg-white rounded-xl border border-slate-200 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-bold text-slate-900">
+              {selectedClassroom ? selectedClassroom.name : 'All Classrooms Analytics'}
+            </h1>
+            {selectedClassroom && (
+              <span className="text-xs font-semibold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
+                {selectedClassroom.course} • Section {selectedClassroom.section}
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-slate-500 mt-1 flex items-center gap-2">
+            <span>Academic Year: {selectedClassroom?.academic_year || 'Current'}</span>
+            <span>•</span>
+            <span>Batch: {selectedClassroom?.batch || 'All'}</span>
+            {selectedClassroom && (
+              <>
+                <span>•</span>
+                <span className="font-mono text-slate-700 font-semibold">
+                  Join Code: {selectedClassroom.join_code}
+                </span>
+              </>
+            )}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {selectedClassroom?.last_scan_at ? (
+            <div className="text-right text-xs">
+              <div className="text-slate-400">Last scanned</div>
+              <div className="font-semibold text-slate-700">
+                {new Date(selectedClassroom.last_scan_at).toLocaleTimeString([], {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </div>
+            </div>
+          ) : (
+            <div className="text-xs text-slate-400 italic">No scan performed yet</div>
+          )}
+
+          <Link
+            href="/students"
+            className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition"
+          >
+            <span>View Roster</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      </div>
+
+      {/* KPI Cards Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Enrolled */}
+        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
+          <div className="flex items-center justify-between text-slate-500 mb-2">
+            <span className="text-xs font-semibold uppercase tracking-wider">Enrolled Students</span>
+            <div className="p-2 bg-slate-100 rounded-lg text-slate-600">
+              <Users className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-slate-900">{kpis.totalEnrolled}</div>
+          <div className="text-[11px] text-slate-400 mt-1">
+            {kpis.totalEnrolled === 0 ? 'No students enrolled' : 'Real database enrollment'}
+          </div>
+        </div>
+
+        {/* Active Today */}
+        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
+          <div className="flex items-center justify-between text-emerald-700 mb-2">
+            <span className="text-xs font-semibold uppercase tracking-wider">Active Today</span>
+            <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-slate-900">{kpis.activeToday}</div>
+          <div className="text-[11px] text-emerald-600 font-medium mt-1">
+            Verified submissions today (Asia/Kolkata)
+          </div>
+        </div>
+
+        {/* Active Yesterday */}
+        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
+          <div className="flex items-center justify-between text-blue-700 mb-2">
+            <span className="text-xs font-semibold uppercase tracking-wider">Active Yesterday</span>
+            <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+              <Clock className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-slate-900">{kpis.activeYesterday}</div>
+          <div className="text-[11px] text-blue-600 font-medium mt-1">
+            Verified submissions yesterday
+          </div>
+        </div>
+
+        {/* Data Unavailable / Error */}
+        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
+          <div className="flex items-center justify-between text-red-700 mb-2">
+            <span className="text-xs font-semibold uppercase tracking-wider">Data Unavailable</span>
+            <div className="p-2 bg-red-50 rounded-lg text-red-600">
+              <AlertTriangle className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-slate-900">{kpis.dataUnavailableCount}</div>
+          <div className="text-[11px] text-red-600 font-medium mt-1">
+            {kpis.dataUnavailableCount > 0 ? 'Scraper failure / requires retry' : 'No connector errors'}
+          </div>
+        </div>
+      </div>
+
+      {/* Platform Solved & Contest Totals Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* LeetCode Total Solved */}
+        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 bg-amber-50 text-amber-600 rounded-md">
+                <Code2 className="w-4 h-4" />
+              </div>
+              <span className="text-xs font-bold text-slate-800">LeetCode Solved</span>
+            </div>
+            <span className="text-xs text-slate-400 font-medium">
+              {platforms.leetcodeCount} linked
+            </span>
+          </div>
+          <div className="text-2xl font-bold text-slate-900">{kpis.leetcodeTotalSolved}</div>
+          <p className="text-[11px] text-slate-500 mt-1">
+            Unique problems solved across all verified LeetCode profiles.
+          </p>
+        </div>
+
+        {/* CodeChef Total Solved */}
+        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 bg-orange-50 text-orange-600 rounded-md">
+                <ChefHat className="w-4 h-4" />
+              </div>
+              <span className="text-xs font-bold text-slate-800">CodeChef Solved</span>
+            </div>
+            <span className="text-xs text-slate-400 font-medium">
+              {platforms.codechefCount} linked
+            </span>
+          </div>
+          <div className="text-2xl font-bold text-slate-900">{kpis.codechefTotalSolved}</div>
+          <p className="text-[11px] text-slate-500 mt-1">
+            Total verified problems solved on CodeChef (reported separately).
+          </p>
+        </div>
+
+        {/* Contest Participations */}
+        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 bg-purple-50 text-purple-600 rounded-md">
+                <Trophy className="w-4 h-4" />
+              </div>
+              <span className="text-xs font-bold text-slate-800">Contest History</span>
+            </div>
+            <Link href="/contests" className="text-xs text-blue-600 hover:underline font-medium">
+              Details
+            </Link>
+          </div>
+          <div className="text-2xl font-bold text-slate-900">{kpis.totalContestsParticipated}</div>
+          <p className="text-[11px] text-slate-500 mt-1">
+            Total rated contest attendances verified in platform histories.
+          </p>
+        </div>
+      </div>
+
+      {/* Daily Activity Trends Chart */}
+      <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-2xs">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-blue-600" />
+              <span>Daily Student Activity Trend (Last 14 Days)</span>
+            </h3>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Active student counts calculated from verified Asia/Kolkata daily submission records.
+            </p>
+          </div>
+          <div className="text-xs text-slate-500 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded">
+            Real DB Observations
+          </div>
+        </div>
+
+        {trends.length === 0 ? (
+          <div className="py-16 text-center text-slate-400 border border-dashed border-slate-200 rounded-lg">
+            <HelpCircle className="w-8 h-8 mx-auto mb-2 text-slate-300" />
+            <div className="text-xs font-semibold text-slate-600">No daily activity records yet</div>
+            <div className="text-[11px] text-slate-400 mt-1">
+              Click &quot;Scan Now&quot; to fetch and store verified student submission heatmaps.
+            </div>
+          </div>
+        ) : (
+          <div className="h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={trends} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="activeGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#2563eb" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                <XAxis dataKey="date" stroke="#94a3b8" fontSize={11} tickLine={false} />
+                <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} allowDecimals={false} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#ffffff',
+                    borderColor: '#e2e8f0',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="activeStudents"
+                  name="Active Students"
+                  stroke="#2563eb"
+                  strokeWidth={2}
+                  fillOpacity={1}
+                  fill="url(#activeGrad)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
