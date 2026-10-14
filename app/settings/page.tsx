@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/components/AuthContext';
+import { dataCache } from '@/components/DataCacheContext';
 import {
   Settings,
   Code2,
@@ -17,8 +18,9 @@ import {
 
 export default function SettingsPage() {
   const { user } = useAuth();
-  const [accounts, setAccounts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const cacheKey = user ? `settings:accounts:${user.id}` : null;
+  const [accounts, setAccounts] = useState<any[]>(() => cacheKey ? dataCache.get<any[]>(cacheKey) || [] : []);
+  const [loading, setLoading] = useState(() => cacheKey ? !dataCache.get<any[]>(cacheKey) : true);
 
   // Link forms
   const [lcUsername, setLcUsername] = useState('');
@@ -29,22 +31,33 @@ export default function SettingsPage() {
   const [errorCc, setErrorCc] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  const fetchAccounts = async () => {
+  const fetchAccounts = async (force = false) => {
     if (!user) return;
-    setLoading(true);
+    if (!force && cacheKey && dataCache.get(cacheKey)) return;
+    if (!cacheKey || !dataCache.get(cacheKey)) setLoading(true);
     try {
       const res = await fetch(`/api/students/${user.id}/platforms`);
       if (res.ok) {
         const json = await res.json();
-        setAccounts(json.accounts || []);
+        const loaded = json.accounts || [];
+        setAccounts(loaded);
+        if (cacheKey) dataCache.set(cacheKey, loaded);
       }
     } catch {}
     setLoading(false);
   };
 
   useEffect(() => {
-    fetchAccounts();
-  }, [user]);
+    if (user && cacheKey) {
+      const cached = dataCache.get<any[]>(cacheKey);
+      if (cached) {
+        setAccounts(cached);
+        setLoading(false);
+      } else {
+        fetchAccounts();
+      }
+    }
+  }, [user, cacheKey]);
 
   const lcAccount = accounts.find((a) => a.platform === 'leetcode');
   const ccAccount = accounts.find((a) => a.platform === 'codechef');
@@ -75,7 +88,8 @@ export default function SettingsPage() {
       }
 
       setSuccessMsg(`Successfully linked ${platform === 'leetcode' ? 'LeetCode' : 'CodeChef'} handle @${json.account.username}`);
-      await fetchAccounts();
+      dataCache.invalidate(`student:dashboard:${user.id}`);
+      await fetchAccounts(true);
       if (platform === 'leetcode') setLcUsername('');
       else setCcUsername('');
     } catch {
@@ -97,7 +111,8 @@ export default function SettingsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ platform }),
       });
-      await fetchAccounts();
+      dataCache.invalidate(`student:dashboard:${user.id}`);
+      await fetchAccounts(true);
     } catch {}
   };
 

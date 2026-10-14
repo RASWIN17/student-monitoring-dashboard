@@ -69,6 +69,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   const logout = async () => {
+    try {
+      const { dataCache } = await import('@/components/DataCacheContext');
+      dataCache.invalidate();
+    } catch {}
     await fetch('/api/auth/me', { method: 'DELETE' });
     setUser(null);
     setClassrooms([]);

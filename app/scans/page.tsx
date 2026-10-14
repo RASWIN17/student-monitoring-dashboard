@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/components/AuthContext';
+import { dataCache } from '@/components/DataCacheContext';
 import {
   History,
   RefreshCw,
@@ -15,14 +16,16 @@ import {
 
 export default function ScansPage() {
   const { selectedClassroom, user } = useAuth();
-  const [jobs, setJobs] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const cacheKey = `scans:history:${selectedClassroom?.id || 'all'}`;
+  const [jobs, setJobs] = useState<any[]>(() => dataCache.get<any[]>(cacheKey) || []);
+  const [loading, setLoading] = useState(() => !dataCache.get<any[]>(cacheKey));
 
   const isTeacher = user?.role === 'teacher' || user?.role === 'admin';
 
-  const fetchScanHistory = async () => {
+  const fetchScanHistory = async (force = false) => {
     if (!isTeacher) return;
-    setLoading(true);
+    if (!force && dataCache.get(cacheKey)) return;
+    if (!dataCache.get(cacheKey)) setLoading(true);
     try {
       const url = selectedClassroom
         ? `/api/scan?classroomId=${selectedClassroom.id}`
@@ -30,7 +33,9 @@ export default function ScansPage() {
       const res = await fetch(url);
       if (res.ok) {
         const json = await res.json();
-        setJobs(json.jobs || []);
+        const loaded = json.jobs || [];
+        setJobs(loaded);
+        dataCache.set(cacheKey, loaded);
       }
     } catch {}
     setLoading(false);
@@ -38,9 +43,15 @@ export default function ScansPage() {
 
   useEffect(() => {
     if (isTeacher) {
-      fetchScanHistory();
+      const cached = dataCache.get<any[]>(cacheKey);
+      if (cached) {
+        setJobs(cached);
+        setLoading(false);
+      } else {
+        fetchScanHistory();
+      }
     }
-  }, [selectedClassroom, isTeacher]);
+  }, [cacheKey, isTeacher]);
 
   if (user && !isTeacher) {
     return (
@@ -77,7 +88,7 @@ export default function ScansPage() {
         </div>
 
         <button
-          onClick={fetchScanHistory}
+          onClick={() => fetchScanHistory(true)}
           className="p-2 text-slate-600 hover:text-blue-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition self-start sm:self-auto"
         >
           <RefreshCw className="w-4 h-4" />

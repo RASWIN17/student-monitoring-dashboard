@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { AuthProvider } from '@/components/AuthContext';
+import { DataCacheProvider } from '@/components/DataCacheContext';
 import { AppShell } from '@/components/AppShell';
 
 export const metadata: Metadata = {
@@ -17,7 +18,9 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased">
         <AuthProvider>
-          <AppShell>{children}</AppShell>
+          <DataCacheProvider>
+            <AppShell>{children}</AppShell>
+          </DataCacheProvider>
         </AuthProvider>
       </body>
     </html>

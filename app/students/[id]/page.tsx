@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthContext';
 import { ScanModal } from '@/components/ScanModal';
+import { dataCache } from '@/components/DataCacheContext';
 import {
   Users,
   Code2,
@@ -34,27 +35,36 @@ export default function StudentDetailPage() {
   const params = useParams();
   const studentId = params?.id as string;
   const { user } = useAuth();
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const cacheKey = studentId ? `student:profile:${studentId}` : null;
+  const [data, setData] = useState<any>(() => cacheKey ? dataCache.get(cacheKey) : null);
+  const [loading, setLoading] = useState(() => cacheKey ? !dataCache.get(cacheKey) : true);
   const [isScanOpen, setIsScanOpen] = useState(false);
 
-  const fetchStudentData = async () => {
-    setLoading(true);
+  const fetchStudentData = async (force = false) => {
+    if (!force && cacheKey && dataCache.get(cacheKey)) return;
+    if (!cacheKey || !dataCache.get(cacheKey)) setLoading(true);
     try {
       const res = await fetch(`/api/students/${studentId}`);
       if (res.ok) {
         const json = await res.json();
         setData(json);
+        if (cacheKey) dataCache.set(cacheKey, json);
       }
     } catch {}
     setLoading(false);
   };
 
   useEffect(() => {
-    if (studentId) {
-      fetchStudentData();
+    if (studentId && cacheKey) {
+      const cached = dataCache.get(cacheKey);
+      if (cached) {
+        setData(cached);
+        setLoading(false);
+      } else {
+        fetchStudentData();
+      }
     }
-  }, [studentId]);
+  }, [studentId, cacheKey]);
 
   if (loading || !data) {
     return (
@@ -362,7 +372,7 @@ export default function StudentDetailPage() {
         isOpen={isScanOpen}
         onClose={() => setIsScanOpen(false)}
         onScanCompleted={() => {
-          fetchStudentData();
+          fetchStudentData(true);
           setIsScanOpen(false);
         }}
         targetStudentId={student.id}

@@ -27,34 +27,62 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
+import { dataCache } from '@/components/DataCacheContext';
+
+interface ContestDataCache {
+  contest: Contest | null;
+  linkedAccounts: StudentContestAttendanceRow[];
+  attended: StudentContestAttendanceRow[];
+  notAttended: StudentContestAttendanceRow[];
+  pendingVerification: StudentContestAttendanceRow[];
+  summary: { totalLinked: number; attendedCount: number; notAttendedCount: number; pendingCount: number };
+  scanMessage?: string | null;
+}
+
 export default function CodeChefContestDetailPage({ params }: PageProps) {
   const resolvedParams = use(params);
   const contestId = resolvedParams.id;
 
   const { selectedClassroom } = useAuth();
-  const [contest, setContest] = useState<Contest | null>(null);
-  const [linkedAccounts, setLinkedAccounts] = useState<StudentContestAttendanceRow[]>([]);
-  const [attended, setAttended] = useState<StudentContestAttendanceRow[]>([]);
-  const [notAttended, setNotAttended] = useState<StudentContestAttendanceRow[]>([]);
-  const [pendingVerification, setPendingVerification] = useState<StudentContestAttendanceRow[]>([]);
-  const [summary, setSummary] = useState({
+  const cacheKey = `contest:codechef:${contestId}:${selectedClassroom?.id || 'all'}`;
+  const uiKey = `ui:codechef:contest:${contestId}`;
+
+  const cachedData = dataCache.get<ContestDataCache>(cacheKey);
+  const [contest, setContest] = useState<Contest | null>(() => cachedData?.contest || null);
+  const [linkedAccounts, setLinkedAccounts] = useState<StudentContestAttendanceRow[]>(() => cachedData?.linkedAccounts || []);
+  const [attended, setAttended] = useState<StudentContestAttendanceRow[]>(() => cachedData?.attended || []);
+  const [notAttended, setNotAttended] = useState<StudentContestAttendanceRow[]>(() => cachedData?.notAttended || []);
+  const [pendingVerification, setPendingVerification] = useState<StudentContestAttendanceRow[]>(() => cachedData?.pendingVerification || []);
+  const [summary, setSummary] = useState(() => cachedData?.summary || {
     totalLinked: 0,
     attendedCount: 0,
     notAttendedCount: 0,
     pendingCount: 0,
   });
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !cachedData);
   const [scanning, setScanning] = useState(false);
-  const [scanMessage, setScanMessage] = useState<string | null>(null);
+  const [scanMessage, setScanMessage] = useState<string | null>(() => cachedData?.scanMessage || null);
   const [showRefreshPopup, setShowRefreshPopup] = useState(false);
 
+  const savedUI = dataCache.getUI<{
+    activeCard: 'attended' | 'not_attended' | 'pending' | 'linked';
+    solvedFilter: number | null;
+    searchQuery: string;
+  }>(uiKey);
+
   // Active view: 'attended' | 'not_attended' | 'pending' | 'linked'
-  const [activeCard, setActiveCard] = useState<'attended' | 'not_attended' | 'pending' | 'linked'>('attended');
+  const [activeCard, setActiveCard] = useState<'attended' | 'not_attended' | 'pending' | 'linked'>(
+    savedUI?.activeCard || 'attended'
+  );
 
   // Problem-solved filter: null | 1 | 2 | ... | 10
-  const [solvedFilter, setSolvedFilter] = useState<number | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [solvedFilter, setSolvedFilter] = useState<number | null>(savedUI?.solvedFilter ?? null);
+  const [searchQuery, setSearchQuery] = useState(savedUI?.searchQuery || '');
+
+  useEffect(() => {
+    dataCache.setUI(uiKey, { activeCard, solvedFilter, searchQuery });
+  }, [uiKey, activeCard, solvedFilter, searchQuery]);
 
   // Countdown timer state
   const [timeLeft, setTimeLeft] = useState({
@@ -66,22 +94,32 @@ export default function CodeChefContestDetailPage({ params }: PageProps) {
     isCompleted: false,
   });
 
-  const fetchContestData = async () => {
-    setLoading(true);
+  const fetchContestData = async (force = false) => {
+    if (!force && !dataCache.get(cacheKey)) setLoading(true);
     try {
       const classroomParam = selectedClassroom ? `?classroomId=${selectedClassroom.id}` : '';
       const res = await fetch(`/api/contests/${contestId}${classroomParam}`);
       if (res.ok) {
         const json = await res.json();
-        setContest(json.contest);
-        setLinkedAccounts(json.linkedAccounts || []);
-        setAttended(json.attended || []);
-        setNotAttended(json.notAttended || []);
-        setPendingVerification(json.pendingVerification || []);
-        setSummary(json.summary || { totalLinked: 0, attendedCount: 0, notAttendedCount: 0, pendingCount: 0 });
-        if (json.contest?.scan_message) {
-          setScanMessage(json.contest.scan_message);
+        const loadedData: ContestDataCache = {
+          contest: json.contest,
+          linkedAccounts: json.linkedAccounts || [],
+          attended: json.attended || [],
+          notAttended: json.notAttended || [],
+          pendingVerification: json.pendingVerification || [],
+          summary: json.summary || { totalLinked: 0, attendedCount: 0, notAttendedCount: 0, pendingCount: 0 },
+          scanMessage: json.contest?.scan_message || null,
+        };
+        setContest(loadedData.contest);
+        setLinkedAccounts(loadedData.linkedAccounts);
+        setAttended(loadedData.attended);
+        setNotAttended(loadedData.notAttended);
+        setPendingVerification(loadedData.pendingVerification);
+        setSummary(loadedData.summary);
+        if (loadedData.scanMessage) {
+          setScanMessage(loadedData.scanMessage);
         }
+        dataCache.set(cacheKey, loadedData);
       }
     } catch (err) {
       console.error('Failed to load contest analytics:', err);
@@ -91,8 +129,20 @@ export default function CodeChefContestDetailPage({ params }: PageProps) {
   };
 
   useEffect(() => {
-    fetchContestData();
-  }, [contestId, selectedClassroom]);
+    const cached = dataCache.get<ContestDataCache>(cacheKey);
+    if (cached) {
+      setContest(cached.contest);
+      setLinkedAccounts(cached.linkedAccounts);
+      setAttended(cached.attended);
+      setNotAttended(cached.notAttended);
+      setPendingVerification(cached.pendingVerification);
+      setSummary(cached.summary);
+      if (cached.scanMessage) setScanMessage(cached.scanMessage);
+      setLoading(false);
+    } else {
+      fetchContestData();
+    }
+  }, [cacheKey]);
 
   // Live countdown timer logic
   useEffect(() => {
@@ -150,7 +200,7 @@ export default function CodeChefContestDetailPage({ params }: PageProps) {
       const data = await res.json();
       if (res.ok) {
         setScanMessage(data.message || 'Scan completed successfully.');
-        await fetchContestData();
+        await fetchContestData(true);
         setShowRefreshPopup(true);
       } else {
         setScanMessage(data.error || 'Failed to scan contest.');

@@ -19,27 +19,33 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 
+import { dataCache } from '@/components/DataCacheContext';
+
 interface Props {
   platform: 'leetcode' | 'codechef';
 }
 
 export function ClassroomSelectionView({ platform }: Props) {
   const { user } = useAuth();
-  const [classrooms, setClassrooms] = useState<Classroom[]>([]);
-  const [loading, setLoading] = useState(true);
+  const cacheKey = 'classrooms:selection:list';
+  const [classrooms, setClassrooms] = useState<Classroom[]>(() => dataCache.get<Classroom[]>(cacheKey) || []);
+  const [loading, setLoading] = useState(() => !dataCache.get<Classroom[]>(cacheKey));
   const [error, setError] = useState<string | null>(null);
 
   const platformDisplayName = platform === 'leetcode' ? 'LeetCode' : 'CodeChef';
   const platformColor = platform === 'leetcode' ? 'amber' : 'orange';
 
-  const fetchClassrooms = async () => {
-    setLoading(true);
+  const fetchClassrooms = async (force = false) => {
+    if (!force && dataCache.get(cacheKey)) return;
+    if (!dataCache.get(cacheKey)) setLoading(true);
     setError(null);
     try {
       const res = await fetch('/api/classrooms');
       if (res.ok) {
         const data = await res.json();
-        setClassrooms(data.classrooms || []);
+        const loaded = data.classrooms || [];
+        setClassrooms(loaded);
+        dataCache.set(cacheKey, loaded);
       } else {
         throw new Error('Failed to load classrooms.');
       }
@@ -51,7 +57,13 @@ export function ClassroomSelectionView({ platform }: Props) {
   };
 
   useEffect(() => {
-    fetchClassrooms();
+    const cached = dataCache.get<Classroom[]>(cacheKey);
+    if (cached) {
+      setClassrooms(cached);
+      setLoading(false);
+    } else {
+      fetchClassrooms();
+    }
   }, []);
 
   return (
@@ -144,7 +156,7 @@ export function ClassroomSelectionView({ platform }: Props) {
           <h3 className="text-sm font-bold text-slate-900 mb-1">Failed to Load Classrooms</h3>
           <p className="text-xs text-slate-500 mb-4">{error}</p>
           <button
-            onClick={fetchClassrooms}
+            onClick={() => fetchClassrooms(true)}
             className="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition"
           >
             Retry

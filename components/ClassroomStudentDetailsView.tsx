@@ -51,19 +51,35 @@ function getCodeChefStars(rating: number | null): string {
   return '7★';
 }
 
+import { dataCache } from '@/components/DataCacheContext';
+
+interface ClassroomDataCache {
+  classroom: Classroom | null;
+  students: StudentPerformanceOverview[];
+}
+
 export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
   const router = useRouter();
   const { user } = useAuth();
   const isTeacher = user?.role === 'teacher' || user?.role === 'admin';
 
-  const [classroom, setClassroom] = useState<Classroom | null>(null);
-  const [students, setStudents] = useState<StudentPerformanceOverview[]>([]);
-  const [loading, setLoading] = useState(true);
+  const cacheKey = `classroom:students:${classroomId}:${platform}`;
+  const uiKey = `ui:classroom:students:${classroomId}:${platform}`;
+
+  const cachedData = dataCache.get<ClassroomDataCache>(cacheKey);
+  const [classroom, setClassroom] = useState<Classroom | null>(() => cachedData?.classroom || null);
+  const [students, setStudents] = useState<StudentPerformanceOverview[]>(() => cachedData?.students || []);
+  const [loading, setLoading] = useState(() => !cachedData);
   const [error, setError] = useState<string | null>(null);
 
+  const savedUI = dataCache.getUI<{ searchTerm: string; sortOption: SortOption }>(uiKey);
   // Search & Sorting state
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortOption, setSortOption] = useState<SortOption>('problems_desc');
+  const [searchTerm, setSearchTerm] = useState(savedUI?.searchTerm || '');
+  const [sortOption, setSortOption] = useState<SortOption>(savedUI?.sortOption || 'problems_desc');
+
+  useEffect(() => {
+    dataCache.setUI(uiKey, { searchTerm, sortOption });
+  }, [uiKey, searchTerm, sortOption]);
 
   // Scan modal state
   const [isScanClassroomOpen, setIsScanClassroomOpen] = useState(false);
@@ -72,8 +88,9 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
   const platformDisplayName = platform === 'leetcode' ? 'LeetCode' : 'CodeChef';
   const platformSelectionUrl = `/students/${platform}`;
 
-  const fetchData = async () => {
-    setLoading(true);
+  const fetchData = async (force = false) => {
+    if (!force && dataCache.get(cacheKey)) return;
+    if (!dataCache.get(cacheKey)) setLoading(true);
     setError(null);
     try {
       // 1. Fetch classroom details
@@ -83,7 +100,8 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
         throw new Error('Failed to load classroom details.');
       }
       const cData = await cRes.json();
-      setClassroom(cData.classroom);
+      const loadedClassroom = cData.classroom;
+      setClassroom(loadedClassroom);
 
       // 2. Fetch classroom students overview
       const sRes = await fetch(`/api/classrooms/${classroomId}/students`);
@@ -91,7 +109,9 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
         throw new Error('Failed to load student records.');
       }
       const sData = await sRes.json();
-      setStudents(sData.students || []);
+      const loadedStudents = sData.students || [];
+      setStudents(loadedStudents);
+      dataCache.set(cacheKey, { classroom: loadedClassroom, students: loadedStudents });
     } catch (err: any) {
       setError(err?.message || 'Error loading classroom details.');
     } finally {
@@ -101,9 +121,16 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
 
   useEffect(() => {
     if (classroomId) {
-      fetchData();
+      const cached = dataCache.get<ClassroomDataCache>(cacheKey);
+      if (cached) {
+        setClassroom(cached.classroom);
+        setStudents(cached.students);
+        setLoading(false);
+      } else {
+        fetchData();
+      }
     }
-  }, [classroomId]);
+  }, [cacheKey, classroomId]);
 
   // Derived filtered & sorted list
   const processedStudents = useMemo(() => {
@@ -775,7 +802,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
         onClose={() => setIsScanClassroomOpen(false)}
         classroomId={classroom.id}
         initialPlatform={platform}
-        onScanCompleted={fetchData}
+        onScanCompleted={() => fetchData(true)}
       />
 
       {/* Individual Student Scan Modal */}
@@ -787,7 +814,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
           targetStudentId={scanStudent.id}
           targetStudentName={scanStudent.name}
           initialPlatform={platform}
-          onScanCompleted={fetchData}
+          onScanCompleted={() => fetchData(true)}
         />
       )}
     </div>

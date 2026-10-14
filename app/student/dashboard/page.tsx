@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthContext';
+import { dataCache } from '@/components/DataCacheContext';
 import {
   Code2,
   ChefHat,
@@ -35,8 +36,9 @@ import {
 export default function StudentDashboardPage() {
   const router = useRouter();
   const { user, loading: authLoading, refreshClassrooms } = useAuth();
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const cacheKey = user ? `student:dashboard:${user.id}` : null;
+  const [data, setData] = useState<any>(() => cacheKey ? dataCache.get(cacheKey) : null);
+  const [loading, setLoading] = useState(() => cacheKey ? !dataCache.get(cacheKey) : true);
 
   // Classroom join state
   const [joinCode, setJoinCode] = useState('');
@@ -55,14 +57,16 @@ export default function StudentDashboardPage() {
     }
   }, [user, authLoading, router]);
 
-  const fetchStudentData = async () => {
+  const fetchStudentData = async (force = false) => {
     if (!user || user.role !== 'student') return;
-    setLoading(true);
+    if (!force && cacheKey && dataCache.get(cacheKey)) return;
+    if (!cacheKey || !dataCache.get(cacheKey)) setLoading(true);
     try {
       const res = await fetch(`/api/students/${user.id}`);
       if (res.ok) {
         const json = await res.json();
         setData(json);
+        if (cacheKey) dataCache.set(cacheKey, json);
       }
     } catch {
     } finally {
@@ -71,10 +75,16 @@ export default function StudentDashboardPage() {
   };
 
   useEffect(() => {
-    if (user && user.role === 'student') {
-      fetchStudentData();
+    if (user && user.role === 'student' && cacheKey) {
+      const cached = dataCache.get(cacheKey);
+      if (cached) {
+        setData(cached);
+        setLoading(false);
+      } else {
+        fetchStudentData();
+      }
     }
-  }, [user]);
+  }, [user, cacheKey]);
 
   const handleJoinClassroom = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,7 +111,7 @@ export default function StudentDashboardPage() {
       setJoinSuccess(`Successfully joined ${result.classroom.name} (${result.classroom.course})!`);
       setJoinCode('');
       await refreshClassrooms();
-      await fetchStudentData();
+      await fetchStudentData(true);
     } catch {
       setJoinError('Network connection failed while joining classroom');
     } finally {

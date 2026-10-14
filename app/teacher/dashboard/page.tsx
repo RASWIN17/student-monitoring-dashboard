@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthContext';
+import { dataCache } from '@/components/DataCacheContext';
 import { ScanModal } from '@/components/ScanModal';
 import {
   Users,
@@ -36,8 +37,9 @@ import {
 export default function TeacherDashboardPage() {
   const router = useRouter();
   const { user, selectedClassroom, classrooms, loading: authLoading } = useAuth();
-  const [stats, setStats] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const cacheKey = `teacher:dashboard:stats:${selectedClassroom?.id || 'all'}`;
+  const [stats, setStats] = useState<any>(() => dataCache.get(cacheKey) || null);
+  const [loading, setLoading] = useState(() => !dataCache.get(cacheKey));
   const [isScanModalOpen, setIsScanModalOpen] = useState(false);
 
   // Security Guard: Prevent students from accessing the teacher dashboard
@@ -51,9 +53,10 @@ export default function TeacherDashboardPage() {
     }
   }, [user, authLoading, router]);
 
-  const fetchStats = async () => {
+  const fetchStats = async (force = false) => {
     if (!user || user.role === 'student') return;
-    setLoading(true);
+    if (!force && dataCache.get(cacheKey)) return;
+    if (!dataCache.get(cacheKey)) setLoading(true);
     try {
       const url = selectedClassroom
         ? `/api/dashboard/stats?classroomId=${selectedClassroom.id}`
@@ -62,6 +65,7 @@ export default function TeacherDashboardPage() {
       if (res.ok) {
         const data = await res.json();
         setStats(data);
+        dataCache.set(cacheKey, data);
       }
     } catch {
     } finally {
@@ -71,9 +75,15 @@ export default function TeacherDashboardPage() {
 
   useEffect(() => {
     if (user && (user.role === 'teacher' || user.role === 'admin')) {
-      fetchStats();
+      const cached = dataCache.get(cacheKey);
+      if (cached) {
+        setStats(cached);
+        setLoading(false);
+      } else {
+        fetchStats();
+      }
     }
-  }, [user, selectedClassroom]);
+  }, [user, cacheKey]);
 
   if (authLoading || (loading && !stats)) {
     return (
@@ -382,7 +392,7 @@ export default function TeacherDashboardPage() {
         isOpen={isScanModalOpen}
         onClose={() => setIsScanModalOpen(false)}
         onScanCompleted={() => {
-          fetchStats();
+          fetchStats(true);
         }}
       />
     </div>

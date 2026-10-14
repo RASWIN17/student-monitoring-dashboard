@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/components/AuthContext';
 import { ContestCard } from '@/components/ContestCard';
 import { Contest } from '@/lib/types';
+import { dataCache } from '@/components/DataCacheContext';
 import {
   Code2,
   RefreshCw,
@@ -18,15 +19,24 @@ import {
 
 export default function LeetCodeContestsPage() {
   const { selectedClassroom } = useAuth();
-  const [contests, setContests] = useState<Contest[]>([]);
-  const [loading, setLoading] = useState(true);
+  const cacheKey = `contests:leetcode:${selectedClassroom?.id || 'all'}`;
+  const uiKey = 'ui:leetcode:contests';
+
+  const [contests, setContests] = useState<Contest[]>(() => dataCache.get<Contest[]>(cacheKey) || []);
+  const [loading, setLoading] = useState(() => !dataCache.get<Contest[]>(cacheKey));
   const [refreshing, setRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'all' | 'upcoming' | 'completed'>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+
+  const savedUI = dataCache.getUI<{ activeTab: 'all' | 'upcoming' | 'completed'; searchQuery: string }>(uiKey);
+  const [activeTab, setActiveTab] = useState<'all' | 'upcoming' | 'completed'>(savedUI?.activeTab || 'all');
+  const [searchQuery, setSearchQuery] = useState(savedUI?.searchQuery || '');
+
+  useEffect(() => {
+    dataCache.setUI(uiKey, { activeTab, searchQuery });
+  }, [activeTab, searchQuery]);
 
   const fetchContests = async (forceSync = false) => {
     if (forceSync) setRefreshing(true);
-    else setLoading(true);
+    else if (!dataCache.get(cacheKey)) setLoading(true);
 
     try {
       const classroomParam = selectedClassroom ? `&classroomId=${selectedClassroom.id}` : '';
@@ -34,7 +44,9 @@ export default function LeetCodeContestsPage() {
       const res = await fetch(`/api/contests?platform=leetcode${classroomParam}${syncParam}`);
       if (res.ok) {
         const json = await res.json();
-        setContests(json.contests || []);
+        const loaded = json.contests || [];
+        setContests(loaded);
+        dataCache.set(cacheKey, loaded);
       }
     } catch (err) {
       console.error('Failed to load LeetCode contests:', err);
@@ -45,8 +57,14 @@ export default function LeetCodeContestsPage() {
   };
 
   useEffect(() => {
-    fetchContests();
-  }, [selectedClassroom]);
+    const cached = dataCache.get<Contest[]>(cacheKey);
+    if (cached) {
+      setContests(cached);
+      setLoading(false);
+    } else {
+      fetchContests();
+    }
+  }, [cacheKey]);
 
   const filteredContests = contests.filter((c) => {
     if (activeTab === 'upcoming' && c.status === 'completed') return false;
