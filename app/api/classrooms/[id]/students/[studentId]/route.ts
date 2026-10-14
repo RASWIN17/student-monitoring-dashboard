@@ -8,12 +8,12 @@ export async function DELETE(
 ) {
   const { id, studentId } = await params;
   const user = await getCurrentUser();
-  if (!user || user.role !== 'teacher') {
+  if (!user || (user.role !== 'teacher' && user.role !== 'admin')) {
     return NextResponse.json({ error: 'Only teachers can remove students' }, { status: 403 });
   }
 
   const classroom = await getClassroomById(id);
-  if (!classroom || classroom.owner_teacher_id !== user.id) {
+  if (!classroom || (classroom.owner_teacher_id !== user.id && user.role !== 'admin')) {
     return NextResponse.json({ error: 'Classroom not found or unauthorized' }, { status: 404 });
   }
 

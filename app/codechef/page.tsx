@@ -15,8 +15,15 @@ import {
   Search,
 } from 'lucide-react';
 
+import { StudentCodeChefAnalytics } from '@/components/StudentCodeChefAnalytics';
+
 export default function CodeChefContestsPage() {
-  const { selectedClassroom } = useAuth();
+  const { user, selectedClassroom } = useAuth();
+
+  if (user?.role === 'student') {
+    return <StudentCodeChefAnalytics user={user} />;
+  }
+
   const cacheKey = `contests:codechef:${selectedClassroom?.id || 'all'}`;
   const uiKey = 'ui:codechef:contests';
 

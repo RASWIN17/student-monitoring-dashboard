@@ -14,8 +14,10 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function ClassroomsPage() {
+  const router = useRouter();
   const { classrooms, user, refreshClassrooms, setSelectedClassroom } = useAuth();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
@@ -128,16 +130,23 @@ export default function ClassroomsPage() {
           {classrooms.map((c) => (
             <div
               key={c.id}
-              className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs hover:shadow-xs transition flex flex-col justify-between"
+              onClick={() => {
+                setSelectedClassroom(c);
+                router.push(`/classrooms/${c.id}`);
+              }}
+              className="bg-white rounded-xl border border-slate-200 hover:border-blue-500 hover:shadow-md p-5 transition-all flex flex-col justify-between cursor-pointer group"
             >
               <div>
                 <div className="flex items-start justify-between gap-2 mb-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
+                  <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 group-hover:bg-blue-100 group-hover:border-blue-300 transition">
                     {c.course} • Sec {c.section}
                   </span>
                   {isTeacher && (
                     <button
-                      onClick={() => handleArchive(c.id, c.name)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleArchive(c.id, c.name);
+                      }}
                       className="text-slate-400 hover:text-red-600 p-1 rounded transition"
                       title="Archive Classroom"
                     >
@@ -146,13 +155,18 @@ export default function ClassroomsPage() {
                   )}
                 </div>
 
-                <h3 className="text-base font-bold text-slate-900 leading-snug">{c.name}</h3>
+                <h3 className="text-base font-bold text-slate-900 group-hover:text-blue-600 leading-snug transition-colors">
+                  {c.name}
+                </h3>
                 <p className="text-xs text-slate-500 mt-1">
                   Dept: {c.department} • Batch: {c.batch} • {c.academic_year}
                 </p>
 
                 {/* Join Code Box */}
-                <div className="mt-4 p-2.5 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between">
+                <div
+                  className="mt-4 p-2.5 bg-slate-50 group-hover:bg-blue-50/40 border border-slate-200 group-hover:border-blue-200/80 rounded-lg flex items-center justify-between transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <div>
                     <div className="text-[10px] text-slate-400 uppercase font-semibold">Join Code</div>
                     <div className="font-mono text-sm font-bold text-slate-800 tracking-wider">
@@ -160,7 +174,10 @@ export default function ClassroomsPage() {
                     </div>
                   </div>
                   <button
-                    onClick={() => copyToClipboard(c.join_code)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      copyToClipboard(c.join_code);
+                    }}
                     className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-white rounded transition"
                     title="Copy Join Code"
                   >
@@ -176,19 +193,14 @@ export default function ClassroomsPage() {
               {/* Bottom Meta & Action */}
               <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-1.5 text-slate-600 font-semibold">
-                  <Users className="w-4 h-4 text-slate-400" />
+                  <Users className="w-4 h-4 text-slate-400 group-hover:text-blue-500 transition-colors" />
                   <span>{c.enrolled_count ?? 0} students</span>
                 </div>
 
-                <button
-                  onClick={() => {
-                    setSelectedClassroom(c);
-                  }}
-                  className="px-3 py-1.5 bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 rounded-lg font-semibold flex items-center gap-1 transition"
-                >
-                  <span>Select</span>
-                  <ArrowRight className="w-3 h-3" />
-                </button>
+                <div className="px-3 py-1.5 bg-slate-100 group-hover:bg-blue-600 group-hover:text-white text-slate-700 rounded-lg font-semibold flex items-center gap-1 transition">
+                  <span>Open Classroom</span>
+                  <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                </div>
               </div>
             </div>
           ))}

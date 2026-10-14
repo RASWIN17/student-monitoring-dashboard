@@ -53,6 +53,8 @@ export default function StudentDashboardPage() {
         router.replace('/login');
       } else if (user.role === 'teacher' || user.role === 'admin') {
         router.replace('/students');
+      } else if (user.role === 'student' && !user.profile_completed) {
+        router.replace('/student/profile/create');
       }
     }
   }, [user, authLoading, router]);

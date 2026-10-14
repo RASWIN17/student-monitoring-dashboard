@@ -44,7 +44,12 @@ function LoginFormContent() {
       if (returnTo && returnTo.startsWith('/') && !returnTo.startsWith('//') && returnTo !== '/login' && returnTo !== '/') {
         router.replace(returnTo);
       } else {
-        const dest = user.role === 'teacher' || user.role === 'admin' ? '/students' : '/student/dashboard';
+        const dest =
+          user.role === 'teacher' || user.role === 'admin'
+            ? '/students'
+            : !user.profile_completed
+            ? '/student/profile/create'
+            : '/student/dashboard';
         router.replace(dest);
       }
     }

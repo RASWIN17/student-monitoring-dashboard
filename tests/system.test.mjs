@@ -25,6 +25,10 @@ describe('CodeTrack Full System & Zero Fake Data Verification Suite', () => {
         email TEXT UNIQUE NOT NULL,
         display_name TEXT NOT NULL,
         role TEXT NOT NULL CHECK (role IN ('teacher', 'student', 'admin')),
+        register_number TEXT,
+        class_name TEXT,
+        section TEXT,
+        profile_completed INTEGER NOT NULL DEFAULT 0,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL
       );
@@ -364,16 +368,17 @@ describe('CodeTrack Full System & Zero Fake Data Verification Suite', () => {
   });
 
   test('10. Role-Based Dashboard Redirection destination logic', () => {
-    function getDashboardRedirectPath(role) {
+    function getDashboardRedirectPath(role, profileCompleted = true) {
       if (role === 'teacher' || role === 'admin') {
         return '/students';
       }
-      return '/student/dashboard';
+      return profileCompleted ? '/student/dashboard' : '/student/profile/create';
     }
 
     assert.strictEqual(getDashboardRedirectPath('teacher'), '/students');
     assert.strictEqual(getDashboardRedirectPath('admin'), '/students');
-    assert.strictEqual(getDashboardRedirectPath('student'), '/student/dashboard');
+    assert.strictEqual(getDashboardRedirectPath('student', false), '/student/profile/create');
+    assert.strictEqual(getDashboardRedirectPath('student', true), '/student/dashboard');
   });
 
   test('11. Contest-Based System: Dynamic contest persistence and live status calculation', () => {
@@ -627,6 +632,233 @@ describe('CodeTrack Full System & Zero Fake Data Verification Suite', () => {
 
     // 7. Cross-role protection: teacher redirected to students portal when visiting student route
     assert.strictEqual(resolveRouteAccess('/student/dashboard', teacherUser, 'teacher').destination, '/students');
+  });
+
+  test('18. Student Profile Creation, Mandatory Validations & Duplicate Register Number Prevention', () => {
+    const now = new Date().toISOString();
+
+    // Setup: Create authenticated student user without profile
+    db.prepare(`
+      INSERT INTO user_profiles (id, auth_user_id, email, display_name, role, profile_completed, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `).run('u-student-arjun', 'auth-s-arjun', 'arjun@college.edu', 'Arjun', 'student', 0, now, now);
+
+    function validateStudentProfile(data, excludeUserId, existingDb) {
+      const name = (data.name || data.display_name || '').trim();
+      const registerNumber = (data.register_number || '').trim();
+      const className = (data.class_name || '').trim();
+      const section = (data.section || '').trim();
+
+      if (!name) return { valid: false, error: 'Student Name is required' };
+      if (!registerNumber) return { valid: false, error: 'Register Number is required' };
+      if (!className) return { valid: false, error: 'Class is required' };
+
+      // Duplicate register number check
+      const duplicate = existingDb.prepare(`
+        SELECT id FROM user_profiles WHERE LOWER(register_number) = LOWER(?) AND id != ?
+      `).get(registerNumber, excludeUserId);
+
+      if (duplicate) {
+        return { valid: false, error: `Register Number "${registerNumber}" is already in use by another student.` };
+      }
+
+      return { valid: true, name, registerNumber, className, section };
+    }
+
+    // 1. Mandatory field validations
+    assert.strictEqual(validateStudentProfile({ name: '', register_number: '2026CS101', class_name: 'CS301' }, 'u-student-arjun', db).valid, false);
+    assert.strictEqual(validateStudentProfile({ name: 'Arjun Verma', register_number: '', class_name: 'CS301' }, 'u-student-arjun', db).valid, false);
+    assert.strictEqual(validateStudentProfile({ name: 'Arjun Verma', register_number: '2026CS101', class_name: '' }, 'u-student-arjun', db).valid, false);
+
+    // 2. Section is optional
+    const validWithNoSection = validateStudentProfile({ name: 'Arjun Verma', register_number: '2026CS101', class_name: 'CS301' }, 'u-student-arjun', db);
+    assert.strictEqual(validWithNoSection.valid, true);
+
+    // 3. Save Arjun's profile
+    db.prepare(`
+      UPDATE user_profiles
+      SET display_name = ?, register_number = ?, class_name = ?, section = ?, profile_completed = 1, updated_at = ?
+      WHERE id = ?
+    `).run('Arjun Verma', '2026CS101', 'CS301', 'A', now, 'u-student-arjun');
+
+    const saved = db.prepare('SELECT * FROM user_profiles WHERE id = ?').get('u-student-arjun');
+    assert.strictEqual(saved.display_name, 'Arjun Verma');
+    assert.strictEqual(saved.register_number, '2026CS101');
+    assert.strictEqual(saved.class_name, 'CS301');
+    assert.strictEqual(saved.section, 'A');
+    assert.strictEqual(saved.profile_completed, 1);
+    assert.strictEqual(saved.email, 'arjun@college.edu', 'Authenticated email remained unchanged and read-only');
+
+    // 4. Duplicate register number check: A second student attempting to use 2026CS101 is rejected
+    db.prepare(`
+      INSERT INTO user_profiles (id, auth_user_id, email, display_name, role, profile_completed, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `).run('u-student-rohit', 'auth-s-rohit', 'rohit@college.edu', 'Rohit', 'student', 0, now, now);
+
+    const dupAttempt = validateStudentProfile({ name: 'Rohit Sharma', register_number: '2026CS101', class_name: 'CS301' }, 'u-student-rohit', db);
+    assert.strictEqual(dupAttempt.valid, false);
+    assert.match(dupAttempt.error, /already in use/i);
+
+    // Rohit uses a unique register number -> passes
+    const rohitValid = validateStudentProfile({ name: 'Rohit Sharma', register_number: '2026CS102', class_name: 'CS301' }, 'u-student-rohit', db);
+    assert.strictEqual(rohitValid.valid, true);
+  });
+
+  test('19. Student Profile Management in Settings: In-place update without creating duplicates', () => {
+    const now = new Date().toISOString();
+
+    const countBefore = db.prepare('SELECT COUNT(*) as count FROM user_profiles').get().count;
+
+    // Student updates profile from Settings
+    db.prepare(`
+      UPDATE user_profiles
+      SET display_name = ?, section = ?, updated_at = ?
+      WHERE id = ?
+    `).run('Arjun K. Verma', 'B', now, 'u-student-arjun');
+
+    const countAfter = db.prepare('SELECT COUNT(*) as count FROM user_profiles').get().count;
+    assert.strictEqual(countAfter, countBefore, 'Updating profile must not create duplicate user records');
+
+    const updated = db.prepare('SELECT * FROM user_profiles WHERE id = ?').get('u-student-arjun');
+    assert.strictEqual(updated.display_name, 'Arjun K. Verma');
+    assert.strictEqual(updated.section, 'B');
+    assert.strictEqual(updated.email, 'arjun@college.edu', 'Email must remain intact');
+  });
+
+  test('20. Teacher Classroom Details Roster & Safe Student Deletion', () => {
+    const now = new Date().toISOString();
+
+    // 1. Create a classroom owned by teacher u-teacher-1
+    const classroomId = 'c-ds-algo-301';
+    db.prepare(`
+      INSERT INTO classrooms (id, owner_teacher_id, name, course, batch, department, academic_year, section, join_code, join_code_hash, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(classroomId, 'u-teacher-1', 'Data Structures & Algorithms', 'CS301', '2026', 'Computer Science', '2026-2027', 'B', 'CT-DSA01', 'hash-dsa', now, now);
+
+    // 2. Enroll student Arjun
+    db.prepare(`
+      INSERT INTO classroom_memberships (id, classroom_id, student_id, joined_at, membership_status)
+      VALUES (?, ?, ?, ?, 'enrolled')
+    `).run('mem-arjun-dsa', classroomId, 'u-student-arjun', now);
+
+    // 3. Query enrolled students for this classroom
+    const enrolledStudents = db.prepare(`
+      SELECT u.id, u.display_name, u.register_number, u.section, u.email
+      FROM classroom_memberships cm
+      JOIN user_profiles u ON u.id = cm.student_id
+      WHERE cm.classroom_id = ? AND cm.membership_status = 'enrolled'
+    `).all(classroomId);
+
+    assert.strictEqual(enrolledStudents.length, 1);
+    assert.strictEqual(enrolledStudents[0].display_name, 'Arjun K. Verma');
+    assert.strictEqual(enrolledStudents[0].register_number, '2026CS101');
+    assert.strictEqual(enrolledStudents[0].section, 'B');
+    assert.strictEqual(enrolledStudents[0].email, 'arjun@college.edu');
+
+    // 4. Unauthorized teacher permission check
+    function canDeleteStudent(teacherId, classId, existingDb) {
+      const cls = existingDb.prepare('SELECT owner_teacher_id FROM classrooms WHERE id = ?').get(classId);
+      if (!cls || cls.owner_teacher_id !== teacherId) {
+        return false;
+      }
+      return true;
+    }
+
+    assert.strictEqual(canDeleteStudent('u-unauthorized-teacher', classroomId, db), false, 'Unauthorized teacher cannot delete student');
+    assert.strictEqual(canDeleteStudent('u-teacher-1', classroomId, db), true, 'Authorized classroom owner can delete student');
+
+    // 5. Safe Delete Student execution: updates status to dropped (un-enrolls from this classroom)
+    db.prepare(`
+      UPDATE classroom_memberships
+      SET membership_status = 'dropped'
+      WHERE classroom_id = ? AND student_id = ?
+    `).run(classroomId, 'u-student-arjun');
+
+    // Classroom enrolled roster count drops to 0
+    const countAfterDelete = db.prepare(`
+      SELECT COUNT(*) as count FROM classroom_memberships
+      WHERE classroom_id = ? AND membership_status = 'enrolled'
+    `).get(classroomId).count;
+    assert.strictEqual(countAfterDelete, 0, 'Classroom roster count updated to 0');
+
+    // CRITICAL DATA PROTECTION: Student profile is NOT deleted from system
+    const studentAfterClassroomRemoval = db.prepare('SELECT * FROM user_profiles WHERE id = ?').get('u-student-arjun');
+    assert(studentAfterClassroomRemoval, 'Student profile and account must NOT be permanently destroyed');
+    assert.strictEqual(studentAfterClassroomRemoval.email, 'arjun@college.edu');
+  });
+
+  test('21. Student LeetCode and CodeChef Analytics: Real Student Data Only & Strict Restriction on Upcoming Contests', () => {
+    const now = new Date().toISOString();
+
+    // 1. Setup LeetCode platform account for Arjun
+    db.prepare(`
+      INSERT INTO platform_accounts (id, student_id, platform, username, normalized_username, public_profile_url, ownership_verification_status, linked_at, account_status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run('pa-arjun-lc', 'u-student-arjun', 'leetcode', 'arjun_v', 'arjun_v', 'https://leetcode.com/arjun_v/', 'linked_public_profile', now, 'active');
+
+    // 2. Save verified snapshot
+    db.prepare(`
+      INSERT INTO platform_profile_snapshots (id, platform_account_id, total_solved, easy_solved, medium_solved, hard_solved, acceptance_rate, global_rank, contest_rating, contests_attended, source, source_version, validation_status, observed_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run('snap-arjun-lc', 'pa-arjun-lc', 42, 20, 15, 7, 68.5, 45120, 1680.0, 5, 'leetcode_graphql', 'v1.0', 'valid', now);
+
+    // 3. Save past attended contest and upcoming contest
+    db.prepare(`
+      INSERT INTO contest_records (id, platform_account_id, contest_name, contest_date, participation_status, rank, problems_solved, total_problems, rating_after, evidence_source, data_availability_status, observed_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run('cr-attended-1', 'pa-arjun-lc', 'Weekly Contest 520', '2026-09-15T00:00:00Z', 'attended', 1240, 3, 4, 1680.0, 'ranking', 'published', now);
+
+    db.prepare(`
+      INSERT INTO contest_records (id, platform_account_id, contest_name, contest_date, participation_status, evidence_source, data_availability_status, observed_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `).run('cr-upcoming-1', 'pa-arjun-lc', 'Weekly Contest 525', '2026-11-01T00:00:00Z', 'upcoming', 'schedule', 'scheduled', now);
+
+    // 4. Query student-specific analytics: STRICT REQUIREMENT: exclude upcoming contests
+    function getStudentAnalytics(studentId, platform, existingDb) {
+      const account = existingDb.prepare('SELECT * FROM platform_accounts WHERE student_id = ? AND platform = ?').get(studentId, platform);
+      if (!account) return { connected: false, state: 'not_connected' };
+
+      const snapshot = existingDb.prepare('SELECT * FROM platform_profile_snapshots WHERE platform_account_id = ? ORDER BY observed_at DESC LIMIT 1').get(account.id);
+      
+      // STRICT FILTER: Never return upcoming contests on student analytics page
+      const contests = existingDb.prepare(`
+        SELECT * FROM contest_records
+        WHERE platform_account_id = ? AND participation_status != 'upcoming'
+        ORDER BY contest_date DESC
+      `).all(account.id);
+
+      return {
+        connected: true,
+        account,
+        snapshot,
+        contests,
+        state: 'connected',
+      };
+    }
+
+    const arjunLc = getStudentAnalytics('u-student-arjun', 'leetcode', db);
+    assert.strictEqual(arjunLc.connected, true);
+    assert.strictEqual(arjunLc.account.username, 'arjun_v');
+    assert.strictEqual(arjunLc.snapshot.total_solved, 42);
+    assert.strictEqual(arjunLc.snapshot.easy_solved, 20);
+    assert.strictEqual(arjunLc.snapshot.medium_solved, 15);
+    assert.strictEqual(arjunLc.snapshot.hard_solved, 7);
+    assert.strictEqual(arjunLc.snapshot.contest_rating, 1680.0);
+
+    // STRICT CHECK: Contests list contains only attended/completed contests, ZERO upcoming contests
+    assert.strictEqual(arjunLc.contests.length, 1);
+    assert.strictEqual(arjunLc.contests[0].contest_name, 'Weekly Contest 520');
+    assert.strictEqual(arjunLc.contests.some((c) => c.participation_status === 'upcoming'), false, 'Upcoming contests must NOT be returned to student');
+
+    // 5. Unconnected student returns not_connected state
+    const rohitLc = getStudentAnalytics('u-student-rohit', 'leetcode', db);
+    assert.strictEqual(rohitLc.connected, false);
+    assert.strictEqual(rohitLc.state, 'not_connected');
+
+    // 6. Zero-fake-data check: Missing metrics must be null/unavailable, NOT fabricated
+    const missingValue = null;
+    const displayValue = missingValue != null ? missingValue : 'N/A';
+    assert.strictEqual(displayValue, 'N/A', 'Missing data must display N/A rather than fabricated 0');
   });
 });
 

@@ -17,8 +17,15 @@ import {
   Filter,
 } from 'lucide-react';
 
+import { StudentLeetCodeAnalytics } from '@/components/StudentLeetCodeAnalytics';
+
 export default function LeetCodeContestsPage() {
-  const { selectedClassroom } = useAuth();
+  const { user, selectedClassroom } = useAuth();
+
+  if (user?.role === 'student') {
+    return <StudentLeetCodeAnalytics user={user} />;
+  }
+
   const cacheKey = `contests:leetcode:${selectedClassroom?.id || 'all'}`;
   const uiKey = 'ui:leetcode:contests';
 

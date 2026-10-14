@@ -6,6 +6,10 @@ export interface UserProfile {
   email: string;
   display_name: string;
   role: UserRole;
+  register_number?: string | null;
+  class_name?: string | null;
+  section?: string | null;
+  profile_completed?: boolean;
   created_at: string;
   updated_at: string;
 }

@@ -93,10 +93,14 @@ export async function createUser(profile: {
   display_name: string;
   role: 'teacher' | 'student' | 'admin';
   avatar_url?: string | null;
+  register_number?: string | null;
+  class_name?: string | null;
+  section?: string | null;
+  profile_completed?: boolean;
 }): Promise<UserProfile> {
   const supabase = getSupabase();
   const now = new Date().toISOString();
-  const payload = {
+  const payload: any = {
     id: profile.id || crypto.randomUUID(),
     auth_user_id: profile.auth_user_id || null,
     email: profile.email.trim().toLowerCase(),
@@ -106,6 +110,10 @@ export async function createUser(profile: {
     created_at: now,
     updated_at: now,
   };
+  if (profile.register_number !== undefined) payload.register_number = profile.register_number ? profile.register_number.trim() : null;
+  if (profile.class_name !== undefined) payload.class_name = profile.class_name ? profile.class_name.trim() : null;
+  if (profile.section !== undefined) payload.section = profile.section ? profile.section.trim() : null;
+  if (profile.profile_completed !== undefined) payload.profile_completed = profile.profile_completed;
 
   const { data, error } = await supabase
     .from('user_profiles')
@@ -116,7 +124,142 @@ export async function createUser(profile: {
   if (error || !data) {
     throw new Error(`Failed to create user profile: ${error?.message || 'Unknown error'}`);
   }
+
+  // Auto-associate student with matching classrooms if class_name is provided
+  if (data.role === 'student' && data.class_name) {
+    try {
+      await syncStudentClassroomMemberships(data.id, data.class_name, data.section);
+    } catch {}
+  }
+
   return data as UserProfile;
+}
+
+export async function checkDuplicateRegisterNumber(registerNumber: string, excludeUserId?: string): Promise<boolean> {
+  if (!registerNumber || !registerNumber.trim()) return false;
+  const supabase = getSupabase();
+  let query = supabase
+    .from('user_profiles')
+    .select('id')
+    .ilike('register_number', registerNumber.trim());
+
+  if (excludeUserId) {
+    query = query.neq('id', excludeUserId);
+  }
+
+  const { data, error } = await query.limit(1);
+  if (error || !data) return false;
+  return data.length > 0;
+}
+
+export async function updateStudentProfile(
+  id: string,
+  updates: {
+    display_name?: string;
+    register_number?: string | null;
+    class_name?: string | null;
+    section?: string | null;
+    profile_completed?: boolean;
+  }
+): Promise<UserProfile | null> {
+  const supabase = getSupabase();
+  const now = new Date().toISOString();
+  const payload: any = { updated_at: now };
+
+  if (updates.display_name !== undefined) payload.display_name = updates.display_name.trim();
+  if (updates.register_number !== undefined) payload.register_number = updates.register_number ? updates.register_number.trim() : null;
+  if (updates.class_name !== undefined) payload.class_name = updates.class_name ? updates.class_name.trim() : null;
+  if (updates.section !== undefined) payload.section = updates.section ? updates.section.trim() : null;
+  if (updates.profile_completed !== undefined) payload.profile_completed = updates.profile_completed;
+
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .update(payload)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error || !data) return null;
+
+  // Auto-associate with classrooms matching class_name and section
+  if (payload.class_name) {
+    try {
+      await syncStudentClassroomMemberships(id, payload.class_name, payload.section);
+    } catch {}
+  }
+
+  return data as UserProfile;
+}
+
+export async function syncStudentClassroomMemberships(
+  studentId: string,
+  className?: string | null,
+  section?: string | null
+): Promise<void> {
+  if (!className || !className.trim()) return;
+  const supabase = getSupabase();
+  const cleanClass = className.trim().toLowerCase();
+  const cleanSection = section ? section.trim().toLowerCase() : '';
+
+  const { data: classrooms } = await supabase
+    .from('classrooms')
+    .select('id, name, course, section')
+    .is('archived_at', null);
+
+  if (!classrooms || classrooms.length === 0) return;
+
+  for (const c of classrooms) {
+    const courseMatch = c.course && c.course.trim().toLowerCase() === cleanClass;
+    const nameMatch = c.name && c.name.trim().toLowerCase() === cleanClass;
+    if (courseMatch || nameMatch) {
+      if (!cleanSection || !c.section || c.section.trim().toLowerCase() === cleanSection) {
+        try {
+          await joinClassroom(c.id, studentId);
+        } catch {}
+      }
+    }
+  }
+}
+
+export async function syncClassroomMatchingStudents(classroomId: string): Promise<void> {
+  const classroom = await getClassroomById(classroomId);
+  if (!classroom) return;
+  const supabase = getSupabase();
+  const { data: students } = await supabase
+    .from('user_profiles')
+    .select('id, class_name, section')
+    .eq('role', 'student');
+
+  if (!students || students.length === 0) return;
+
+  const targetCourse = classroom.course ? classroom.course.trim().toLowerCase() : '';
+  const targetName = classroom.name ? classroom.name.trim().toLowerCase() : '';
+  const targetSection = classroom.section ? classroom.section.trim().toLowerCase() : '';
+
+  for (const s of students) {
+    if (!s.class_name) continue;
+    const studentClass = s.class_name.trim().toLowerCase();
+    const studentSection = s.section ? s.section.trim().toLowerCase() : '';
+    const classMatches = (targetCourse && studentClass === targetCourse) || (targetName && studentClass === targetName);
+
+    if (classMatches) {
+      if (!targetSection || !studentSection || targetSection === studentSection) {
+        // Check if previously dropped before auto-joining
+        const { data: existing } = await supabase
+          .from('classroom_memberships')
+          .select('membership_status')
+          .eq('classroom_id', classroomId)
+          .eq('student_id', s.id)
+          .maybeSingle();
+
+        if (!existing) {
+          try {
+            await joinClassroom(classroomId, s.id);
+          } catch {}
+        }
+      }
+    }
+  }
 }
 
 // ----------------------------------------------------
@@ -354,7 +497,7 @@ export async function removeStudentFromClassroom(classroomId: string, studentId:
   const supabase = getSupabase();
   const { error } = await supabase
     .from('classroom_memberships')
-    .delete()
+    .update({ membership_status: 'dropped' })
     .eq('classroom_id', classroomId)
     .eq('student_id', studentId);
 
@@ -362,6 +505,10 @@ export async function removeStudentFromClassroom(classroomId: string, studentId:
 }
 
 export async function getEnrolledStudents(classroomId: string): Promise<UserProfile[]> {
+  try {
+    await syncClassroomMatchingStudents(classroomId);
+  } catch {}
+
   const supabase = getSupabase();
   const { data: memberships, error: memError } = await supabase
     .from('classroom_memberships')
