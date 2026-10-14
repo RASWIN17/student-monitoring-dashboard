@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { ScanJob, ScanJobItem } from '@/lib/types';
 import { RefreshCw, CheckCircle2, AlertTriangle, XCircle, Clock, Play, X } from 'lucide-react';
@@ -30,37 +30,6 @@ export function ScanModal({
   const [jobItems, setJobItems] = useState<(ScanJobItem & { username: string; studentName: string })[]>([]);
   const [isStarting, setIsStarting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isCompleted, setIsCompleted] = useState(false);
-  const reloadTriggeredRef = useRef(false);
-  const reloadTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  const triggerPageRefresh = () => {
-    if (reloadTriggeredRef.current) return;
-    reloadTriggeredRef.current = true;
-    if (reloadTimerRef.current) clearTimeout(reloadTimerRef.current);
-    window.location.reload();
-  };
-
-  const handleClose = () => {
-    if (activeJob?.status === 'running') return;
-    if (isCompleted) {
-      triggerPageRefresh();
-      return;
-    }
-    onClose();
-  };
-
-  // Reset states when modal is opened or closed
-  useEffect(() => {
-    if (!isOpen) {
-      setActiveJob(null);
-      setJobItems([]);
-      setErrorMessage(null);
-      setIsCompleted(false);
-      reloadTriggeredRef.current = false;
-      if (reloadTimerRef.current) clearTimeout(reloadTimerRef.current);
-    }
-  }, [isOpen]);
 
   // Poll scan progress if activeJob is running or queued
   useEffect(() => {
@@ -75,24 +44,13 @@ export function ScanModal({
             setJobItems(data.items || []);
             if (data.job.status === 'succeeded' || data.job.status === 'partial' || data.job.status === 'failed') {
               clearInterval(interval);
-              setIsCompleted(true);
               if (onScanCompleted) onScanCompleted();
-
-              // Automatically refresh the website once to show updated data
-              if (!reloadTriggeredRef.current) {
-                reloadTimerRef.current = setTimeout(() => {
-                  triggerPageRefresh();
-                }, 1500);
-              }
             }
           }
         } catch {}
       }, 1500);
     }
-    return () => {
-      clearInterval(interval);
-      if (reloadTimerRef.current) clearTimeout(reloadTimerRef.current);
-    };
+    return () => clearInterval(interval);
   }, [activeJob, onScanCompleted]);
 
   if (!isOpen) return null;
@@ -137,30 +95,12 @@ export function ScanModal({
         {/* Modal Header */}
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
           <div className="flex items-center gap-2.5">
-            <div
-              className={`p-2 rounded-lg transition-colors ${
-                isCompleted
-                  ? 'bg-emerald-100 text-emerald-700'
-                  : 'bg-blue-100 text-blue-700'
-              }`}
-            >
-              {isCompleted ? (
-                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-              ) : (
-                <RefreshCw
-                  className={`w-5 h-5 ${
-                    activeJob?.status === 'running' ? 'animate-spin' : ''
-                  }`}
-                />
-              )}
+            <div className="p-2 bg-blue-100 text-blue-700 rounded-lg">
+              <RefreshCw className={`w-5 h-5 ${activeJob?.status === 'running' ? 'animate-spin' : ''}`} />
             </div>
             <div>
               <h3 className="font-semibold text-slate-900 text-base">
-                {isCompleted
-                  ? 'Scan Completed'
-                  : activeJob
-                  ? 'Scanning In Progress'
-                  : 'Initiate Platform Scan'}
+                {activeJob ? 'Scanning In Progress' : 'Initiate Platform Scan'}
               </h3>
               <p className="text-xs text-slate-500">
                 {targetStudentName
@@ -170,10 +110,9 @@ export function ScanModal({
             </div>
           </div>
           <button
-            onClick={handleClose}
+            onClick={onClose}
             disabled={activeJob?.status === 'running'}
             className="text-slate-400 hover:text-slate-600 disabled:opacity-40 p-1 rounded-md"
-            title="Close"
           >
             <X className="w-5 h-5" />
           </button>
@@ -181,19 +120,6 @@ export function ScanModal({
 
         {/* Modal Body */}
         <div className="p-6 overflow-y-auto space-y-5 flex-1">
-          {/* Automatic Refresh Banner when scan completes */}
-          {isCompleted && (
-            <div className="p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-xs flex items-center justify-between shadow-2xs">
-              <div className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span className="font-medium">
-                  Scan complete! Automatically refreshing the website to show the updated data...
-                </span>
-              </div>
-              <RefreshCw className="w-3.5 h-3.5 text-emerald-600 animate-spin shrink-0" />
-            </div>
-          )}
-
           {errorMessage && (
             <div className="p-3.5 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm flex items-start gap-2.5">
               <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
@@ -350,7 +276,7 @@ export function ScanModal({
             <>
               <button
                 type="button"
-                onClick={handleClose}
+                onClick={onClose}
                 className="px-4 py-2 text-xs font-medium text-slate-600 hover:text-slate-800 transition"
               >
                 Cancel
@@ -366,34 +292,14 @@ export function ScanModal({
               </button>
             </>
           ) : (
-            <div className="w-full flex items-center justify-between">
-              {isCompleted ? (
-                <div className="flex items-center gap-1.5 text-xs text-emerald-700 font-medium">
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-600" />
-                  <span>Automatically refreshing page...</span>
-                </div>
-              ) : (
-                <div />
-              )}
+            <div className="w-full flex justify-end">
               <button
                 type="button"
-                onClick={handleClose}
+                onClick={onClose}
                 disabled={activeJob.status === 'running'}
-                className="px-5 py-2 bg-slate-800 text-white rounded-lg text-xs font-semibold hover:bg-slate-900 transition disabled:opacity-50 flex items-center gap-2"
+                className="px-5 py-2 bg-slate-800 text-white rounded-lg text-xs font-semibold hover:bg-slate-900 transition disabled:opacity-50"
               >
-                {activeJob.status === 'running' ? (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>Scanning...</span>
-                  </>
-                ) : isCompleted ? (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>Refresh Now</span>
-                  </>
-                ) : (
-                  <span>Done</span>
-                )}
+                {activeJob.status === 'running' ? 'Scanning...' : 'Done'}
               </button>
             </div>
           )}

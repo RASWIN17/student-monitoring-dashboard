@@ -147,11 +147,8 @@ export default function CodeChefContestDetailPage({ params }: PageProps) {
       });
       const data = await res.json();
       if (res.ok) {
-        setScanMessage(data.message || 'Scan completed successfully. Refreshing website...');
+        setScanMessage(data.message || 'Scan completed successfully.');
         await fetchContestData();
-        setTimeout(() => {
-          window.location.reload();
-        }, 1200);
       } else {
         setScanMessage(data.error || 'Failed to scan contest.');
       }
