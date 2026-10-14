@@ -58,10 +58,6 @@ export function ClassroomSelectionView({ platform }: Props) {
     <div className="space-y-6 max-w-6xl mx-auto pb-12">
       {/* Breadcrumb Navigation */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-slate-500">
-        <Link href="/teacher/dashboard" className="hover:text-blue-600 transition">
-          Dashboard
-        </Link>
-        <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
         <Link href="/students" className="hover:text-blue-600 transition">
           Students
         </Link>

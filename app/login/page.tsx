@@ -119,11 +119,11 @@ function LoginFormContent() {
             <div className="pt-3 flex flex-col gap-2">
               <button
                 onClick={() =>
-                  router.push(user.role === 'teacher' || user.role === 'admin' ? '/teacher/dashboard' : '/student/dashboard')
+                  router.push(user.role === 'teacher' || user.role === 'admin' ? '/students' : '/student/dashboard')
                 }
                 className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition shadow-xs"
               >
-                <span>Go to {user.role === 'teacher' ? 'Teacher' : 'Student'} Dashboard</span>
+                <span>Continue to {user.role === 'teacher' ? 'Students Portal' : 'Student Dashboard'}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
               <button

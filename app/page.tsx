@@ -25,7 +25,7 @@ export default function RootPage() {
   useEffect(() => {
     if (!authLoading && user) {
       if (user.role === 'teacher' || user.role === 'admin') {
-        router.replace('/teacher/dashboard');
+        router.replace('/students');
       } else {
         router.replace('/student/dashboard');
       }

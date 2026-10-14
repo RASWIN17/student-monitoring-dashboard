@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from './AuthContext';
 import {
-  LayoutDashboard,
   GraduationCap,
   Users,
   Code2,
@@ -25,12 +24,6 @@ export function Sidebar() {
   const isTeacher = user?.role === 'teacher' || user?.role === 'admin';
 
   const navItems = [
-    {
-      label: 'Dashboard',
-      href: isTeacher ? '/teacher/dashboard' : '/student/dashboard',
-      icon: LayoutDashboard,
-      roles: ['teacher', 'admin', 'student'],
-    },
     { label: 'Classrooms', href: '/classrooms', icon: GraduationCap, roles: ['teacher', 'admin', 'student'] },
     { label: 'Students', href: '/students', icon: Users, roles: ['teacher', 'admin'] },
     { label: 'LeetCode Analytics', href: '/leetcode', icon: Code2, roles: ['teacher', 'admin', 'student'] },
@@ -82,10 +75,8 @@ export function Sidebar() {
       <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
         {visibleItems.map((item) => {
           const Icon = item.icon;
-          const isDashboard = item.label === 'Dashboard';
-          const isActive = isDashboard
-            ? pathname === '/' || pathname === '/teacher/dashboard' || pathname === '/student/dashboard'
-            : pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+          const isActive =
+            pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
 
           return (
             <Link

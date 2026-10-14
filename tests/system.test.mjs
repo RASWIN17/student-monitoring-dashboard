@@ -366,13 +366,13 @@ describe('CodeTrack Full System & Zero Fake Data Verification Suite', () => {
   test('10. Role-Based Dashboard Redirection destination logic', () => {
     function getDashboardRedirectPath(role) {
       if (role === 'teacher' || role === 'admin') {
-        return '/teacher/dashboard';
+        return '/students';
       }
       return '/student/dashboard';
     }
 
-    assert.strictEqual(getDashboardRedirectPath('teacher'), '/teacher/dashboard');
-    assert.strictEqual(getDashboardRedirectPath('admin'), '/teacher/dashboard');
+    assert.strictEqual(getDashboardRedirectPath('teacher'), '/students');
+    assert.strictEqual(getDashboardRedirectPath('admin'), '/students');
     assert.strictEqual(getDashboardRedirectPath('student'), '/student/dashboard');
   });
 

@@ -58,12 +58,8 @@ export default function StudentsLandingPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-12">
-      {/* Breadcrumb Navigation */}
+      {/* Page Section Indicator */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-slate-500">
-        <Link href="/teacher/dashboard" className="hover:text-blue-600 transition">
-          Dashboard
-        </Link>
-        <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
         <span className="font-semibold text-slate-800">Students</span>
       </nav>
 

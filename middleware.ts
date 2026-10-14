@@ -82,9 +82,14 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/students') ||
     pathname.startsWith('/scans') ||
     pathname.startsWith('/reports') ||
-    pathname.startsWith('/admin');
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/classrooms') ||
+    pathname.startsWith('/leetcode') ||
+    pathname.startsWith('/codechef') ||
+    pathname.startsWith('/contests') ||
+    pathname.startsWith('/settings');
 
-  const isStudentRoute = pathname.startsWith('/student');
+  const isStudentRoute = pathname === '/student' || pathname.startsWith('/student/');
 
   // 1. Unauthenticated users cannot access role-protected pages
   if (!user && (isTeacherRoute || isStudentRoute)) {
@@ -106,24 +111,31 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // Direct teachers trying to access student dashboard to teacher dashboard
+    // Direct teachers trying to access student dashboard to students section
     if (isTeacher && isStudentRoute) {
       const url = request.nextUrl.clone();
-      url.pathname = '/teacher/dashboard';
+      url.pathname = '/students';
       return NextResponse.redirect(url);
     }
 
-    // Root page redirection to proper dashboard
+    // Direct teachers trying to access teacher dashboard to students section
+    if (isTeacher && pathname.startsWith('/teacher/dashboard')) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/students';
+      return NextResponse.redirect(url);
+    }
+
+    // Root page redirection
     if (pathname === '/') {
       const url = request.nextUrl.clone();
-      url.pathname = isTeacher ? '/teacher/dashboard' : '/student/dashboard';
+      url.pathname = isTeacher ? '/students' : '/student/dashboard';
       return NextResponse.redirect(url);
     }
 
     // Prevent authenticated users from getting stuck on login/register
     if (pathname === '/login' || pathname === '/register') {
       const url = request.nextUrl.clone();
-      url.pathname = isTeacher ? '/teacher/dashboard' : '/student/dashboard';
+      url.pathname = isTeacher ? '/students' : '/student/dashboard';
       return NextResponse.redirect(url);
     }
   }
