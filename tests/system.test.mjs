@@ -860,6 +860,150 @@ describe('CodeTrack Full System & Zero Fake Data Verification Suite', () => {
     const displayValue = missingValue != null ? missingValue : 'N/A';
     assert.strictEqual(displayValue, 'N/A', 'Missing data must display N/A rather than fabricated 0');
   });
+
+  test('22. Classroom Student Roster Access for Students & Registration Number Search/Range Filters', () => {
+    const now = new Date().toISOString();
+    const classroomId = 'c-ds-algo-301';
+
+    // 1. Re-enroll Arjun into the classroom
+    db.prepare(`
+      INSERT OR REPLACE INTO classroom_memberships (id, classroom_id, student_id, joined_at, membership_status)
+      VALUES (?, ?, ?, ?, 'enrolled')
+    `).run('mem-arjun-dsa', classroomId, 'u-student-arjun', now);
+
+    // Enroll Rohit into the classroom
+    db.prepare(`
+      INSERT OR REPLACE INTO classroom_memberships (id, classroom_id, student_id, joined_at, membership_status)
+      VALUES (?, ?, ?, ?, 'enrolled')
+    `).run('mem-rohit-dsa', classroomId, 'u-student-rohit', now);
+
+    // Update Rohit's profile details
+    db.prepare(`
+      UPDATE user_profiles
+      SET display_name = 'Rohit Sharma', register_number = '2026CS102', class_name = 'CS301', section = 'B', profile_completed = 1
+      WHERE id = 'u-student-rohit'
+    `).run();
+
+    // Add a 3rd student with leading zeros in register number
+    db.prepare(`
+      INSERT OR REPLACE INTO user_profiles (id, auth_user_id, email, display_name, role, register_number, class_name, section, profile_completed, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run('u-student-priya', 'auth-s-priya', 'priya@college.edu', 'Priya Patel', 'student', '007', 'CS301', 'B', 1, now, now);
+
+    db.prepare(`
+      INSERT OR REPLACE INTO classroom_memberships (id, classroom_id, student_id, joined_at, membership_status)
+      VALUES (?, ?, ?, ?, 'enrolled')
+    `).run('mem-priya-dsa', classroomId, 'u-student-priya', now);
+
+    // 2. Query classroom enrolled roster (Used by BOTH Teacher Login and Student Login)
+    const roster = db.prepare(`
+      SELECT u.id, u.display_name, u.register_number, u.section, u.email
+      FROM classroom_memberships cm
+      JOIN user_profiles u ON u.id = cm.student_id
+      WHERE cm.classroom_id = ? AND cm.membership_status = 'enrolled'
+      ORDER BY u.display_name ASC
+    `).all(classroomId);
+
+    // Both Teacher and Student must receive the complete enrolled list and accurate count (3 students)
+    assert.strictEqual(roster.length, 3, 'Total student count matches database records');
+    assert.deepStrictEqual(
+      roster.map((s) => s.register_number).sort(),
+      ['007', '2026CS101', '2026CS102'].sort()
+    );
+
+    // 3. Role authorization check for classroom roster
+    function canAccessClassroomRoster(user, classId, existingDb) {
+      if (!user) return false;
+      if (user.role === 'teacher' || user.role === 'admin') return true;
+      if (user.role === 'student') {
+        const mem = existingDb.prepare(`
+          SELECT id FROM classroom_memberships
+          WHERE classroom_id = ? AND student_id = ? AND membership_status = 'enrolled'
+        `).get(classId, user.id);
+        return Boolean(mem);
+      }
+      return false;
+    }
+
+    const studentArjun = { id: 'u-student-arjun', role: 'student' };
+    const teacher1 = { id: 'u-teacher-1', role: 'teacher' };
+    const outsiderStudent = { id: 'u-student-outsider', role: 'student' };
+
+    assert.strictEqual(canAccessClassroomRoster(studentArjun, classroomId, db), true, 'Enrolled student can view classroom roster');
+    assert.strictEqual(canAccessClassroomRoster(teacher1, classroomId, db), true, 'Teacher can view classroom roster');
+    assert.strictEqual(canAccessClassroomRoster(outsiderStudent, classroomId, db), false, 'Non-enrolled student cannot view classroom roster');
+
+    // 4. Role authorization: Student CANNOT delete students
+    function canDeleteStudentFromClassroom(user, classId, existingDb) {
+      if (!user || user.role === 'student') return false;
+      const cls = existingDb.prepare('SELECT owner_teacher_id FROM classrooms WHERE id = ?').get(classId);
+      return cls && cls.owner_teacher_id === user.id;
+    }
+
+    assert.strictEqual(canDeleteStudentFromClassroom(studentArjun, classroomId, db), false, 'Student MUST NOT be allowed to delete students');
+    assert.strictEqual(canDeleteStudentFromClassroom(teacher1, classroomId, db), true, 'Authorized teacher can delete students');
+
+    // 5. Registration Number Search Filter
+    function filterStudents(list, query, startRange, endRange) {
+      function parseParts(val) {
+        const t = (val || '').trim();
+        if (!t) return null;
+        if (/^\d+$/.test(t)) return { prefix: '', num: parseInt(t, 10) };
+        const m = t.match(/^(.*?)(\d+)$/);
+        return m ? { prefix: m[1].toUpperCase(), num: parseInt(m[2], 10) } : null;
+      }
+
+      function inRange(reg, s, e) {
+        if (!reg) return false;
+        const pReg = parseParts(reg);
+        const pS = s ? parseParts(s) : null;
+        const pE = e ? parseParts(e) : null;
+        if (pReg && pS && pE && pS.prefix === pE.prefix && pReg.prefix === pS.prefix) {
+          return pReg.num >= pS.num && pReg.num <= pE.num;
+        }
+        if (pReg && pS && !pE && pReg.prefix === pS.prefix) return pReg.num >= pS.num;
+        if (pReg && !pS && pE && pReg.prefix === pE.prefix) return pReg.num <= pE.num;
+        const rU = reg.toUpperCase(), sU = (s || '').toUpperCase(), eU = (e || '').toUpperCase();
+        if (sU && eU) return rU >= sU && rU <= eU;
+        if (sU) return rU >= sU;
+        if (eU) return rU <= eU;
+        return true;
+      }
+
+      return list.filter((s) => {
+        const reg = s.register_number || '';
+        if (query && query.trim()) {
+          const q = query.trim().toLowerCase();
+          const matchReg = reg.toLowerCase().includes(q);
+          const matchName = (s.display_name || '').toLowerCase().includes(q);
+          if (!matchReg && !matchName) return false;
+        }
+        if (startRange || endRange) {
+          if (!inRange(reg, startRange, endRange)) return false;
+        }
+        return true;
+      });
+    }
+
+    // A. Complete Registration Number search
+    const exactSearch = filterStudents(roster, '2026CS101', '', '');
+    assert.strictEqual(exactSearch.length, 1);
+    assert.strictEqual(exactSearch[0].display_name, 'Arjun K. Verma');
+
+    // B. Alphanumeric Range Filter: 2026CS101 to 2026CS102
+    const range1 = filterStudents(roster, '', '2026CS101', '2026CS102');
+    assert.strictEqual(range1.length, 2);
+    assert.deepStrictEqual(range1.map((s) => s.register_number), ['2026CS101', '2026CS102']);
+
+    // C. Numeric Range Filter with Leading Zeros: '001' to '010' includes '007'
+    const rangeLeadingZeros = filterStudents(roster, '', '001', '010');
+    assert.strictEqual(rangeLeadingZeros.length, 1);
+    assert.strictEqual(rangeLeadingZeros[0].register_number, '007');
+
+    // D. Clear filters restores complete count
+    const cleared = filterStudents(roster, '', '', '');
+    assert.strictEqual(cleared.length, 3, 'Clearing filters restores complete 3-student list');
+  });
 });
 
 

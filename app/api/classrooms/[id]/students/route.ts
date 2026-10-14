@@ -6,6 +6,7 @@ import {
   getUserByEmail,
   joinClassroom,
   logAuditAction,
+  getClassroomsForStudent,
 } from '@/lib/db';
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -15,13 +16,28 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  if (user.role === 'student') {
-    return NextResponse.json({ error: 'Only teachers can access the classroom student roster' }, { status: 403 });
-  }
-
   const classroom = await getClassroomById(id);
   if (!classroom) {
     return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });
+  }
+
+  // Authorization:
+  // If user is a student, ensure they are enrolled in or assigned to this classroom
+  if (user.role === 'student') {
+    const studentClassrooms = await getClassroomsForStudent(user.id);
+    const isEnrolled = studentClassrooms.some((c) => c.id === id);
+    const matchesCourse =
+      user.class_name &&
+      classroom.course &&
+      user.class_name.trim().toLowerCase() === classroom.course.trim().toLowerCase();
+
+    if (!isEnrolled && matchesCourse) {
+      try {
+        await joinClassroom(id, user.id);
+      } catch {}
+    } else if (!isEnrolled && !matchesCourse) {
+      return NextResponse.json({ error: 'You are not enrolled in this classroom' }, { status: 403 });
+    }
   }
 
   const overview = await getClassroomOverview(id);
