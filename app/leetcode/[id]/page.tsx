@@ -148,8 +148,11 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
       });
       const data = await res.json();
       if (res.ok) {
-        setScanMessage(data.message || 'Scan completed successfully.');
+        setScanMessage(data.message || 'Scan completed successfully. Refreshing website...');
         await fetchContestData();
+        setTimeout(() => {
+          window.location.reload();
+        }, 1200);
       } else {
         setScanMessage(data.error || 'Failed to scan contest.');
       }
