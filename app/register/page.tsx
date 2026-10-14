@@ -56,7 +56,7 @@ export default function RegisterPage() {
   };
 
   if (user) {
-    router.replace(user.role === 'teacher' || user.role === 'admin' ? '/students' : '/student/dashboard');
+    router.replace(user.role === 'teacher' || user.role === 'admin' ? '/students' : '/classrooms');
     return null;
   }
 

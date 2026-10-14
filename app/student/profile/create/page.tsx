@@ -43,9 +43,9 @@ export default function CreateStudentProfilePage() {
         router.replace('/students');
         return;
       }
-      // If student already completed their profile, redirect directly to dashboard
+      // If student already completed their profile, redirect directly to classrooms
       if (user.profile_completed) {
-        router.replace('/student/dashboard');
+        router.replace('/classrooms');
         return;
       }
 
@@ -109,11 +109,11 @@ export default function CreateStudentProfilePage() {
         return;
       }
 
-      setSuccess('Profile created successfully! Redirecting to your dashboard...');
+      setSuccess('Profile created successfully! Redirecting to classrooms...');
       await refreshUser();
 
       setTimeout(() => {
-        router.replace('/student/dashboard');
+        router.replace('/classrooms');
       }, 1000);
     } catch {
       setError('A network error occurred. Please check your connection and try again.');

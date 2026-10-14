@@ -15,7 +15,7 @@ export default function RootPage() {
         if (user.role === 'teacher' || user.role === 'admin') {
           router.replace('/students');
         } else {
-          router.replace('/student/dashboard');
+          router.replace(!user.profile_completed ? '/student/profile/create' : '/classrooms');
         }
       } else {
         router.replace('/login');

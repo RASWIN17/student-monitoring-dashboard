@@ -49,7 +49,7 @@ function LoginFormContent() {
             ? '/students'
             : !user.profile_completed
             ? '/student/profile/create'
-            : '/student/dashboard';
+            : '/classrooms';
         router.replace(dest);
       }
     }

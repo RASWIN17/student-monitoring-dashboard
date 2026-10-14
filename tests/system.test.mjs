@@ -372,13 +372,13 @@ describe('CodeTrack Full System & Zero Fake Data Verification Suite', () => {
       if (role === 'teacher' || role === 'admin') {
         return '/students';
       }
-      return profileCompleted ? '/student/dashboard' : '/student/profile/create';
+      return profileCompleted ? '/classrooms' : '/student/profile/create';
     }
 
     assert.strictEqual(getDashboardRedirectPath('teacher'), '/students');
     assert.strictEqual(getDashboardRedirectPath('admin'), '/students');
     assert.strictEqual(getDashboardRedirectPath('student', false), '/student/profile/create');
-    assert.strictEqual(getDashboardRedirectPath('student', true), '/student/dashboard');
+    assert.strictEqual(getDashboardRedirectPath('student', true), '/classrooms');
   });
 
   test('11. Contest-Based System: Dynamic contest persistence and live status calculation', () => {
@@ -588,7 +588,7 @@ describe('CodeTrack Full System & Zero Fake Data Verification Suite', () => {
       const isTeacher = userRole === 'teacher' || userRole === 'admin';
 
       if (!isTeacher && isTeacherOnlyRoute) {
-        return { status: 307, destination: '/student/dashboard?error=Access restricted to teachers only' };
+        return { status: 307, destination: '/classrooms?error=Access restricted to teachers only' };
       }
       if (isTeacher && isStudentRoute) {
         return { status: 307, destination: '/students' };
@@ -597,7 +597,7 @@ describe('CodeTrack Full System & Zero Fake Data Verification Suite', () => {
         return { status: 307, destination: '/students' };
       }
       if (pathname === '/' || pathname === '/login' || pathname === '/register') {
-        return { status: 307, destination: isTeacher ? '/students' : '/student/dashboard' };
+        return { status: 307, destination: isTeacher ? '/students' : '/classrooms' };
       }
 
       return { status: 200, destination: pathname };
@@ -608,7 +608,6 @@ describe('CodeTrack Full System & Zero Fake Data Verification Suite', () => {
 
     // 2. Unauthenticated user opening protected routes -> /login with returnTo
     assert.deepStrictEqual(resolveRouteAccess('/students', null, null), { status: 307, destination: '/login?returnTo=%2Fstudents' });
-    assert.deepStrictEqual(resolveRouteAccess('/student/dashboard', null, null), { status: 307, destination: '/login?returnTo=%2Fstudent%2Fdashboard' });
     assert.deepStrictEqual(resolveRouteAccess('/classrooms', null, null), { status: 307, destination: '/login?returnTo=%2Fclassrooms' });
 
     // 3. Unauthenticated visitor opening /login or /register -> allowed
@@ -621,17 +620,17 @@ describe('CodeTrack Full System & Zero Fake Data Verification Suite', () => {
     assert.deepStrictEqual(resolveRouteAccess('/login', teacherUser, 'teacher'), { status: 307, destination: '/students' });
     assert.deepStrictEqual(resolveRouteAccess('/students', teacherUser, 'teacher'), { status: 200, destination: '/students' });
 
-    // 5. Already authenticated student -> redirected to /student/dashboard when opening / or /login
+    // 5. Already authenticated student -> redirected to /classrooms when opening / or /login
     const studentUser = { id: 's1', email: 'student@school.edu' };
-    assert.deepStrictEqual(resolveRouteAccess('/', studentUser, 'student'), { status: 307, destination: '/student/dashboard' });
-    assert.deepStrictEqual(resolveRouteAccess('/login', studentUser, 'student'), { status: 307, destination: '/student/dashboard' });
-    assert.deepStrictEqual(resolveRouteAccess('/student/dashboard', studentUser, 'student'), { status: 200, destination: '/student/dashboard' });
+    assert.deepStrictEqual(resolveRouteAccess('/', studentUser, 'student'), { status: 307, destination: '/classrooms' });
+    assert.deepStrictEqual(resolveRouteAccess('/login', studentUser, 'student'), { status: 307, destination: '/classrooms' });
+    assert.deepStrictEqual(resolveRouteAccess('/classrooms', studentUser, 'student'), { status: 200, destination: '/classrooms' });
 
     // 6. Cross-role protection: student prevented from accessing teacher route
-    assert.strictEqual(resolveRouteAccess('/students', studentUser, 'student').destination, '/student/dashboard?error=Access restricted to teachers only');
+    assert.strictEqual(resolveRouteAccess('/students', studentUser, 'student').destination, '/classrooms?error=Access restricted to teachers only');
 
     // 7. Cross-role protection: teacher redirected to students portal when visiting student route
-    assert.strictEqual(resolveRouteAccess('/student/dashboard', teacherUser, 'teacher').destination, '/students');
+    assert.strictEqual(resolveRouteAccess('/student/profile/create', teacherUser, 'teacher').destination, '/students');
   });
 
   test('18. Student Profile Creation, Mandatory Validations & Duplicate Register Number Prevention', () => {

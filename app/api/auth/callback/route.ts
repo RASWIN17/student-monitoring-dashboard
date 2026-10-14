@@ -82,7 +82,7 @@ export async function GET(request: Request) {
         ? '/students'
         : !profile.profile_completed
         ? '/student/profile/create'
-        : '/student/dashboard';
+        : '/classrooms';
       const response = NextResponse.redirect(`${requestUrl.origin}${redirectPath}`);
 
       // Set verified role cookie for fast, low-overhead server middleware authorization

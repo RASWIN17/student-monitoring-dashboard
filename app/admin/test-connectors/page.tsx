@@ -34,10 +34,10 @@ export default function TestConnectorsPage() {
           Diagnostic connector verification consoles are restricted to teachers and administrators.
         </p>
         <Link
-          href="/student/dashboard"
+          href="/classrooms"
           className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition"
         >
-          Go to Student Dashboard
+          Go to Classrooms
         </Link>
       </div>
     );

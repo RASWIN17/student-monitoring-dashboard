@@ -48,7 +48,7 @@ export default function TeacherDashboardPage() {
       if (!user) {
         router.replace('/login');
       } else if (user.role === 'student') {
-        router.replace('/student/dashboard');
+        router.replace('/classrooms');
       }
     }
   }, [user, authLoading, router]);

@@ -64,10 +64,10 @@ export default function ScansPage() {
           Background scraping history is only accessible to verified teachers and administrators.
         </p>
         <a
-          href="/student/dashboard"
+          href="/classrooms"
           className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition"
         >
-          Go to Student Dashboard
+          Go to Classrooms
         </a>
       </div>
     );
