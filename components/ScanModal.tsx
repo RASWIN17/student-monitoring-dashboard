@@ -9,6 +9,8 @@ interface ScanModalProps {
   isOpen: boolean;
   onClose: () => void;
   onScanCompleted?: () => void;
+  classroomId?: string;
+  initialPlatform?: 'all' | 'leetcode' | 'codechef';
   targetStudentId?: string;
   targetStudentName?: string;
 }
@@ -17,11 +19,13 @@ export function ScanModal({
   isOpen,
   onClose,
   onScanCompleted,
+  classroomId,
+  initialPlatform,
   targetStudentId,
   targetStudentName,
 }: ScanModalProps) {
   const { selectedClassroom, user } = useAuth();
-  const [platform, setPlatform] = useState<'all' | 'leetcode' | 'codechef'>('all');
+  const [platform, setPlatform] = useState<'all' | 'leetcode' | 'codechef'>(initialPlatform || 'all');
   const [activeJob, setActiveJob] = useState<ScanJob | null>(null);
   const [jobItems, setJobItems] = useState<(ScanJobItem & { username: string; studentName: string })[]>([]);
   const [isStarting, setIsStarting] = useState(false);
@@ -60,7 +64,7 @@ export function ScanModal({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          classroomId: selectedClassroom?.id,
+          classroomId: classroomId || selectedClassroom?.id,
           targetStudentId: targetStudentId || undefined,
           platform,
         }),

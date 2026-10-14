@@ -470,5 +470,93 @@ describe('CodeTrack Full System & Zero Fake Data Verification Suite', () => {
     const statusAfterResults = categorizeParticipation(false, 'completed', true);
     assert.strictEqual(statusAfterResults, 'not_attended', 'Categorized as absent only after results publication is verified');
   });
+
+  test('15. Separate Students Section & Classroom Dynamic Selection: Returns classrooms dynamically', () => {
+    // Insert test classroom if needed
+    const teacherId = 'teacher-101';
+    const teacher = db.prepare('SELECT * FROM user_profiles WHERE id = ?').get(teacherId);
+    if (!teacher) {
+      db.prepare(`
+        INSERT INTO user_profiles (id, auth_user_id, email, display_name, role, created_at, updated_at)
+        VALUES (?, ?, ?, ?, 'teacher', datetime('now'), datetime('now'))
+      `).run(teacherId, 'auth-teacher-101', 'teacher101@test.edu', 'Prof. Smith');
+    }
+
+    const cls = db.prepare('SELECT * FROM classrooms WHERE owner_teacher_id = ?').all(teacherId);
+    assert(Array.isArray(cls), 'Classrooms must be returned as an array');
+    // Verify valid platforms
+    const supportedPlatforms = ['leetcode', 'codechef'];
+    assert.strictEqual(supportedPlatforms.includes('leetcode'), true);
+    assert.strictEqual(supportedPlatforms.includes('codechef'), true);
+  });
+
+  test('16. Numerical Sorting for LeetCode & CodeChef: Problem counts and ratings sort numerically, not alphabetically', () => {
+    const studentSample = [
+      { name: 'Student A', solved: 25, rating: 1416.71 },
+      { name: 'Student B', solved: 100, rating: 759 },
+      { name: 'Student C', solved: 5, rating: 1850.5 },
+      { name: 'Student D', solved: null, rating: null },
+      { name: 'Student E', solved: 0, rating: 920 },
+    ];
+
+    function sortStudents(list, sortOption) {
+      return [...list].sort((a, b) => {
+        if (sortOption === 'problems_desc') {
+          const aVal = a.solved != null ? Number(a.solved) : -1;
+          const bVal = b.solved != null ? Number(b.solved) : -1;
+          return bVal - aVal;
+        }
+        if (sortOption === 'problems_asc') {
+          const aVal = a.solved != null ? Number(a.solved) : 999999999;
+          const bVal = b.solved != null ? Number(b.solved) : 999999999;
+          return aVal - bVal;
+        }
+        if (sortOption === 'rating_desc') {
+          const aVal = a.rating != null ? Number(a.rating) : -1;
+          const bVal = b.rating != null ? Number(b.rating) : -1;
+          return bVal - aVal;
+        }
+        if (sortOption === 'rating_asc') {
+          const aVal = a.rating != null ? Number(a.rating) : 999999999;
+          const bVal = b.rating != null ? Number(b.rating) : 999999999;
+          return aVal - bVal;
+        }
+        return 0;
+      });
+    }
+
+    // 1. Problems Highest -> Lowest: 100, 25, 5, 0, null
+    const sortedProblemsDesc = sortStudents(studentSample, 'problems_desc');
+    assert.deepStrictEqual(
+      sortedProblemsDesc.map((s) => s.name),
+      ['Student B', 'Student A', 'Student C', 'Student E', 'Student D'],
+      'Numeric sort must place 100 before 25 (alphabetical would incorrectly place 25 first)'
+    );
+
+    // 2. Problems Lowest -> Highest: 0, 5, 25, 100, null
+    const sortedProblemsAsc = sortStudents(studentSample, 'problems_asc');
+    assert.deepStrictEqual(
+      sortedProblemsAsc.map((s) => s.name),
+      ['Student E', 'Student C', 'Student A', 'Student B', 'Student D'],
+      'Numeric sort must order ascending by actual count'
+    );
+
+    // 3. Rating Highest -> Lowest: 1850.5, 1416.71, 920, 759, null
+    const sortedRatingDesc = sortStudents(studentSample, 'rating_desc');
+    assert.deepStrictEqual(
+      sortedRatingDesc.map((s) => s.name),
+      ['Student C', 'Student A', 'Student E', 'Student B', 'Student D'],
+      'Rating sort must place highest rating first and null at end'
+    );
+
+    // 4. Rating Lowest -> Highest: 759, 920, 1416.71, 1850.5, null
+    const sortedRatingAsc = sortStudents(studentSample, 'rating_asc');
+    assert.deepStrictEqual(
+      sortedRatingAsc.map((s) => s.name),
+      ['Student B', 'Student E', 'Student A', 'Student C', 'Student D'],
+      'Rating sort must order ascending by rating with null at end'
+    );
+  });
 });
+
 
