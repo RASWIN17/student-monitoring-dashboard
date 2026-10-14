@@ -50,8 +50,8 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
   const [scanMessage, setScanMessage] = useState<string | null>(null);
   const [showRefreshPopup, setShowRefreshPopup] = useState(false);
 
-  // Active view: 'attended' | 'not_attended' | 'linked'
-  const [activeCard, setActiveCard] = useState<'attended' | 'not_attended' | 'linked'>('attended');
+  // Active view: 'attended' | 'not_attended' | 'pending' | 'linked'
+  const [activeCard, setActiveCard] = useState<'attended' | 'not_attended' | 'pending' | 'linked'>('attended');
 
   // Problem-solved filter: 'all' | 1 | 2 | ... | 10
   const [solvedFilter, setSolvedFilter] = useState<'all' | number>('all');
@@ -168,7 +168,9 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
   if (activeCard === 'attended') {
     baseList = attended;
   } else if (activeCard === 'not_attended') {
-    baseList = [...notAttended, ...pendingVerification];
+    baseList = notAttended;
+  } else if (activeCard === 'pending') {
+    baseList = pendingVerification;
   } else {
     baseList = linkedAccounts;
   }
@@ -320,8 +322,8 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
         )}
       </div>
 
-      {/* Exactly THREE Primary Summary Cards (Clickable) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Four Primary Summary Cards (Clickable) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Linked Accounts */}
         <button
           onClick={() => setActiveCard('linked')}
@@ -377,25 +379,51 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
           onClick={() => setActiveCard('not_attended')}
           className={`text-left p-5 rounded-xl border transition-all duration-200 shadow-2xs relative ${
             activeCard === 'not_attended'
+              ? 'bg-rose-50/60 border-rose-500 ring-2 ring-rose-500/20'
+              : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/60'
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-rose-700">
+              3. Contest Not Attended
+            </span>
+            <XCircle className={`w-4 h-4 ${activeCard === 'not_attended' ? 'text-rose-600' : 'text-slate-400'}`} />
+          </div>
+          <div className="text-3xl font-bold text-rose-950 mt-2">
+            {isContestOngoingOrUpcoming ? '—' : summary.notAttendedCount}
+          </div>
+          <div className="text-xs text-slate-500 mt-1">
+            {isContestOngoingOrUpcoming
+              ? 'Available after contest completes'
+              : `${summary.notAttendedCount} verified absent`}
+          </div>
+          {activeCard === 'not_attended' && (
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-rose-600 rounded-b-xl" />
+          )}
+        </button>
+
+        {/* Card 4: Pending Verification */}
+        <button
+          onClick={() => setActiveCard('pending')}
+          className={`text-left p-5 rounded-xl border transition-all duration-200 shadow-2xs relative ${
+            activeCard === 'pending'
               ? 'bg-amber-50/60 border-amber-500 ring-2 ring-amber-500/20'
               : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/60'
           }`}
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-amber-700">
-              3. Contest Not Attended
+              4. Pending Verification
             </span>
-            <XCircle className={`w-4 h-4 ${activeCard === 'not_attended' ? 'text-amber-600' : 'text-slate-400'}`} />
+            <Clock className={`w-4 h-4 ${activeCard === 'pending' ? 'text-amber-600' : 'text-slate-400'}`} />
           </div>
           <div className="text-3xl font-bold text-amber-950 mt-2">
-            {isContestOngoingOrUpcoming ? '—' : summary.notAttendedCount + summary.pendingCount}
+            {summary.pendingCount}
           </div>
           <div className="text-xs text-slate-500 mt-1">
-            {isContestOngoingOrUpcoming
-              ? 'Available after contest completes'
-              : `${summary.notAttendedCount} absent${summary.pendingCount > 0 ? ` (${summary.pendingCount} pending)` : ''}`}
+            {summary.pendingCount === 1 ? '1 student awaiting verification' : `${summary.pendingCount} students awaiting verification`}
           </div>
-          {activeCard === 'not_attended' && (
+          {activeCard === 'pending' && (
             <div className="absolute bottom-0 left-0 right-0 h-1 bg-amber-600 rounded-b-xl" />
           )}
         </button>
@@ -411,7 +439,9 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
               {activeCard === 'attended'
                 ? `Contest Attended (${attended.length})`
                 : activeCard === 'not_attended'
-                ? `Contest Not Attended (${notAttended.length + pendingVerification.length})`
+                ? `Contest Not Attended (${notAttended.length})`
+                : activeCard === 'pending'
+                ? `Pending Verification (${pendingVerification.length})`
                 : `Linked Accounts (${linkedAccounts.length})`}
             </span>
           </div>
@@ -492,6 +522,8 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
                   : 'No verified students attended this contest.'
                 : activeCard === 'not_attended'
                 ? 'All verified students attended this contest.'
+                : activeCard === 'pending'
+                ? 'No students awaiting verification for this contest.'
                 : 'No student accounts are linked to LeetCode in this classroom.'}
             </p>
             {solvedFilter !== 'all' && (
