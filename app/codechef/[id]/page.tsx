@@ -52,8 +52,8 @@ export default function CodeChefContestDetailPage({ params }: PageProps) {
   // Active view: 'attended' | 'not_attended' | 'pending' | 'linked'
   const [activeCard, setActiveCard] = useState<'attended' | 'not_attended' | 'pending' | 'linked'>('attended');
 
-  // Problem-solved filter: 'all' | 1 | 2 | ... | 10
-  const [solvedFilter, setSolvedFilter] = useState<'all' | number>('all');
+  // Problem-solved filter: null | 1 | 2 | ... | 10
+  const [solvedFilter, setSolvedFilter] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Countdown timer state
@@ -175,8 +175,12 @@ export default function CodeChefContestDetailPage({ params }: PageProps) {
   }
 
   // Apply Problem-Solved Filter and search
+  const totalSolvedCount = solvedFilter !== null
+    ? baseList.filter((item) => item.contest_problems_solved === solvedFilter).length
+    : 0;
+
   const filteredList = baseList.filter((item) => {
-    if (solvedFilter !== 'all') {
+    if (solvedFilter !== null) {
       if (item.contest_problems_solved !== solvedFilter) {
         return false;
       }
@@ -463,21 +467,10 @@ export default function CodeChefContestDetailPage({ params }: PageProps) {
             <span className="font-semibold text-[11px] uppercase tracking-wider">Contest Problems Solved Filter:</span>
           </div>
 
-          <button
-            onClick={() => setSolvedFilter('all')}
-            className={`px-2.5 py-1 text-xs rounded-md font-medium transition ${
-              solvedFilter === 'all'
-                ? 'bg-orange-600 text-white font-semibold shadow-2xs'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-            }`}
-          >
-            All Solved
-          </button>
-
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
             <button
               key={num}
-              onClick={() => setSolvedFilter(num)}
+              onClick={() => setSolvedFilter(solvedFilter === num ? null : num)}
               className={`px-2.5 py-1 text-xs rounded-md font-medium transition ${
                 solvedFilter === num
                   ? 'bg-orange-600 text-white font-semibold shadow-2xs'
@@ -488,9 +481,9 @@ export default function CodeChefContestDetailPage({ params }: PageProps) {
             </button>
           ))}
 
-          {solvedFilter !== 'all' && (
+          {solvedFilter !== null && (
             <button
-              onClick={() => setSolvedFilter('all')}
+              onClick={() => setSolvedFilter(null)}
               className="text-[11px] text-red-600 hover:text-red-700 font-semibold ml-2 underline"
             >
               Clear Filter
@@ -501,6 +494,19 @@ export default function CodeChefContestDetailPage({ params }: PageProps) {
 
       {/* Main Student Data Table */}
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-2xs">
+        {solvedFilter !== null && (
+          <div className="px-4 py-2.5 bg-orange-50/80 border-b border-orange-100 flex items-center justify-between text-xs text-orange-950">
+            <span className="font-semibold">
+              Total number of students solved {solvedFilter} {solvedFilter === 1 ? 'problem' : 'problems'} ({totalSolvedCount})
+            </span>
+            <button
+              onClick={() => setSolvedFilter(null)}
+              className="text-[11px] text-orange-700 hover:text-orange-900 font-semibold underline"
+            >
+              Clear Filter
+            </button>
+          </div>
+        )}
         {loading ? (
           <div className="py-20 text-center text-slate-400">
             <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-orange-600" />
@@ -511,7 +517,7 @@ export default function CodeChefContestDetailPage({ params }: PageProps) {
             <HelpCircle className="w-10 h-10 text-slate-300 mx-auto mb-2" />
             <div className="text-sm font-semibold text-slate-700">No Students Found</div>
             <p className="text-xs text-slate-400 mt-1 max-w-md mx-auto">
-              {solvedFilter !== 'all'
+              {solvedFilter !== null
                 ? `No students solved exactly ${solvedFilter} problem${solvedFilter === 1 ? '' : 's'} in this contest.`
                 : activeCard === 'attended'
                 ? isContestOngoingOrUpcoming
@@ -523,9 +529,9 @@ export default function CodeChefContestDetailPage({ params }: PageProps) {
                 ? 'No students awaiting verification for this contest.'
                 : 'No student accounts are linked to CodeChef in this classroom.'}
             </p>
-            {solvedFilter !== 'all' && (
+            {solvedFilter !== null && (
               <button
-                onClick={() => setSolvedFilter('all')}
+                onClick={() => setSolvedFilter(null)}
                 className="mt-3 px-3 py-1.5 bg-orange-50 text-orange-700 text-xs font-semibold rounded-lg hover:bg-orange-100 transition"
               >
                 Reset Solved Filter
@@ -537,7 +543,14 @@ export default function CodeChefContestDetailPage({ params }: PageProps) {
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
-                  <th className="py-3 px-4">Student Name</th>
+                  <th className="py-3 px-4">
+                    <div>Student Name</div>
+                    {solvedFilter !== null && (
+                      <div className="text-[10px] font-normal normal-case text-orange-700 mt-0.5 whitespace-nowrap">
+                        Total number of students solved {solvedFilter} {solvedFilter === 1 ? 'problem' : 'problems'} ({totalSolvedCount})
+                      </div>
+                    )}
+                  </th>
                   <th className="py-3 px-4">CodeChef Username</th>
                   <th className="py-3 px-4 text-center">Participation Status</th>
                   <th className="py-3 px-4 text-center bg-orange-50/50 text-orange-950 border-x border-orange-100">
