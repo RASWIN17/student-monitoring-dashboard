@@ -48,9 +48,9 @@ export default function StudentDashboardPage() {
   useEffect(() => {
     if (!authLoading) {
       if (!user) {
-        router.push('/login');
+        router.replace('/login');
       } else if (user.role === 'teacher' || user.role === 'admin') {
-        router.push('/teacher/dashboard');
+        router.replace('/students');
       }
     }
   }, [user, authLoading, router]);

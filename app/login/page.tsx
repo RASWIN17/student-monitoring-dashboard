@@ -7,9 +7,6 @@ import { useAuth } from '@/components/AuthContext';
 import { createClient } from '@/lib/supabase/client';
 import {
   AlertCircle,
-  LogOut,
-  ArrowRight,
-  ShieldCheck,
   GraduationCap,
   Code2,
   CheckCircle2,
@@ -19,7 +16,7 @@ import {
 function LoginFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, loading: authLoading, logout } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [selectedRole, setSelectedRole] = useState<'teacher' | 'student' | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -39,6 +36,19 @@ function LoginFormContent() {
       setSelectedRole(roleParam);
     }
   }, [searchParams]);
+
+  // Requirement 3: Automatically redirect already authenticated users directly to their dashboard
+  useEffect(() => {
+    if (!authLoading && user) {
+      const returnTo = searchParams.get('returnTo');
+      if (returnTo && returnTo.startsWith('/') && !returnTo.startsWith('//') && returnTo !== '/login' && returnTo !== '/') {
+        router.replace(returnTo);
+      } else {
+        const dest = user.role === 'teacher' || user.role === 'admin' ? '/students' : '/student/dashboard';
+        router.replace(dest);
+      }
+    }
+  }, [user, authLoading, router, searchParams]);
 
   const handleGoogleSignIn = async () => {
     if (!selectedRole) {
@@ -78,6 +88,28 @@ function LoginFormContent() {
     }
   };
 
+  if (authLoading || user) {
+    return (
+      <div className="max-w-lg w-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+        <div className="bg-sidebar-bg p-7 sm:p-8 text-center text-white">
+          <div className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-blue-600 font-bold text-xl mb-3 shadow-md">
+            CT
+          </div>
+          <h1 className="text-xl font-bold tracking-tight">CodeTrack</h1>
+          <p className="text-xs text-slate-400 mt-1">
+            Real-Time Student Coding Activity Monitor
+          </p>
+        </div>
+        <div className="p-8 text-center flex flex-col items-center justify-center gap-3">
+          <div className="h-6 w-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          <span className="text-sm font-medium text-slate-500">
+            {user ? 'Redirecting to your dashboard...' : 'Checking authentication status...'}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-lg w-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden transition-all">
       {/* Header */}
@@ -93,56 +125,12 @@ function LoginFormContent() {
 
       {/* Form Body */}
       <div className="p-6 sm:p-8">
-        {user ? (
-          <div className="text-center py-4 space-y-4">
-            <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-emerald-100 text-emerald-600 mb-1">
-              <ShieldCheck className="w-6 h-6" />
-            </div>
-            <h2 className="text-lg font-semibold text-slate-900">Signed In</h2>
-            <p className="text-xs text-slate-500">
-              You are currently logged in as <strong className="text-slate-800">{user.email}</strong>.
-            </p>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200">
-              {user.role === 'teacher' ? (
-                <>
-                  <GraduationCap className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Teacher Account</span>
-                </>
-              ) : (
-                <>
-                  <Code2 className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Student Account</span>
-                </>
-              )}
-            </div>
-
-            <div className="pt-3 flex flex-col gap-2">
-              <button
-                onClick={() =>
-                  router.push(user.role === 'teacher' || user.role === 'admin' ? '/students' : '/student/dashboard')
-                }
-                className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition shadow-xs"
-              >
-                <span>Continue to {user.role === 'teacher' ? 'Students Portal' : 'Student Dashboard'}</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-              <button
-                onClick={logout}
-                className="w-full py-2 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition"
-              >
-                <LogOut className="w-4 h-4" />
-                <span>Sign Out</span>
-              </button>
-            </div>
-          </div>
-        ) : (
-          <>
-            <div className="text-center sm:text-left mb-6">
-              <h2 className="text-lg font-bold text-slate-900">Sign In to CodeTrack</h2>
-              <p className="text-xs text-slate-500 mt-1">
-                Select your account role to continue to your verified dashboard.
-              </p>
-            </div>
+        <div className="text-center sm:text-left mb-6">
+          <h2 className="text-lg font-bold text-slate-900">Sign In to CodeTrack</h2>
+          <p className="text-xs text-slate-500 mt-1">
+            Select your account role to continue to your verified dashboard.
+          </p>
+        </div>
 
             {notice && (
               <div className="mb-5 p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-800 flex items-start gap-2">
@@ -304,9 +292,7 @@ function LoginFormContent() {
                 Existing users will be routed to their registered role dashboard without losing access.
               </p>
             </div>
-          </>
-        )}
-      </div>
+          </div>
     </div>
   );
 }

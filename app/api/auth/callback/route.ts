@@ -78,7 +78,7 @@ export async function GET(request: Request) {
 
       // 4. Role-Based Dashboard Redirection
       const isTeacher = profile.role === 'teacher' || profile.role === 'admin';
-      const redirectPath = isTeacher ? '/teacher/dashboard' : '/student/dashboard';
+      const redirectPath = isTeacher ? '/students' : '/student/dashboard';
       const response = NextResponse.redirect(`${requestUrl.origin}${redirectPath}`);
 
       // Set verified role cookie for fast, low-overhead server middleware authorization

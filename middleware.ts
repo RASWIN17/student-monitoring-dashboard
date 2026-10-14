@@ -92,17 +92,23 @@ export async function middleware(request: NextRequest) {
 
   const isStudentRoute = pathname === '/student' || pathname.startsWith('/student/');
 
-  // 1. Unauthenticated users cannot access role-protected pages
-  if (!user && (isTeacherOnlyRoute || isSharedAuthRoute || isStudentRoute)) {
+  // 1. Unauthenticated users: default entry page is /login; protect all internal/dashboard routes
+  if (!user) {
+    if (pathname === '/login' || pathname === '/register') {
+      return supabaseResponse;
+    }
     const url = request.nextUrl.clone();
     url.pathname = '/login';
-    url.searchParams.set('returnTo', pathname);
+    if (pathname !== '/') {
+      url.searchParams.set('returnTo', pathname);
+    }
     return NextResponse.redirect(url);
   }
 
   // 2. Authenticated user authorization & role-based routing
-  if (user && role) {
-    const isTeacher = role === 'teacher' || role === 'admin';
+  if (user) {
+    const userRole = role || 'student';
+    const isTeacher = userRole === 'teacher' || userRole === 'admin';
 
     // Prevent student from accessing teacher-only features
     if (!isTeacher && isTeacherOnlyRoute) {
@@ -126,7 +132,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // Root page redirection
+    // Root page redirection: already authenticated users go directly to their dashboard
     if (pathname === '/') {
       const url = request.nextUrl.clone();
       url.pathname = isTeacher ? '/students' : '/student/dashboard';

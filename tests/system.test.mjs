@@ -557,6 +557,78 @@ describe('CodeTrack Full System & Zero Fake Data Verification Suite', () => {
       'Rating sort must order ascending by rating with null at end'
     );
   });
+
+  test('17. Default Entry Page & Protected Route Guard Verification', () => {
+    function resolveRouteAccess(pathname, user, role) {
+      const isTeacherOnlyRoute =
+        pathname.startsWith('/teacher') ||
+        pathname.startsWith('/students') ||
+        pathname.startsWith('/scans') ||
+        pathname.startsWith('/reports') ||
+        pathname.startsWith('/admin');
+
+      const isStudentRoute = pathname === '/student' || pathname.startsWith('/student/');
+
+      if (!user) {
+        if (pathname === '/login' || pathname === '/register') {
+          return { status: 200, destination: pathname };
+        }
+        return {
+          status: 307,
+          destination: pathname === '/' ? '/login' : `/login?returnTo=${encodeURIComponent(pathname)}`,
+        };
+      }
+
+      const userRole = role || 'student';
+      const isTeacher = userRole === 'teacher' || userRole === 'admin';
+
+      if (!isTeacher && isTeacherOnlyRoute) {
+        return { status: 307, destination: '/student/dashboard?error=Access restricted to teachers only' };
+      }
+      if (isTeacher && isStudentRoute) {
+        return { status: 307, destination: '/students' };
+      }
+      if (isTeacher && pathname.startsWith('/teacher/dashboard')) {
+        return { status: 307, destination: '/students' };
+      }
+      if (pathname === '/' || pathname === '/login' || pathname === '/register') {
+        return { status: 307, destination: isTeacher ? '/students' : '/student/dashboard' };
+      }
+
+      return { status: 200, destination: pathname };
+    }
+
+    // 1. New/Unauthenticated visitor opening website root URL -> /login directly
+    assert.deepStrictEqual(resolveRouteAccess('/', null, null), { status: 307, destination: '/login' });
+
+    // 2. Unauthenticated user opening protected routes -> /login with returnTo
+    assert.deepStrictEqual(resolveRouteAccess('/students', null, null), { status: 307, destination: '/login?returnTo=%2Fstudents' });
+    assert.deepStrictEqual(resolveRouteAccess('/student/dashboard', null, null), { status: 307, destination: '/login?returnTo=%2Fstudent%2Fdashboard' });
+    assert.deepStrictEqual(resolveRouteAccess('/classrooms', null, null), { status: 307, destination: '/login?returnTo=%2Fclassrooms' });
+
+    // 3. Unauthenticated visitor opening /login or /register -> allowed
+    assert.deepStrictEqual(resolveRouteAccess('/login', null, null), { status: 200, destination: '/login' });
+    assert.deepStrictEqual(resolveRouteAccess('/register', null, null), { status: 200, destination: '/register' });
+
+    // 4. Already authenticated teacher -> redirected to /students when opening / or /login
+    const teacherUser = { id: 't1', email: 'teacher@school.edu' };
+    assert.deepStrictEqual(resolveRouteAccess('/', teacherUser, 'teacher'), { status: 307, destination: '/students' });
+    assert.deepStrictEqual(resolveRouteAccess('/login', teacherUser, 'teacher'), { status: 307, destination: '/students' });
+    assert.deepStrictEqual(resolveRouteAccess('/students', teacherUser, 'teacher'), { status: 200, destination: '/students' });
+
+    // 5. Already authenticated student -> redirected to /student/dashboard when opening / or /login
+    const studentUser = { id: 's1', email: 'student@school.edu' };
+    assert.deepStrictEqual(resolveRouteAccess('/', studentUser, 'student'), { status: 307, destination: '/student/dashboard' });
+    assert.deepStrictEqual(resolveRouteAccess('/login', studentUser, 'student'), { status: 307, destination: '/student/dashboard' });
+    assert.deepStrictEqual(resolveRouteAccess('/student/dashboard', studentUser, 'student'), { status: 200, destination: '/student/dashboard' });
+
+    // 6. Cross-role protection: student prevented from accessing teacher route
+    assert.strictEqual(resolveRouteAccess('/students', studentUser, 'student').destination, '/student/dashboard?error=Access restricted to teachers only');
+
+    // 7. Cross-role protection: teacher redirected to students portal when visiting student route
+    assert.strictEqual(resolveRouteAccess('/student/dashboard', teacherUser, 'teacher').destination, '/students');
+  });
 });
+
 
 

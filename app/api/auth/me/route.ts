@@ -11,5 +11,8 @@ export async function GET() {
 
 export async function DELETE() {
   await signOut();
-  return NextResponse.json({ success: true });
+  const response = NextResponse.json({ success: true });
+  response.cookies.delete('codetrack_user_role');
+  response.cookies.delete('codetrack_intended_role');
+  return response;
 }
