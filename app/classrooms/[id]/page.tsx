@@ -24,89 +24,17 @@ import {
   X,
 } from 'lucide-react';
 
-function parseRegParts(val: string): { prefix: string; num: number; numStr: string } | null {
-  const trimmed = val.trim();
-  if (!trimmed) return null;
-  if (/^\d+$/.test(trimmed)) {
-    return { prefix: '', num: parseInt(trimmed, 10), numStr: trimmed };
-  }
-  const match = trimmed.match(/^(.*?)(\d+)$/);
-  if (match) {
-    return { prefix: match[1].toUpperCase(), num: parseInt(match[2], 10), numStr: match[2] };
-  }
-  return null;
-}
-
-function validateRegRange(start: string, end: string): string | null {
-  const s = start.trim();
-  const e = end.trim();
-  if (!s || !e) return null;
-
-  const pStart = parseRegParts(s);
-  const pEnd = parseRegParts(e);
-
-  if (pStart && pEnd && pStart.prefix === pEnd.prefix) {
-    if (pStart.num > pEnd.num) {
-      return 'Starting Register Number cannot be greater than Ending Register Number.';
-    }
-  } else if (s.toUpperCase() > e.toUpperCase()) {
-    return 'Starting Register Number cannot be greater than Ending Register Number.';
-  }
-  return null;
-}
-
-function checkRegInRange(regNo: string | undefined | null, start: string, end: string): boolean {
-  if (!regNo) return false;
-  const s = start.trim();
-  const e = end.trim();
-  if (!s && !e) return true;
-
-  const reg = regNo.trim();
-  const pReg = parseRegParts(reg);
-  const pStart = s ? parseRegParts(s) : null;
-  const pEnd = e ? parseRegParts(e) : null;
-
-  if (pReg && pStart && pEnd && pStart.prefix === pEnd.prefix && pReg.prefix === pStart.prefix) {
-    return pReg.num >= pStart.num && pReg.num <= pEnd.num;
-  }
-  if (pReg && pStart && !pEnd && pReg.prefix === pStart.prefix) {
-    return pReg.num >= pStart.num;
-  }
-  if (pReg && !pStart && pEnd && pReg.prefix === pEnd.prefix) {
-    return pReg.num <= pEnd.num;
-  }
-
-  const rUp = reg.toUpperCase();
-  const sUp = s.toUpperCase();
-  const eUp = e.toUpperCase();
-
-  if (sUp && eUp) {
-    return rUp >= sUp && rUp <= eUp;
-  }
-  if (sUp) {
-    return rUp >= sUp;
-  }
-  if (eUp) {
-    return rUp <= eUp;
-  }
-  return true;
-}
-
 export default function ClassroomDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const classroomId = resolvedParams.id;
   const router = useRouter();
   const { user, loading: authLoading, refreshClassrooms } = useAuth();
-  const isTeacher = user?.role === 'teacher' || user?.role === 'admin';
 
   const [classroom, setClassroom] = useState<Classroom | null>(null);
   const [students, setStudents] = useState<StudentPerformanceOverview[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [startRegRange, setStartRegRange] = useState('');
-  const [endRegRange, setEndRegRange] = useState('');
-  const [rangeError, setRangeError] = useState<string | null>(null);
   const [copiedCode, setCopiedCode] = useState(false);
 
   // Delete modal state
@@ -194,46 +122,15 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
     }
   };
 
-  const handleRangeChange = (start: string, end: string) => {
-    setStartRegRange(start);
-    setEndRegRange(end);
-    const err = validateRegRange(start, end);
-    setRangeError(err);
-  };
-
-  const clearFilters = () => {
-    setSearchQuery('');
-    setStartRegRange('');
-    setEndRegRange('');
-    setRangeError(null);
-  };
-
-  const isFilterActive = Boolean(searchQuery.trim() || startRegRange.trim() || endRegRange.trim());
-
   const filteredStudents = students.filter((row) => {
     const s = row.student;
-    const regNo = s.register_number || '';
-
-    // 1. Search Query: matches registration number (complete or partial) as well as name, email, section
-    if (searchQuery.trim()) {
-      const q = searchQuery.trim().toLowerCase();
-      const matchReg = regNo.toLowerCase().includes(q);
-      const matchName = s.display_name?.toLowerCase().includes(q);
-      const matchEmail = s.email?.toLowerCase().includes(q);
-      const matchSec = s.section?.toLowerCase().includes(q);
-      if (!matchReg && !matchName && !matchEmail && !matchSec) {
-        return false;
-      }
-    }
-
-    // 2. Registration Number Range Filter
-    if ((startRegRange.trim() || endRegRange.trim()) && !rangeError) {
-      if (!checkRegInRange(regNo, startRegRange, endRegRange)) {
-        return false;
-      }
-    }
-
-    return true;
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    const nameMatch = s.display_name?.toLowerCase().includes(q);
+    const regMatch = s.register_number?.toLowerCase().includes(q);
+    const emailMatch = s.email?.toLowerCase().includes(q);
+    const secMatch = s.section?.toLowerCase().includes(q);
+    return nameMatch || regMatch || emailMatch || secMatch;
   });
 
   if (authLoading || (loading && !classroom)) {
@@ -368,101 +265,32 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
 
       {/* Roster Table Card */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
-        {/* Table Header Bar & Filters */}
-        <div className="p-4 sm:p-5 border-b border-slate-200 space-y-3 bg-slate-50/50">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <Users className="w-4 h-4 text-blue-600" />
-                <span>Enrolled Students</span>
-                <span className="text-xs text-slate-500 font-normal">
-                  ({filteredStudents.length} of {students.length})
-                </span>
-                {isFilterActive && (
-                  <span className="text-[10px] font-semibold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">
-                    Filtered
-                  </span>
-                )}
-              </h2>
-              <p className="text-[11px] text-slate-500 mt-0.5">
-                Verified student profiles enrolled in {classroom?.name} ({classroom?.course} - Sec {classroom?.section}).
-              </p>
-            </div>
-
-            {isFilterActive && (
-              <button
-                type="button"
-                onClick={clearFilters}
-                className="self-start sm:self-auto px-2.5 py-1 text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg font-medium transition cursor-pointer flex items-center gap-1"
-              >
-                <X className="w-3.5 h-3.5" />
-                <span>Clear Filters</span>
-              </button>
-            )}
+        {/* Table Header Bar */}
+        <div className="p-4 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50">
+          <div>
+            <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <Users className="w-4 h-4 text-blue-600" />
+              <span>Enrolled Students</span>
+              <span className="text-xs text-slate-500 font-normal">
+                ({filteredStudents.length} of {students.length})
+              </span>
+            </h2>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              Verified student profiles matched to {classroom?.name} ({classroom?.course} - Sec {classroom?.section}).
+            </p>
           </div>
 
-          {/* Registration Number Search & Range Filter Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 pt-1">
-            {/* Search by Registration Number */}
-            <div className="sm:col-span-5 relative">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search by Registration Number, Name..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
-              />
-            </div>
-
-            {/* Starting Register Number */}
-            <div className="sm:col-span-3 relative">
-              <input
-                type="text"
-                placeholder="Starting Reg No."
-                value={startRegRange}
-                onChange={(e) => handleRangeChange(e.target.value, endRegRange)}
-                className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono uppercase"
-              />
-            </div>
-
-            {/* Ending Register Number */}
-            <div className="sm:col-span-3 relative">
-              <input
-                type="text"
-                placeholder="Ending Reg No."
-                value={endRegRange}
-                onChange={(e) => handleRangeChange(startRegRange, e.target.value)}
-                className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono uppercase"
-              />
-            </div>
-
-            {/* Clear Button */}
-            <div className="sm:col-span-1 flex items-center">
-              {isFilterActive ? (
-                <button
-                  type="button"
-                  onClick={clearFilters}
-                  className="w-full py-1.5 px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg text-center transition cursor-pointer"
-                  title="Reset filters"
-                >
-                  Reset
-                </button>
-              ) : (
-                <div className="text-[11px] text-slate-400 text-center w-full hidden sm:block">
-                  Filter
-                </div>
-              )}
-            </div>
+          {/* Search bar */}
+          <div className="relative w-full sm:w-64">
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search by name, reg no, email..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
           </div>
-
-          {/* Invalid Range Warning */}
-          {rangeError && (
-            <div className="p-2 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800 flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-              <span>{rangeError}</span>
-            </div>
-          )}
         </div>
 
         {/* Loading State */}
@@ -486,15 +314,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
           </div>
         ) : filteredStudents.length === 0 ? (
           <div className="p-8 text-center text-slate-500 text-xs">
-            <p className="font-semibold text-slate-700">No students match the current filter.</p>
-            <p className="text-slate-400 mt-1">Try adjusting your search query or registration number range.</p>
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="mt-3 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold rounded-lg transition cursor-pointer"
-            >
-              Clear Filters
-            </button>
+            No students matching &quot;{searchQuery}&quot;.
           </div>
         ) : (
           /* Student Details Table */
@@ -506,7 +326,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
                   <th className="py-3 px-4">Register Number</th>
                   <th className="py-3 px-4">Section</th>
                   <th className="py-3 px-4">Gmail ID</th>
-                  {isTeacher && <th className="py-3 px-4 text-right">Action</th>}
+                  <th className="py-3 px-4 text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -560,28 +380,26 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
                         </a>
                       </td>
 
-                      {/* Column 5: Action (Teacher / Admin Only) */}
-                      {isTeacher && (
-                        <td className="py-3.5 px-4 text-right">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setDeleteError(null);
-                              setStudentToDelete({
-                                id: s.id,
-                                name: s.display_name,
-                                registerNumber: regNo,
-                                email: s.email,
-                              });
-                            }}
-                            className="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 rounded-lg text-[11px] font-semibold inline-flex items-center gap-1.5 transition cursor-pointer"
-                            title="Delete Student from Classroom"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            <span>Delete Student</span>
-                          </button>
-                        </td>
-                      )}
+                      {/* Column 5: Action */}
+                      <td className="py-3.5 px-4 text-right">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDeleteError(null);
+                            setStudentToDelete({
+                              id: s.id,
+                              name: s.display_name,
+                              registerNumber: regNo,
+                              email: s.email,
+                            });
+                          }}
+                          className="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 rounded-lg text-[11px] font-semibold inline-flex items-center gap-1.5 transition cursor-pointer"
+                          title="Delete Student from Classroom"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Delete Student</span>
+                        </button>
+                      </td>
                     </tr>
                   );
                 })}
@@ -591,8 +409,8 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
         )}
       </div>
 
-      {/* Delete Student Confirmation Modal (Teachers / Admins Only) */}
-      {isTeacher && studentToDelete && (
+      {/* Delete Student Confirmation Modal */}
+      {studentToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             <div className="p-5 border-b border-slate-100 flex items-start gap-3">

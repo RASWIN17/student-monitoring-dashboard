@@ -315,10 +315,6 @@ export async function createClassroom(data: {
 }
 
 export async function getClassroomById(id: string): Promise<Classroom | null> {
-  try {
-    await syncClassroomMatchingStudents(id);
-  } catch {}
-
   const supabase = getSupabase();
   const { data, error } = await supabase
     .from('classrooms')
@@ -534,13 +530,6 @@ export async function getEnrolledStudents(classroomId: string): Promise<UserProf
 }
 
 export async function getClassroomsForStudent(studentId: string): Promise<Classroom[]> {
-  const student = await getUserById(studentId);
-  if (student?.class_name) {
-    try {
-      await syncStudentClassroomMemberships(studentId, student.class_name, student.section);
-    } catch {}
-  }
-
   const supabase = getSupabase();
   const { data: memberships, error } = await supabase
     .from('classroom_memberships')
