@@ -51,7 +51,7 @@ export function Navbar({ onDataRefreshed }: { onDataRefreshed?: () => void }) {
 
   return (
     <>
-      <header className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between sticky top-0 z-30 shadow-2xs">
+      <header className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between sticky top-0 z-30 shadow-2xs shrink-0">
         {/* Left Section: Classroom Selector */}
         <div className="flex items-center gap-4">
           {classrooms.length > 0 ? (

@@ -22,6 +22,7 @@ import {
   Info,
 } from 'lucide-react';
 import { Contest, StudentContestAttendanceRow } from '@/lib/types';
+import { RefreshModal } from '@/components/RefreshModal';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -47,6 +48,7 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
   const [scanMessage, setScanMessage] = useState<string | null>(null);
+  const [showRefreshPopup, setShowRefreshPopup] = useState(false);
 
   // Active view: 'attended' | 'not_attended' | 'linked'
   const [activeCard, setActiveCard] = useState<'attended' | 'not_attended' | 'linked'>('attended');
@@ -150,6 +152,7 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
       if (res.ok) {
         setScanMessage(data.message || 'Scan completed successfully.');
         await fetchContestData();
+        setShowRefreshPopup(true);
       } else {
         setScanMessage(data.error || 'Failed to scan contest.');
       }
@@ -600,6 +603,7 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
           </div>
         )}
       </div>
+      <RefreshModal isOpen={showRefreshPopup} />
     </div>
   );
 }

@@ -40,7 +40,7 @@ export function Sidebar() {
   );
 
   return (
-    <aside className="w-64 bg-sidebar-bg text-sidebar-text flex flex-col min-h-screen border-r border-sidebar-border shrink-0 select-none">
+    <aside className="w-64 bg-sidebar-bg text-sidebar-text flex flex-col h-screen border-r border-sidebar-border shrink-0 select-none sticky top-0">
       {/* Brand Header */}
       <div className="h-16 flex items-center px-6 border-b border-sidebar-border gap-3">
         <div className="h-9 w-9 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">

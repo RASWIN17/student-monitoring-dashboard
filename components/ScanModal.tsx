@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { ScanJob, ScanJobItem } from '@/lib/types';
 import { RefreshCw, CheckCircle2, AlertTriangle, XCircle, Clock, Play, X } from 'lucide-react';
+import { RefreshModal } from './RefreshModal';
 
 interface ScanModalProps {
   isOpen: boolean;
@@ -30,6 +31,13 @@ export function ScanModal({
   const [jobItems, setJobItems] = useState<(ScanJobItem & { username: string; studentName: string })[]>([]);
   const [isStarting, setIsStarting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showRefreshPopup, setShowRefreshPopup] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setShowRefreshPopup(false);
+    }
+  }, [isOpen]);
 
   // Poll scan progress if activeJob is running or queued
   useEffect(() => {
@@ -42,7 +50,11 @@ export function ScanModal({
             const data = await res.json();
             setActiveJob(data.job);
             setJobItems(data.items || []);
-            if (data.job.status === 'succeeded' || data.job.status === 'partial' || data.job.status === 'failed') {
+            if (data.job.status === 'succeeded' || data.job.status === 'partial') {
+              clearInterval(interval);
+              if (onScanCompleted) onScanCompleted();
+              setShowRefreshPopup(true);
+            } else if (data.job.status === 'failed') {
               clearInterval(interval);
               if (onScanCompleted) onScanCompleted();
             }
@@ -52,6 +64,10 @@ export function ScanModal({
     }
     return () => clearInterval(interval);
   }, [activeJob, onScanCompleted]);
+
+  if (showRefreshPopup) {
+    return <RefreshModal isOpen={true} />;
+  }
 
   if (!isOpen) return null;
 
@@ -78,6 +94,10 @@ export function ScanModal({
       }
 
       setActiveJob(data.job);
+      if (data.job?.status === 'succeeded' || data.job?.status === 'partial') {
+        if (onScanCompleted) onScanCompleted();
+        setShowRefreshPopup(true);
+      }
       setIsStarting(false);
     } catch (e: any) {
       setErrorMessage(e?.message || 'Network error');
