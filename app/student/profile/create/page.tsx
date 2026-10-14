@@ -21,16 +21,18 @@ export default function CreateStudentProfilePage() {
   const router = useRouter();
   const { user, loading: authLoading, refreshUser } = useAuth();
 
-  const [name, setName] = useState('');
-  const [registerNumber, setRegisterNumber] = useState('');
-  const [className, setClassName] = useState('');
-  const [section, setSection] = useState('');
+  const [name, setName] = useState(user?.display_name || '');
+  const [registerNumber, setRegisterNumber] = useState(user?.register_number || '');
+  const [className, setClassName] = useState(user?.class_name || '');
+  const [section, setSection] = useState(user?.section || '');
 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const nameInitializedRef = React.useRef(false);
 
-  // Auto-populate initial values from authenticated user
+  // Auto-populate initial values from authenticated Google user on first load
+  // Keeps name fully editable so student can enter or change their name without snapping back
   useEffect(() => {
     if (!authLoading) {
       if (!user) {
@@ -47,11 +49,19 @@ export default function CreateStudentProfilePage() {
         return;
       }
 
-      if (user.display_name && !name) {
-        setName(user.display_name);
+      if (!nameInitializedRef.current) {
+        const initialName = user.display_name?.trim() || '';
+        if (initialName) {
+          setName(initialName);
+          nameInitializedRef.current = true;
+        } else if (user.email) {
+          const emailPrefix = user.email.split('@')[0];
+          setName(emailPrefix);
+          nameInitializedRef.current = true;
+        }
       }
     }
-  }, [user, authLoading, router, name]);
+  }, [user, authLoading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -155,14 +165,20 @@ export default function CreateStudentProfilePage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Student Name */}
             <div>
-              <label htmlFor="student-name" className="block text-xs font-semibold text-slate-700 mb-1.5">
-                Student Name <span className="text-red-500">*</span>
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label htmlFor="student-name" className="block text-xs font-semibold text-slate-700">
+                  Student Name <span className="text-red-500">*</span>
+                </label>
+                <span className="inline-flex items-center text-[10px] font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+                  Auto-filled &bull; Editable
+                </span>
+              </div>
               <div className="relative">
                 <User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   id="student-name"
                   type="text"
+                  autoComplete="name"
                   placeholder="e.g. Rahul Sharma"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -171,6 +187,9 @@ export default function CreateStudentProfilePage() {
                   required
                 />
               </div>
+              <p className="text-[11px] text-slate-400 mt-1">
+                Pre-filled from your authenticated Google account. You can edit this or enter your full official name.
+              </p>
             </div>
 
             {/* Register Number */}
