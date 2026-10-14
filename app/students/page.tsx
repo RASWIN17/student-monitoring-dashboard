@@ -1,40 +1,18 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthContext';
 import { LeetCodeIcon, CodeChefIcon } from '@/components/PlatformIcons';
 import {
-  Users,
-  GraduationCap,
   ArrowRight,
-  Sparkles,
-  Trophy,
-  Layers,
-  ChevronRight,
-  TrendingUp,
   AlertTriangle,
-  Code2,
-  ChefHat,
   CheckCircle2,
 } from 'lucide-react';
 
 export default function StudentsLandingPage() {
-  const { user, classrooms } = useAuth();
+  const { user } = useAuth();
   const isTeacher = user?.role === 'teacher' || user?.role === 'admin';
-
-  const [totalStudents, setTotalStudents] = useState<number>(0);
-  const [loadingStats, setLoadingStats] = useState<boolean>(true);
-
-  // Compute total enrolled students across all teacher's classrooms
-  useEffect(() => {
-    let count = 0;
-    for (const c of classrooms) {
-      count += c.enrolled_count ?? 0;
-    }
-    setTotalStudents(count);
-    setLoadingStats(false);
-  }, [classrooms]);
 
   if (user && !isTeacher) {
     return (
@@ -58,26 +36,6 @@ export default function StudentsLandingPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-12">
-      {/* Page Section Indicator */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-slate-500">
-        <span className="font-semibold text-slate-800">Students</span>
-      </nav>
-
-      {/* Hero Welcome Header */}
-      <div className="text-center space-y-3 max-w-2xl mx-auto">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-200/80">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Classroom Coding Platform Analytics</span>
-        </div>
-        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight sm:text-4xl">
-          Students Performance Section
-        </h1>
-        <p className="text-sm text-slate-600 leading-relaxed">
-          Select a coding platform below to inspect classroom-specific student records, verified problem counts,
-          official contest ratings, and leaderboard standings.
-        </p>
-      </div>
-
       {/* Two Large, Attractive, Clickable Cards in Center */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto pt-2">
         {/* Card 1: LeetCode */}
@@ -201,55 +159,6 @@ export default function StudentsLandingPage() {
             </div>
           </div>
         </Link>
-      </div>
-
-      {/* Quick Summary Row */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs max-w-4xl mx-auto">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
-                <GraduationCap className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="text-lg font-extrabold text-slate-900">{classrooms.length}</div>
-                <div className="text-[11px] text-slate-500">Active Classrooms</div>
-              </div>
-            </div>
-
-            <div className="h-8 w-px bg-slate-200" />
-
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
-                <Users className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="text-lg font-extrabold text-slate-900">{totalStudents}</div>
-                <div className="text-[11px] text-slate-500">Total Enrolled Students</div>
-              </div>
-            </div>
-
-            <div className="h-8 w-px bg-slate-200 hidden md:block" />
-
-            <div className="hidden md:flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-                <Trophy className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="text-lg font-extrabold text-slate-900">2 Platforms</div>
-                <div className="text-[11px] text-slate-500">LeetCode & CodeChef</div>
-              </div>
-            </div>
-          </div>
-
-          <Link
-            href="/classrooms"
-            className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1.5 hover:underline"
-          >
-            <span>Manage Classrooms</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
       </div>
     </div>
   );
