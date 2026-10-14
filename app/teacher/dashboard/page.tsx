@@ -300,9 +300,7 @@ export default function TeacherDashboardPage() {
               </div>
               <span className="text-xs font-bold text-slate-800">Contest History</span>
             </div>
-            <Link href="/contests" className="text-xs text-blue-600 hover:underline font-medium">
-              Details
-            </Link>
+            <span className="text-xs text-slate-400 font-medium">Recorded</span>
           </div>
           <div className="text-2xl font-bold text-slate-900">{kpis.totalContestsParticipated}</div>
           <p className="text-[11px] text-slate-500 mt-1">

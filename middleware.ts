@@ -86,7 +86,6 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/classrooms') ||
     pathname.startsWith('/leetcode') ||
     pathname.startsWith('/codechef') ||
-    pathname.startsWith('/contests') ||
     pathname.startsWith('/settings');
 
   const isStudentRoute = pathname === '/student' || pathname.startsWith('/student/');
