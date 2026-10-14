@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from './AuthContext';
 import {
+  LayoutDashboard,
   GraduationCap,
   Users,
   Code2,
@@ -23,6 +24,7 @@ export function Sidebar() {
   const isTeacher = user?.role === 'teacher' || user?.role === 'admin';
 
   const navItems = [
+    { label: 'Dashboard', href: '/student/dashboard', icon: LayoutDashboard, roles: ['student'] },
     { label: 'Classrooms', href: '/classrooms', icon: GraduationCap, roles: ['teacher', 'admin', 'student'] },
     { label: 'Students', href: '/students', icon: Users, roles: ['teacher', 'admin'] },
     { label: 'LeetCode Analytics', href: '/leetcode', icon: Code2, roles: ['teacher', 'admin', 'student'] },

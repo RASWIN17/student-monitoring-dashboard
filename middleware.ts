@@ -77,12 +77,14 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  const isTeacherRoute =
+  const isTeacherOnlyRoute =
     pathname.startsWith('/teacher') ||
     pathname.startsWith('/students') ||
     pathname.startsWith('/scans') ||
     pathname.startsWith('/reports') ||
-    pathname.startsWith('/admin') ||
+    pathname.startsWith('/admin');
+
+  const isSharedAuthRoute =
     pathname.startsWith('/classrooms') ||
     pathname.startsWith('/leetcode') ||
     pathname.startsWith('/codechef') ||
@@ -91,7 +93,7 @@ export async function middleware(request: NextRequest) {
   const isStudentRoute = pathname === '/student' || pathname.startsWith('/student/');
 
   // 1. Unauthenticated users cannot access role-protected pages
-  if (!user && (isTeacherRoute || isStudentRoute)) {
+  if (!user && (isTeacherOnlyRoute || isSharedAuthRoute || isStudentRoute)) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     url.searchParams.set('returnTo', pathname);
@@ -103,7 +105,7 @@ export async function middleware(request: NextRequest) {
     const isTeacher = role === 'teacher' || role === 'admin';
 
     // Prevent student from accessing teacher-only features
-    if (!isTeacher && isTeacherRoute) {
+    if (!isTeacher && isTeacherOnlyRoute) {
       const url = request.nextUrl.clone();
       url.pathname = '/student/dashboard';
       url.searchParams.set('error', 'Access restricted to teachers only');
