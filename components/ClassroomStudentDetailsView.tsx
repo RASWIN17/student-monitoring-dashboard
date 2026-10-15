@@ -63,8 +63,8 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
   const { user } = useAuth();
   const isTeacher = user?.role === 'teacher' || user?.role === 'admin';
 
-  const cacheKey = `classroom:students:${classroomId}:${platform}`;
-  const uiKey = `ui:classroom:students:${classroomId}:${platform}`;
+  const cacheKey = `classroom:students:${classroomId}:${platform}:v2`;
+  const uiKey = `ui:classroom:students:${classroomId}:${platform}:v2`;
 
   const cachedData = dataCache.get<ClassroomDataCache>(cacheKey);
   const [classroom, setClassroom] = useState<Classroom | null>(() => cachedData?.classroom || null);
@@ -144,8 +144,9 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
       const matchName = s.display_name?.toLowerCase().includes(term);
       const matchEmail = s.email?.toLowerCase().includes(term);
       const matchUsername = account?.username?.toLowerCase().includes(term);
+      const matchReg = s.register_number?.toLowerCase().includes(term);
 
-      return matchName || matchEmail || matchUsername;
+      return matchName || matchEmail || matchUsername || matchReg;
     });
 
     // 2. Sort numerically
@@ -554,15 +555,15 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
               <thead>
                 <tr className="bg-slate-50/80 border-b border-slate-200 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
                   <th className="py-3 px-4">Student Name</th>
-                  <th className="py-3 px-4">Register Number</th>
+                  <th className="py-3 px-4">Registration Number</th>
                   <th className="py-3 px-4">{platform === 'leetcode' ? 'LeetCode Handle' : 'CodeChef Handle'}</th>
                   <th className="py-3 px-4">Total Solved</th>
                   {platform === 'leetcode' ? (
                     <>
                       <th className="py-3 px-4">Difficulty Breakdown</th>
                       <th className="py-3 px-4">Contest Rating</th>
+                      <th className="py-3 px-4">Highest Rating</th>
                       <th className="py-3 px-4">Global Ranking</th>
-                      <th className="py-3 px-4">Contest Acceptance</th>
                     </>
                   ) : (
                     <>
@@ -649,73 +650,50 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
                           {/* 5. Difficulty Breakdown */}
                           <td className="py-3.5 px-4 whitespace-nowrap">
                             {snap ? (
-                              <div className="flex items-center gap-1.5 text-[11px]">
-                                <span
-                                  className="px-2 py-0.5 rounded font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200"
-                                  title="Easy problems solved"
-                                >
-                                  E: {snap.easy_solved ?? 0}
-                                </span>
-                                <span
-                                  className="px-2 py-0.5 rounded font-semibold bg-amber-50 text-amber-700 border border-amber-200"
-                                  title="Medium problems solved"
-                                >
-                                  M: {snap.medium_solved ?? 0}
-                                </span>
-                                <span
-                                  className="px-2 py-0.5 rounded font-semibold bg-rose-50 text-rose-700 border border-rose-200"
-                                  title="Hard problems solved"
-                                >
-                                  H: {snap.hard_solved ?? 0}
-                                </span>
-                              </div>
+                              <span className="font-mono text-xs text-slate-700 font-medium">
+                                Easy: <strong className="text-emerald-700 font-bold">{snap.easy_solved ?? 0}</strong>
+                                <span className="text-slate-300 mx-1.5 font-normal">|</span>
+                                Medium: <strong className="text-amber-700 font-bold">{snap.medium_solved ?? 0}</strong>
+                                <span className="text-slate-300 mx-1.5 font-normal">|</span>
+                                Hard: <strong className="text-rose-700 font-bold">{snap.hard_solved ?? 0}</strong>
+                              </span>
                             ) : (
-                              <span className="text-slate-400">—</span>
+                              <span className="text-slate-400">N/A</span>
                             )}
                           </td>
 
                           {/* 6. Contest Rating */}
                           <td className="py-3.5 px-4 whitespace-nowrap font-semibold text-slate-800">
-                            {snap?.contest_rating != null ? (
+                            {snap?.contest_rating != null && Number(snap.contest_rating) > 0 ? (
                               <span className="text-amber-700 font-mono font-bold">
                                 {Number(snap.contest_rating).toFixed(1)}
                               </span>
                             ) : (
-                              <span className="text-slate-400 font-normal">Unrated</span>
+                              <span className="text-slate-400 font-normal">N/A</span>
                             )}
                           </td>
 
-                          {/* 7. Global Ranking */}
-                          <td className="py-3.5 px-4 whitespace-nowrap text-slate-700">
-                            {snap?.global_rank != null ? (
-                              <span className="font-mono text-[11px]">#{snap.global_rank.toLocaleString()}</span>
+                          {/* 7. Highest Rating */}
+                          <td className="py-3.5 px-4 whitespace-nowrap font-semibold text-slate-800">
+                            {snap?.highest_rating != null && Number(snap.highest_rating) > 0 ? (
+                              <span className="font-mono font-bold text-slate-900">
+                                {Number(snap.highest_rating).toFixed(1)}
+                              </span>
                             ) : (
-                              <span className="text-slate-400">—</span>
+                              <span className="text-slate-400 font-normal">N/A</span>
                             )}
                           </td>
 
-                          {/* 8. Contest Acceptance */}
-                          <td className="py-3.5 px-4 whitespace-nowrap text-slate-600 text-[11px]">
-                            {snap ? (
-                              <div>
-                                {snap.acceptance_rate != null ? (
-                                  <span className="font-semibold text-slate-800">
-                                    {snap.acceptance_rate}%
-                                  </span>
-                                ) : null}
-                                {snap.contests_attended != null && (
-                                  <span className="text-slate-400 block text-[10px]">
-                                    {snap.contests_attended} attended
-                                  </span>
-                                )}
-                                {snap.acceptance_rate == null && snap.contests_attended == null && (
-                                  <span className="text-slate-400">—</span>
-                                )}
-                              </div>
-                            ) : (
-                              <span className="text-slate-400">—</span>
-                            )}
-                          </td>
+                            {/* 8. Global Ranking */}
+                            <td className="py-3.5 px-4 whitespace-nowrap text-slate-700">
+                              {snap?.global_rank != null && Number(snap.global_rank) > 0 && Number(snap.global_rank) < 5000000 ? (
+                                <span className="font-mono text-xs font-bold text-slate-900">
+                                  #{Number(snap.global_rank).toLocaleString('en-US')}
+                                </span>
+                              ) : (
+                                <span className="text-slate-400 font-normal">N/A</span>
+                              )}
+                            </td>
                         </>
                       )}
 

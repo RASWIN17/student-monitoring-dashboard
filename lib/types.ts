@@ -226,6 +226,7 @@ export interface LeetCodeExtractedData {
   username: string;
   realName: string | null;
   ranking: number | null;
+  globalRank: number | null;
   totalSolved: number;
   easySolved: number;
   mediumSolved: number;
@@ -236,6 +237,7 @@ export interface LeetCodeExtractedData {
   acceptanceRate: number | null;
   attendedContestsCount: number;
   contestRating: number | null;
+  highestRating: number | null;
   contestGlobalRanking: number | null;
   contestTopPercentage: number | null;
   contestBadge: string | null;

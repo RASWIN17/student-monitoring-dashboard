@@ -55,6 +55,10 @@ async function fetchLeetCodeProfile(username) {
         attendedContestsCount
         globalRanking
       }
+      userContestRankingHistory(username: $username) {
+        attended
+        rating
+      }
     }
   `;
 
@@ -88,6 +92,13 @@ async function fetchLeetCodeProfile(username) {
   }
 
   const contest = json.data.userContestRanking;
+  const history = json.data.userContestRankingHistory || [];
+  const attendedRatings = history.filter((h) => h.attended && h.rating != null && Number(h.rating) > 0).map((h) => Number(h.rating));
+  const contestRating = contest?.rating ? Number(contest.rating.toFixed(2)) : null;
+  const highestRating = attendedRatings.length > 0 ? Number(Math.max(...attendedRatings).toFixed(2)) : contestRating;
+  const contestGlobalRanking = contest?.globalRanking ? Number(contest.globalRanking) : null;
+  const profileRank = user.profile?.ranking ? Number(user.profile.ranking) : null;
+  const globalRank = contestGlobalRanking ?? (profileRank && profileRank < 5000000 ? profileRank : null);
 
   return {
     success: true,
@@ -96,8 +107,10 @@ async function fetchLeetCodeProfile(username) {
       easySolved,
       mediumSolved,
       hardSolved,
-      ranking: user.profile?.ranking || null,
-      contestRating: contest?.rating ? Math.round(contest.rating) : null,
+      ranking: profileRank,
+      globalRank,
+      contestRating,
+      highestRating,
       contestsAttended: contest?.attendedContestsCount || 0,
     },
   };
@@ -225,13 +238,14 @@ async function processJob(job) {
             easy_solved: d.easySolved,
             medium_solved: d.mediumSolved,
             hard_solved: d.hardSolved,
-            global_rank: d.ranking,
+            global_rank: d.globalRank,
             contest_rating: d.contestRating,
+            highest_rating: d.highestRating,
             contests_attended: d.contestsAttended,
             source: 'leetcode_worker',
             source_version: 'v1.0',
             validation_status: 'valid',
-            available_fields: ['totalSolved', 'easySolved', 'mediumSolved', 'hardSolved'],
+            available_fields: ['totalSolved', 'easySolved', 'mediumSolved', 'hardSolved', 'globalRank', 'highestRating'],
             observed_at: now,
           });
 

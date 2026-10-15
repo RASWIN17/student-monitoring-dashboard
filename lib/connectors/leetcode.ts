@@ -178,7 +178,7 @@ export class LeetCodeConnector {
       const contestTopPercentage = contestRanking?.topPercentage ? Number(contestRanking.topPercentage) : null;
       const contestBadge = contestRanking?.badge?.name || null;
 
-      // Contest History
+      // Contest History & Historical Highest Rating
       const rawHistory = json.data.userContestRankingHistory || [];
       const contestHistory = rawHistory
         .filter((h: any) => h.attended)
@@ -190,6 +190,22 @@ export class LeetCodeConnector {
           problemsSolved: Number(h.problemsSolved || 0),
           totalProblems: Number(h.totalProblems || 0),
         }));
+
+      const attendedRatings = rawHistory
+        .filter((h: any) => h.attended && h.rating != null && Number(h.rating) > 0)
+        .map((h: any) => Number(h.rating));
+      const highestRating =
+        attendedRatings.length > 0
+          ? Number(Math.max(...attendedRatings).toFixed(2))
+          : (contestRating != null ? contestRating : null);
+
+      // Verified Global Ranking: Contest Global Ranking takes precedence over practice sentinel
+      let globalRank: number | null = null;
+      if (contestGlobalRanking != null && Number(contestGlobalRanking) > 0) {
+        globalRank = Number(contestGlobalRanking);
+      } else if (profile.ranking && Number(profile.ranking) > 0 && Number(profile.ranking) < 5000000) {
+        globalRank = Number(profile.ranking);
+      }
 
       // Recent submissions
       const recentList = json.data.recentSubmissionList || [];
@@ -228,6 +244,8 @@ export class LeetCodeConnector {
       if (totalQuestions !== null) availableFields.push('totalQuestions');
       if (acceptanceRate !== null) availableFields.push('acceptanceRate');
       if (contestRating !== null) availableFields.push('contestRating');
+      if (highestRating !== null) availableFields.push('highestRating');
+      if (globalRank !== null) availableFields.push('globalRank');
       if (contestGlobalRanking !== null) availableFields.push('contestGlobalRanking');
       if (contestBadge) availableFields.push('contestBadge');
       if (contestHistory.length > 0) availableFields.push('contestHistory');
@@ -235,6 +253,8 @@ export class LeetCodeConnector {
       const unavailableFields: string[] = [];
       if (!profile.realName) unavailableFields.push('realName');
       if (contestRating === null) unavailableFields.push('contestRating');
+      if (highestRating === null) unavailableFields.push('highestRating');
+      if (globalRank === null) unavailableFields.push('globalRank');
       if (contestGlobalRanking === null) unavailableFields.push('contestGlobalRanking');
 
       return {
@@ -243,6 +263,7 @@ export class LeetCodeConnector {
           username: matchedUser.username,
           realName: profile.realName || null,
           ranking: profile.ranking ? Number(profile.ranking) : null,
+          globalRank,
           totalSolved,
           easySolved,
           mediumSolved,
@@ -253,6 +274,7 @@ export class LeetCodeConnector {
           acceptanceRate,
           attendedContestsCount,
           contestRating,
+          highestRating,
           contestGlobalRanking,
           contestTopPercentage,
           contestBadge,

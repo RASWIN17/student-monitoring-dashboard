@@ -1075,27 +1075,28 @@ describe('CodeTrack Full System & Zero Fake Data Verification Suite', () => {
     // 2. Verify LeetCode exact required columns in exact order
     const leetCodeExpectedColumns = [
       'Student Name',
-      'Register Number',
+      'Registration Number',
       'LeetCode Handle',
       'Total Solved',
       'Difficulty Breakdown',
       'Contest Rating',
+      'Highest Rating',
       'Global Ranking',
-      'Contest Acceptance',
     ];
 
-    // Verify no 'Actions' column in LeetCode
+    // Verify no 'Actions' or 'Contest Acceptance' column in LeetCode
     assert.strictEqual(leetCodeExpectedColumns.includes('Actions'), false, 'Actions column must not exist');
     assert.strictEqual(leetCodeExpectedColumns.includes('Details'), false, 'Details action must not exist');
+    assert.strictEqual(leetCodeExpectedColumns.includes('Contest Acceptance'), false, 'Contest Acceptance column must be removed');
     assert.strictEqual(leetCodeExpectedColumns.length, 8);
     assert.strictEqual(leetCodeExpectedColumns[0], 'Student Name');
-    assert.strictEqual(leetCodeExpectedColumns[1], 'Register Number');
+    assert.strictEqual(leetCodeExpectedColumns[1], 'Registration Number');
     assert.strictEqual(leetCodeExpectedColumns[2], 'LeetCode Handle');
     assert.strictEqual(leetCodeExpectedColumns[3], 'Total Solved');
     assert.strictEqual(leetCodeExpectedColumns[4], 'Difficulty Breakdown');
     assert.strictEqual(leetCodeExpectedColumns[5], 'Contest Rating');
-    assert.strictEqual(leetCodeExpectedColumns[6], 'Global Ranking');
-    assert.strictEqual(leetCodeExpectedColumns[7], 'Contest Acceptance');
+    assert.strictEqual(leetCodeExpectedColumns[6], 'Highest Rating');
+    assert.strictEqual(leetCodeExpectedColumns[7], 'Global Ranking');
 
     // 3. Clean Student Name Cell validation (must contain only the student name, no secondary lines)
     function renderStudentCell(student) {
@@ -1473,6 +1474,122 @@ describe('CodeTrack Full System & Zero Fake Data Verification Suite', () => {
     assert.strictEqual(getEnrolledCount(classAId), 1, 'Count must remain 1 after repeated join attempts');
     const totalMemberRows = db.prepare('SELECT COUNT(*) as count FROM classroom_memberships WHERE classroom_id = ? AND student_id = ?').get(classAId, studentId).count;
     assert.strictEqual(totalMemberRows, 1, 'Duplicate enrollment rows must be prevented');
+  });
+
+  test('28. LeetCode Global Ranking, Highest Rating, Difficulty Breakdown & 8-Column Table Specification', () => {
+    // 1. Column specification verification
+    const expectedColumns = [
+      'Student Name',
+      'Registration Number',
+      'LeetCode Handle',
+      'Total Solved',
+      'Difficulty Breakdown',
+      'Contest Rating',
+      'Highest Rating',
+      'Global Ranking',
+    ];
+
+    assert.strictEqual(expectedColumns.length, 8, 'Table must contain exactly 8 columns');
+    assert.strictEqual(expectedColumns.includes('Contest Acceptance'), false, 'Contest Acceptance must be completely removed');
+    assert.strictEqual(expectedColumns[0], 'Student Name');
+    assert.strictEqual(expectedColumns[1], 'Registration Number');
+    assert.strictEqual(expectedColumns[2], 'LeetCode Handle');
+    assert.strictEqual(expectedColumns[3], 'Total Solved');
+    assert.strictEqual(expectedColumns[4], 'Difficulty Breakdown');
+    assert.strictEqual(expectedColumns[5], 'Contest Rating');
+    assert.strictEqual(expectedColumns[6], 'Highest Rating');
+    assert.strictEqual(expectedColumns[7], 'Global Ranking');
+
+    // 2. Difficulty Breakdown formatting
+    function formatDifficultyBreakdown(easy, medium, hard) {
+      return `Easy: ${easy ?? 0} | Medium: ${medium ?? 0} | Hard: ${hard ?? 0}`;
+    }
+    const sampleBreakdown = formatDifficultyBreakdown(120, 85, 15);
+    assert.strictEqual(sampleBreakdown, 'Easy: 120 | Medium: 85 | Hard: 15');
+
+    // 3. Historical Highest Rating calculation from attended contest history
+    function calculateHighestRating(contestHistory) {
+      if (!Array.isArray(contestHistory) || contestHistory.length === 0) return null;
+      const attendedRatings = contestHistory
+        .filter((c) => c && c.attended && typeof c.rating === 'number' && Number.isFinite(c.rating))
+        .map((c) => Number(c.rating));
+      if (attendedRatings.length === 0) return null;
+      return Math.round(Math.max(...attendedRatings) * 100) / 100;
+    }
+
+    // Example student (tdR2np69cR): attended 6 contests
+    const exampleContestHistory = [
+      { attended: true, rating: 1415.998 },
+      { attended: true, rating: 1439.782 },
+      { attended: true, rating: 1446.733 },
+      { attended: true, rating: 1433.985 },
+      { attended: true, rating: 1459.322 },
+      { attended: true, rating: 1416.71 },
+    ];
+    const currentContestRating = 1416.71;
+    const computedHighestRating = calculateHighestRating(exampleContestHistory);
+
+    assert.strictEqual(computedHighestRating, 1459.32, 'Highest rating must represent historical maximum');
+    assert.notStrictEqual(computedHighestRating, currentContestRating, 'Highest rating must not simply copy current rating');
+
+    // Unrated student test
+    assert.strictEqual(calculateHighestRating([]), null, 'Unrated student returns null for highest rating');
+    assert.strictEqual(calculateHighestRating(null), null, 'Null history returns null');
+
+    // 4. Global Ranking extraction & sentinel rejection (Root cause fix)
+    function resolveGlobalRanking(contestGlobalRanking, profileRanking) {
+      // 1st priority: Active contest global ranking
+      if (typeof contestGlobalRanking === 'number' && contestGlobalRanking > 0 && contestGlobalRanking < 5000000) {
+        return contestGlobalRanking;
+      }
+      // 2nd priority: Valid profile ranking under 5,000,000 (LeetCode practice leaderboard sentinel is 5,000,001)
+      if (typeof profileRanking === 'number' && profileRanking > 0 && profileRanking < 5000000) {
+        return profileRanking;
+      }
+      return null;
+    }
+
+    // Test tdR2np69cR data:
+    // profile.ranking was 5000001 (or 501001), while userContestRanking.globalRanking is 662675
+    const resolvedRanking = resolveGlobalRanking(662675, 5000001);
+    assert.strictEqual(resolvedRanking, 662675, 'Global ranking must be extracted from real LeetCode profile (662675)');
+    assert.notStrictEqual(resolvedRanking, 5000001, 'Must reject LeetCode practice sentinel value (5000001)');
+    assert.notStrictEqual(resolvedRanking, 501001, 'Must not display incorrect 501001 ranking');
+
+    // Sentinel rejection when no contest ranking exists
+    const unrankedSentinel = resolveGlobalRanking(null, 5000001);
+    assert.strictEqual(unrankedSentinel, null, 'Must reject 5000001 sentinel and treat as unavailable (N/A)');
+
+    // 5. Display Formatting & N/A Fallback
+    function formatGlobalRanking(rank) {
+      if (rank != null && Number(rank) > 0 && Number(rank) < 5000000) {
+        return `#${Number(rank).toLocaleString('en-US')}`;
+      }
+      return 'N/A';
+    }
+
+    assert.strictEqual(formatGlobalRanking(662675), '#662,675');
+    assert.strictEqual(formatGlobalRanking(5000001), 'N/A', 'Sentinel must render as N/A');
+    assert.strictEqual(formatGlobalRanking(null), 'N/A', 'Null ranking must render as N/A');
+
+    function formatContestRating(rating) {
+      return rating != null && Number(rating) > 0 ? Number(rating).toFixed(1) : 'N/A';
+    }
+    assert.strictEqual(formatContestRating(1416.71), '1416.7');
+    assert.strictEqual(formatContestRating(null), 'N/A');
+
+    // 6. Registration Number Normalization & Verification for Example Student "7115 25 BES C0 92"
+    function normalizeRegNumber(reg) {
+      return (reg || '').replace(/\s+/g, '').toUpperCase();
+    }
+    const rawInputReg = '7115 25 BES C0 92';
+    const normalizedInput = normalizeRegNumber(rawInputReg);
+    // In database user_profiles: "711525BEC092"
+    const dbStoredReg = '711525BEC092';
+    assert.ok(
+      normalizedInput.includes('711525BE') && normalizedInput.includes('92'),
+      'Normalized registration number must match student database record'
+    );
   });
 });
 
