@@ -859,7 +859,191 @@ describe('CodeTrack Full System & Zero Fake Data Verification Suite', () => {
     const displayValue = missingValue != null ? missingValue : 'N/A';
     assert.strictEqual(displayValue, 'N/A', 'Missing data must display N/A rather than fabricated 0');
   });
+
+  test('22. Student Classroom Roster View-Only Access & Authorization Enforcement', () => {
+    const now = new Date().toISOString();
+    // 1. Create a classroom and enroll two students
+    const cId = 'c-algo-read-only-test';
+    db.prepare(`
+      INSERT INTO classrooms (id, owner_teacher_id, name, course, batch, department, academic_year, section, join_code, join_code_hash, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(cId, 'u-teacher-1', 'Algorithms View Only', 'CS401', '2026', 'CSE', '2026-2027', 'A', 'CT-RO001', 'hash-ro1', now, now);
+
+    db.prepare(`
+      INSERT INTO classroom_memberships (id, classroom_id, student_id, joined_at, membership_status)
+      VALUES (?, ?, ?, ?, 'enrolled'), (?, ?, ?, ?, 'enrolled')
+    `).run('mem-ro-1', cId, 'u-student-arjun', now, 'mem-ro-2', cId, 'u-student-rohit', now);
+
+    // 2. Authorization function simulating GET /api/classrooms/[id]/students
+    function getClassroomStudentsForUser(requestingUser, targetClassroomId, testDb) {
+      if (!requestingUser) return { status: 401, error: 'Unauthorized' };
+      const cls = testDb.prepare('SELECT * FROM classrooms WHERE id = ?').get(targetClassroomId);
+      if (!cls) return { status: 404, error: 'Classroom not found' };
+
+      if (requestingUser.role === 'student') {
+        const mem = testDb.prepare(`
+          SELECT id FROM classroom_memberships
+          WHERE classroom_id = ? AND student_id = ? AND membership_status = 'enrolled'
+        `).get(targetClassroomId, requestingUser.id);
+        if (!mem) {
+          return { status: 403, error: 'Access denied: You are not enrolled in this classroom' };
+        }
+      }
+
+      const students = testDb.prepare(`
+        SELECT u.id, u.display_name, u.register_number, u.section, u.email
+        FROM classroom_memberships cm
+        JOIN user_profiles u ON u.id = cm.student_id
+        WHERE cm.classroom_id = ? AND cm.membership_status = 'enrolled'
+        ORDER BY u.display_name ASC
+      `).all(targetClassroomId);
+
+      return { status: 200, students };
+    }
+
+    // 3. Enrolled student Arjun fetches classroom roster: succeeds and sees all enrolled students
+    const arjunView = getClassroomStudentsForUser({ id: 'u-student-arjun', role: 'student' }, cId, db);
+    assert.strictEqual(arjunView.status, 200);
+    assert.strictEqual(arjunView.students.length, 2);
+    assert.strictEqual(arjunView.students[0].display_name, 'Arjun K. Verma');
+    assert.strictEqual(arjunView.students[1].display_name, 'Rohit');
+
+    // 4. Non-enrolled student Priya: rejected with 403
+    const priyaView = getClassroomStudentsForUser({ id: 'u-student-priya', role: 'student' }, cId, db);
+    assert.strictEqual(priyaView.status, 403);
+    assert.strictEqual(priyaView.error, 'Access denied: You are not enrolled in this classroom');
+
+    // 5. Backend check: Student cannot delete another student from classroom
+    function deleteStudentFromClassroom(requestingUser, targetClassroomId, studentIdToDelete, testDb) {
+      if (!requestingUser || (requestingUser.role !== 'teacher' && requestingUser.role !== 'admin')) {
+        return { status: 403, error: 'Only teachers can remove students' };
+      }
+      const cls = testDb.prepare('SELECT owner_teacher_id FROM classrooms WHERE id = ?').get(targetClassroomId);
+      if (!cls || (cls.owner_teacher_id !== requestingUser.id && requestingUser.role !== 'admin')) {
+        return { status: 404, error: 'Classroom not found or unauthorized' };
+      }
+      testDb.prepare(`
+        UPDATE classroom_memberships
+        SET membership_status = 'dropped'
+        WHERE classroom_id = ? AND student_id = ?
+      `).run(targetClassroomId, studentIdToDelete);
+      return { status: 200, success: true };
+    }
+
+    const studentDeleteAttempt = deleteStudentFromClassroom({ id: 'u-student-arjun', role: 'student' }, cId, 'u-student-rohit', db);
+    assert.strictEqual(studentDeleteAttempt.status, 403, 'Students must never be permitted to delete classmates');
+
+    // 6. Teacher can delete student
+    const teacherDelete = deleteStudentFromClassroom({ id: 'u-teacher-1', role: 'teacher' }, cId, 'u-student-rohit', db);
+    assert.strictEqual(teacherDelete.status, 200);
+
+    // 7. Roster count updates consistently
+    const updatedView = getClassroomStudentsForUser({ id: 'u-student-arjun', role: 'student' }, cId, db);
+    assert.strictEqual(updatedView.students.length, 1);
+  });
+
+  test('23. Upcoming and Active Contest Ascending Sorting Order for CodeChef & LeetCode', () => {
+    const baseNow = Date.now();
+    const oneDay = 24 * 60 * 60 * 1000;
+    const oneHour = 60 * 60 * 1000;
+
+    // Simulate contests for CodeChef and LeetCode with various start dates
+    const mockContests = [
+      {
+        id: 'c-13d',
+        title: 'Starters 190 (Starts in 13 days)',
+        platform: 'codechef',
+        status: 'upcoming',
+        start_time: new Date(baseNow + 13 * oneDay).toISOString(),
+      },
+      {
+        id: 'c-1d',
+        title: 'Starters 187 (Starts in 1 day)',
+        platform: 'codechef',
+        status: 'upcoming',
+        start_time: new Date(baseNow + 1 * oneDay).toISOString(),
+      },
+      {
+        id: 'c-7d',
+        title: 'Starters 189 (Starts in 7 days)',
+        platform: 'codechef',
+        status: 'upcoming',
+        start_time: new Date(baseNow + 7 * oneDay).toISOString(),
+      },
+      {
+        id: 'c-3d',
+        title: 'Starters 188 (Starts in 3 days)',
+        platform: 'codechef',
+        status: 'upcoming',
+        start_time: new Date(baseNow + 3 * oneDay).toISOString(),
+      },
+      {
+        id: 'c-same-day-evening',
+        title: 'Starters 187 Evening Special (Starts in 1 day + 4 hours)',
+        platform: 'codechef',
+        status: 'upcoming',
+        start_time: new Date(baseNow + 1 * oneDay + 4 * oneHour).toISOString(),
+      },
+      {
+        id: 'c-live',
+        title: 'Live Challenge (Currently Live)',
+        platform: 'codechef',
+        status: 'live',
+        start_time: new Date(baseNow - 1 * oneHour).toISOString(),
+      },
+      {
+        id: 'c-past',
+        title: 'Starters 186 (Completed Yesterday)',
+        platform: 'codechef',
+        status: 'completed',
+        start_time: new Date(baseNow - 1 * oneDay).toISOString(),
+      },
+    ];
+
+    // Sorting implementation matching CodeChef & LeetCode analytics pages
+    const upcomingAndLive = mockContests
+      .filter((c) => c.status !== 'completed')
+      .sort((a, b) => {
+        const timeA = new Date(a.start_time).getTime();
+        const timeB = new Date(b.start_time).getTime();
+        if (timeA !== timeB) return timeA - timeB;
+        return a.title.localeCompare(b.title);
+      });
+
+    // 1. Live contest (started 1 hour ago) must appear FIRST
+    assert.strictEqual(upcomingAndLive[0].id, 'c-live');
+
+    // 2. Contest starting in 1 day must appear before 3 days, 7 days, 13 days
+    assert.strictEqual(upcomingAndLive[1].id, 'c-1d');
+
+    // 3. Same-day contest starting later in the day must follow the earlier one
+    assert.strictEqual(upcomingAndLive[2].id, 'c-same-day-evening');
+
+    // 4. Contest starting in 3 days
+    assert.strictEqual(upcomingAndLive[3].id, 'c-3d');
+
+    // 5. Contest starting in 7 days
+    assert.strictEqual(upcomingAndLive[4].id, 'c-7d');
+
+    // 6. Contest starting in 13 days must appear LAST among upcoming contests
+    assert.strictEqual(upcomingAndLive[5].id, 'c-13d');
+
+    // 7. Verify chronological ascending order across the entire array
+    for (let i = 0; i < upcomingAndLive.length - 1; i++) {
+      const currentStart = new Date(upcomingAndLive[i].start_time).getTime();
+      const nextStart = new Date(upcomingAndLive[i + 1].start_time).getTime();
+      assert(currentStart <= nextStart, `Contest index ${i} (${upcomingAndLive[i].title}) must start before or at index ${i + 1} (${upcomingAndLive[i + 1].title})`);
+    }
+
+    // 8. Completed contests remain in descending order (most recent completed contest first)
+    const completed = mockContests
+      .filter((c) => c.status === 'completed')
+      .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime());
+    assert.strictEqual(completed.length, 1);
+    assert.strictEqual(completed[0].id, 'c-past');
+  });
 });
+
 
 
 

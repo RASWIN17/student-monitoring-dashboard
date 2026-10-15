@@ -84,8 +84,25 @@ export default function CodeChefContestsPage() {
     return true;
   });
 
-  const upcomingAndLive = filteredContests.filter((c) => c.status !== 'completed');
-  const completed = filteredContests.filter((c) => c.status === 'completed');
+  // Sort Upcoming & Active contests in ascending chronological order (contest starting soonest appears first)
+  const upcomingAndLive = filteredContests
+    .filter((c) => c.status !== 'completed')
+    .sort((a, b) => {
+      const timeA = new Date(a.start_time).getTime();
+      const timeB = new Date(b.start_time).getTime();
+      if (timeA !== timeB) return timeA - timeB;
+      return a.title.localeCompare(b.title);
+    });
+
+  // Keep completed contests sorted descending (most recently completed contest first)
+  const completed = filteredContests
+    .filter((c) => c.status === 'completed')
+    .sort((a, b) => {
+      const timeA = new Date(a.start_time).getTime();
+      const timeB = new Date(b.start_time).getTime();
+      if (timeA !== timeB) return timeB - timeA;
+      return a.title.localeCompare(b.title);
+    });
 
   return (
     <div className="space-y-6">

@@ -17,11 +17,9 @@ import {
   Search,
   RefreshCw,
   Mail,
-  Hash,
-  Layers,
-  User,
   AlertCircle,
   X,
+  Eye,
 } from 'lucide-react';
 
 export default function ClassroomDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -30,14 +28,18 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
   const router = useRouter();
   const { user, loading: authLoading, refreshClassrooms } = useAuth();
 
+  const isTeacher = user?.role === 'teacher' || user?.role === 'admin';
+
   const [classroom, setClassroom] = useState<Classroom | null>(null);
   const [students, setStudents] = useState<StudentPerformanceOverview[]>([]);
   const [loading, setLoading] = useState(true);
+  const [studentsLoading, setStudentsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [studentsError, setStudentsError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedCode, setCopiedCode] = useState(false);
 
-  // Delete modal state
+  // Delete modal state (Teachers only)
   const [studentToDelete, setStudentToDelete] = useState<{ id: string; name: string; registerNumber: string; email: string } | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null);
@@ -63,20 +65,32 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
       }
       const cData = await cRes.json();
       setClassroom(cData.classroom);
+      setLoading(false);
 
       // 2. Fetch enrolled students roster
+      await fetchStudentsData();
+    } catch {
+      setError('Network error loading classroom details.');
+      setLoading(false);
+    }
+  };
+
+  const fetchStudentsData = async () => {
+    setStudentsLoading(true);
+    setStudentsError(null);
+    try {
       const sRes = await fetch(`/api/classrooms/${classroomId}/students`);
       if (sRes.ok) {
         const sData = await sRes.json();
         setStudents(sData.students || []);
       } else {
         const sErr = await sRes.json();
-        setError(sErr.error || 'Failed to load classroom student roster.');
+        setStudentsError(sErr.error || 'Failed to load classroom student roster.');
       }
     } catch {
-      setError('Network error loading classroom details.');
+      setStudentsError('Network error loading classroom student roster.');
     } finally {
-      setLoading(false);
+      setStudentsLoading(false);
     }
   };
 
@@ -93,7 +107,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
   };
 
   const handleDeleteConfirm = async () => {
-    if (!studentToDelete) return;
+    if (!isTeacher || !studentToDelete) return;
     setDeleting(true);
     setDeleteError(null);
     setDeleteSuccess(null);
@@ -132,6 +146,8 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
     const secMatch = s.section?.toLowerCase().includes(q);
     return nameMatch || regMatch || emailMatch || secMatch;
   });
+
+  const enrolledStudentCount = students.length > 0 ? students.length : (classroom?.enrolled_count ?? 0);
 
   if (authLoading || (loading && !classroom)) {
     return (
@@ -193,6 +209,12 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
                   <span className="text-[11px] font-medium text-slate-500">
                     {classroom.academic_year}
                   </span>
+                  {!isTeacher && (
+                    <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                      <Eye className="w-3 h-3 text-emerald-600" />
+                      <span>View-Only</span>
+                    </span>
+                  )}
                 </div>
                 <h1 className="text-xl font-bold text-slate-900">{classroom.name}</h1>
                 <p className="text-xs text-slate-500 mt-0.5">
@@ -207,7 +229,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
                 <Users className="w-4 h-4 text-blue-600" />
                 <div className="text-xs">
                   <span className="text-slate-500 font-medium">Total Students: </span>
-                  <span className="font-bold text-slate-900">{students.length}</span>
+                  <span className="font-bold text-slate-900">{enrolledStudentCount}</span>
                 </div>
               </div>
 
@@ -272,7 +294,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
               <Users className="w-4 h-4 text-blue-600" />
               <span>Enrolled Students</span>
               <span className="text-xs text-slate-500 font-normal">
-                ({filteredStudents.length} of {students.length})
+                ({filteredStudents.length} of {enrolledStudentCount})
               </span>
             </h2>
             <p className="text-[11px] text-slate-500 mt-0.5">
@@ -294,27 +316,52 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
         </div>
 
         {/* Loading State */}
-        {loading ? (
+        {studentsLoading ? (
           <div className="p-12 text-center text-slate-400 flex flex-col items-center justify-center gap-2">
             <RefreshCw className="w-5 h-5 animate-spin text-blue-600" />
             <span className="text-xs font-medium">Fetching enrolled students...</span>
           </div>
+        ) : studentsError ? (
+          /* Error State for Roster */
+          <div className="p-8 text-center bg-red-50/40">
+            <AlertCircle className="w-6 h-6 text-red-500 mx-auto mb-2" />
+            <div className="text-xs font-semibold text-red-900">{studentsError}</div>
+            <p className="text-[11px] text-red-600 mt-1">Please try fetching the roster again.</p>
+            <button
+              onClick={fetchStudentsData}
+              className="mt-3 px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-semibold hover:bg-red-700 transition cursor-pointer"
+            >
+              Retry
+            </button>
+          </div>
         ) : students.length === 0 ? (
-          /* Empty State */
+          /* Empty State - Only when genuinely 0 students */
           <div className="p-12 text-center">
             <Users className="w-10 h-10 text-slate-300 mx-auto mb-3" />
             <h3 className="text-sm font-bold text-slate-800">No students enrolled yet</h3>
             <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
-              Students can join this classroom by entering join code{' '}
-              <span className="font-mono font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">
-                {classroom?.join_code}
-              </span>{' '}
-              on their Student Dashboard, or by registering with Class &quot;{classroom?.course}&quot; and Section &quot;{classroom?.section}&quot;.
+              {isTeacher ? (
+                <>
+                  Students can join this classroom by entering join code{' '}
+                  <span className="font-mono font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">
+                    {classroom?.join_code}
+                  </span>{' '}
+                  on their Student Dashboard, or by registering with Class &quot;{classroom?.course}&quot; and Section &quot;{classroom?.section}&quot;.
+                </>
+              ) : (
+                'No students are currently enrolled in this classroom.'
+              )}
             </p>
           </div>
         ) : filteredStudents.length === 0 ? (
-          <div className="p-8 text-center text-slate-500 text-xs">
-            No students matching &quot;{searchQuery}&quot;.
+          <div className="p-8 text-center text-slate-500 text-xs space-y-2">
+            <p>No students matching &quot;{searchQuery}&quot;.</p>
+            <button
+              onClick={() => setSearchQuery('')}
+              className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-medium transition cursor-pointer"
+            >
+              Clear Search
+            </button>
           </div>
         ) : (
           /* Student Details Table */
@@ -326,7 +373,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
                   <th className="py-3 px-4">Register Number</th>
                   <th className="py-3 px-4">Section</th>
                   <th className="py-3 px-4">Gmail ID</th>
-                  <th className="py-3 px-4 text-right">Action</th>
+                  {isTeacher && <th className="py-3 px-4 text-right">Action</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -380,26 +427,28 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
                         </a>
                       </td>
 
-                      {/* Column 5: Action */}
-                      <td className="py-3.5 px-4 text-right">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setDeleteError(null);
-                            setStudentToDelete({
-                              id: s.id,
-                              name: s.display_name,
-                              registerNumber: regNo,
-                              email: s.email,
-                            });
-                          }}
-                          className="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 rounded-lg text-[11px] font-semibold inline-flex items-center gap-1.5 transition cursor-pointer"
-                          title="Delete Student from Classroom"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                          <span>Delete Student</span>
-                        </button>
-                      </td>
+                      {/* Column 5: Action (Teachers Only) */}
+                      {isTeacher && (
+                        <td className="py-3.5 px-4 text-right">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setDeleteError(null);
+                              setStudentToDelete({
+                                id: s.id,
+                                name: s.display_name,
+                                registerNumber: regNo,
+                                email: s.email,
+                              });
+                            }}
+                            className="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 rounded-lg text-[11px] font-semibold inline-flex items-center gap-1.5 transition cursor-pointer"
+                            title="Delete Student from Classroom"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Delete Student</span>
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   );
                 })}
@@ -409,8 +458,8 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
         )}
       </div>
 
-      {/* Delete Student Confirmation Modal */}
-      {studentToDelete && (
+      {/* Delete Student Confirmation Modal (Teachers Only) */}
+      {isTeacher && studentToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             <div className="p-5 border-b border-slate-100 flex items-start gap-3">
@@ -427,7 +476,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
               </div>
               <button
                 onClick={() => setStudentToDelete(null)}
-                className="text-slate-400 hover:text-slate-600 p-1"
+                className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>

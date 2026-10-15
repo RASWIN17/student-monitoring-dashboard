@@ -50,7 +50,34 @@ export async function GET(req: Request) {
       })
     );
 
-    return NextResponse.json({ contests: enriched });
+    // 4. Ensure upcoming & live contests are ordered in ascending chronological order (soonest first)
+    // while completed contests remain in descending order (most recently completed first)
+    const upcomingAndLive = enriched
+      .filter((c) => c.status !== 'completed')
+      .sort((a, b) => {
+        const timeA = new Date(a.start_time).getTime();
+        const timeB = new Date(b.start_time).getTime();
+        if (timeA !== timeB) return timeA - timeB;
+        return a.title.localeCompare(b.title);
+      });
+
+    const completed = enriched
+      .filter((c) => c.status === 'completed')
+      .sort((a, b) => {
+        const timeA = new Date(a.start_time).getTime();
+        const timeB = new Date(b.start_time).getTime();
+        if (timeA !== timeB) return timeB - timeA;
+        return a.title.localeCompare(b.title);
+      });
+
+    const sortedContests =
+      status === 'completed'
+        ? completed
+        : status === 'upcoming' || status === 'live'
+          ? upcomingAndLive
+          : [...upcomingAndLive, ...completed];
+
+    return NextResponse.json({ contests: sortedContests });
   } catch (err: any) {
     console.error('Error in /api/contests:', err);
     return NextResponse.json({ error: err?.message || 'Failed to fetch contests' }, { status: 500 });

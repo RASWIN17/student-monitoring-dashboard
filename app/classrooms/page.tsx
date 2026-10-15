@@ -34,6 +34,41 @@ export default function ClassroomsPage() {
 
   const isTeacher = user?.role === 'teacher' || user?.role === 'admin';
 
+  // Student Join Modal State
+  const [isJoinOpen, setIsJoinOpen] = useState(false);
+  const [joinCode, setJoinCode] = useState('');
+  const [joinError, setJoinError] = useState<string | null>(null);
+  const [joining, setJoining] = useState(false);
+
+  const handleJoin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setJoining(true);
+    setJoinError(null);
+    try {
+      const res = await fetch('/api/classrooms/join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ joinCode: joinCode.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setJoinError(data.error || 'Failed to join classroom');
+        setJoining(false);
+        return;
+      }
+      await refreshClassrooms();
+      setIsJoinOpen(false);
+      setJoinCode('');
+      if (data.classroom?.id) {
+        router.push(`/classrooms/${data.classroom.id}`);
+      }
+    } catch {
+      setJoinError('Network error joining classroom');
+    } finally {
+      setJoining(false);
+    }
+  };
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreating(true);
@@ -103,13 +138,21 @@ export default function ClassroomsPage() {
           </p>
         </div>
 
-        {isTeacher && (
+        {isTeacher ? (
           <button
             onClick={() => setIsCreateOpen(true)}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold flex items-center gap-2 shadow-xs transition"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold flex items-center gap-2 shadow-xs transition cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>New Classroom</span>
+          </button>
+        ) : (
+          <button
+            onClick={() => setIsJoinOpen(true)}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold flex items-center gap-2 shadow-xs transition cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Join Classroom</span>
           </button>
         )}
       </div>
@@ -124,6 +167,15 @@ export default function ClassroomsPage() {
               ? 'Click "New Classroom" to create a section and invite your students.'
               : 'You are not enrolled in any classrooms yet. Use a join code from your instructor.'}
           </p>
+          {!isTeacher && (
+            <button
+              onClick={() => setIsJoinOpen(true)}
+              className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold inline-flex items-center gap-2 shadow-xs transition cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Join a Classroom</span>
+            </button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -325,6 +377,59 @@ export default function ClassroomsPage() {
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 disabled:opacity-50"
                 >
                   {creating ? 'Creating...' : 'Create Classroom'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Join Classroom Modal for Students */}
+      {isJoinOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-sm w-full border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="px-6 py-4 bg-slate-50 border-b border-slate-200">
+              <h3 className="text-base font-bold text-slate-900">Join Classroom</h3>
+              <p className="text-xs text-slate-500">
+                Enter the classroom join code provided by your instructor.
+              </p>
+            </div>
+
+            <form onSubmit={handleJoin} className="p-6 space-y-4">
+              {joinError && (
+                <div className="p-3 bg-red-50 text-red-700 text-xs rounded-lg border border-red-200">
+                  {joinError}
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Classroom Join Code
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. CT-ABC123"
+                  value={joinCode}
+                  onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-mono uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsJoinOpen(false)}
+                  className="px-3.5 py-2 text-xs font-medium text-slate-600 hover:text-slate-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={joining}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {joining ? 'Joining...' : 'Join Classroom'}
                 </button>
               </div>
             </form>

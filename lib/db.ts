@@ -222,9 +222,14 @@ export async function syncStudentClassroomMemberships(
 }
 
 export async function syncClassroomMatchingStudents(classroomId: string): Promise<void> {
-  const classroom = await getClassroomById(classroomId);
-  if (!classroom) return;
   const supabase = getSupabase();
+  const { data: classroom } = await supabase
+    .from('classrooms')
+    .select('*')
+    .eq('id', classroomId)
+    .maybeSingle();
+
+  if (!classroom) return;
   const { data: students } = await supabase
     .from('user_profiles')
     .select('id, class_name, section')
@@ -315,6 +320,10 @@ export async function createClassroom(data: {
 }
 
 export async function getClassroomById(id: string): Promise<Classroom | null> {
+  try {
+    await syncClassroomMatchingStudents(id);
+  } catch {}
+
   const supabase = getSupabase();
   const { data, error } = await supabase
     .from('classrooms')
@@ -502,6 +511,24 @@ export async function removeStudentFromClassroom(classroomId: string, studentId:
     .eq('student_id', studentId);
 
   return !error;
+}
+
+export async function isStudentInClassroom(classroomId: string, studentId: string): Promise<boolean> {
+  try {
+    await syncClassroomMatchingStudents(classroomId);
+  } catch {}
+
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from('classroom_memberships')
+    .select('id')
+    .eq('classroom_id', classroomId)
+    .eq('student_id', studentId)
+    .eq('membership_status', 'enrolled')
+    .maybeSingle();
+
+  if (error || !data) return false;
+  return true;
 }
 
 export async function getEnrolledStudents(classroomId: string): Promise<UserProfile[]> {
@@ -950,8 +977,13 @@ export async function getContests(filters?: {
   const supabase = getSupabase();
   let query = supabase
     .from('contests')
-    .select('*')
-    .order('start_time', { ascending: false });
+    .select('*');
+
+  if (filters?.status === 'upcoming' || filters?.status === 'live') {
+    query = query.order('start_time', { ascending: true });
+  } else {
+    query = query.order('start_time', { ascending: false });
+  }
 
   if (filters?.platform && filters.platform !== 'all') {
     query = query.eq('platform', filters.platform);

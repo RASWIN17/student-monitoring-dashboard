@@ -6,6 +6,7 @@ import {
   getUserByEmail,
   joinClassroom,
   logAuditAction,
+  isStudentInClassroom,
 } from '@/lib/db';
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -15,13 +16,21 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  if (user.role === 'student') {
-    return NextResponse.json({ error: 'Only teachers can access the classroom student roster' }, { status: 403 });
-  }
-
   const classroom = await getClassroomById(id);
   if (!classroom) {
     return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });
+  }
+
+  // Role-based authorization:
+  // If user is a student, verify they are currently enrolled in this classroom
+  if (user.role === 'student') {
+    const isEnrolled = await isStudentInClassroom(id, user.id);
+    if (!isEnrolled) {
+      return NextResponse.json(
+        { error: 'Access denied: You are not enrolled in this classroom' },
+        { status: 403 }
+      );
+    }
   }
 
   const overview = await getClassroomOverview(id);
@@ -31,12 +40,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const user = await getCurrentUser();
-  if (!user || user.role !== 'teacher') {
+  if (!user || (user.role !== 'teacher' && user.role !== 'admin')) {
     return NextResponse.json({ error: 'Only teachers can manually enroll students' }, { status: 403 });
   }
 
   const classroom = await getClassroomById(id);
-  if (!classroom || classroom.owner_teacher_id !== user.id) {
+  if (!classroom || (classroom.owner_teacher_id !== user.id && user.role !== 'admin')) {
     return NextResponse.json({ error: 'Classroom not found or unauthorized' }, { status: 404 });
   }
 
