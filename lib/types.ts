@@ -142,6 +142,7 @@ export interface Contest {
 export interface StudentContestAttendanceRow {
   student_id: string;
   student_name: string;
+  register_number: string | null;
   username: string;
   public_profile_url: string;
   platform: PlatformType;

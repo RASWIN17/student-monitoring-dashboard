@@ -1158,6 +1158,7 @@ export async function getContestAnalyticsForClassroom(contestId: string, classro
     const row: StudentContestAttendanceRow = {
       student_id: st.id,
       student_name: st.display_name,
+      register_number: st.register_number || null,
       username: acc.username,
       public_profile_url: acc.public_profile_url,
       platform: acc.platform,

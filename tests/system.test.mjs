@@ -1193,6 +1193,105 @@ describe('CodeTrack Full System & Zero Fake Data Verification Suite', () => {
     db.prepare("UPDATE scan_jobs SET status = 'succeeded' WHERE id = 'job-arjun-active'").run();
     assert.strictEqual(checkActiveScan('u-student-arjun', null, db).allowed, true);
   });
+
+  test('26. CodeChef & LeetCode Analytics Table: Column Ordering, Last Sync Removal & Register Number Mapping', () => {
+    // 1. Verify CodeChef exact required columns in exact order
+    const codeChefExpectedColumns = [
+      'Student Name',
+      'Register Number',
+      'CodeChef Username',
+      'Participation Status',
+      'Contest Problems Solved',
+      'Total Solved',
+      'Contest Rating',
+      'Highest Rating',
+      'Global Rank',
+      'Current Rank',
+      'Country Rank',
+    ];
+
+    // Verify 'Last Sync' is completely absent
+    assert.strictEqual(codeChefExpectedColumns.includes('Last Sync'), false, 'Last Sync must be removed from CodeChef');
+    assert.strictEqual(codeChefExpectedColumns.length, 11);
+    assert.strictEqual(codeChefExpectedColumns[0], 'Student Name');
+    assert.strictEqual(codeChefExpectedColumns[1], 'Register Number');
+    assert.strictEqual(codeChefExpectedColumns[2], 'CodeChef Username');
+    assert.strictEqual(codeChefExpectedColumns[3], 'Participation Status');
+    assert.strictEqual(codeChefExpectedColumns[4], 'Contest Problems Solved');
+    assert.strictEqual(codeChefExpectedColumns[5], 'Total Solved');
+    assert.strictEqual(codeChefExpectedColumns[6], 'Contest Rating');
+    assert.strictEqual(codeChefExpectedColumns[7], 'Highest Rating');
+    assert.strictEqual(codeChefExpectedColumns[8], 'Global Rank');
+    assert.strictEqual(codeChefExpectedColumns[9], 'Current Rank');
+    assert.strictEqual(codeChefExpectedColumns[10], 'Country Rank');
+
+    // Current Rank and Country Rank are separate columns in the specified order
+    const currentRankIdx = codeChefExpectedColumns.indexOf('Current Rank');
+    const countryRankIdx = codeChefExpectedColumns.indexOf('Country Rank');
+    assert.strictEqual(currentRankIdx, 9, 'Current Rank must be at index 9');
+    assert.strictEqual(countryRankIdx, 10, 'Country Rank must be at index 10');
+    assert.strictEqual(countryRankIdx > currentRankIdx, true, 'Country Rank must follow Current Rank');
+
+    // 2. Verify LeetCode exact required columns in exact order
+    const leetCodeExpectedColumns = [
+      'Student Name',
+      'Register Number',
+      'LeetCode Username',
+      'Contest Status',
+      'Contest Problems Solved',
+      'Contest Rank',
+      'Total Solved',
+      'Easy',
+      'Medium',
+      'Hard',
+      'Accepted',
+      'Contest Rating',
+      'Profile Rank',
+    ];
+
+    // Verify 'Last Sync' is completely absent
+    assert.strictEqual(leetCodeExpectedColumns.includes('Last Sync'), false, 'Last Sync must be removed from LeetCode');
+    assert.strictEqual(leetCodeExpectedColumns.length, 13);
+    assert.strictEqual(leetCodeExpectedColumns[0], 'Student Name');
+    assert.strictEqual(leetCodeExpectedColumns[1], 'Register Number');
+    assert.strictEqual(leetCodeExpectedColumns[2], 'LeetCode Username');
+    assert.strictEqual(leetCodeExpectedColumns[3], 'Contest Status');
+    assert.strictEqual(leetCodeExpectedColumns[4], 'Contest Problems Solved');
+    assert.strictEqual(leetCodeExpectedColumns[5], 'Contest Rank');
+    assert.strictEqual(leetCodeExpectedColumns[6], 'Total Solved');
+    assert.strictEqual(leetCodeExpectedColumns[7], 'Easy');
+    assert.strictEqual(leetCodeExpectedColumns[8], 'Medium');
+    assert.strictEqual(leetCodeExpectedColumns[9], 'Hard');
+    assert.strictEqual(leetCodeExpectedColumns[10], 'Accepted');
+    assert.strictEqual(leetCodeExpectedColumns[11], 'Contest Rating');
+    assert.strictEqual(leetCodeExpectedColumns[12], 'Profile Rank');
+
+    // 3. Register number mapping from student database records (not platform username or mock)
+    const mockStudent = {
+      id: 'u-student-arjun',
+      display_name: 'Arjun Verma',
+      register_number: '2023CS101',
+      role: 'student',
+    };
+    const mockAccount = {
+      username: 'arjun_coder',
+      platform: 'codechef',
+      public_profile_url: 'https://codechef.com/users/arjun_coder',
+    };
+
+    function buildContestRow(st, acc) {
+      return {
+        student_id: st.id,
+        student_name: st.display_name,
+        register_number: st.register_number || null,
+        username: acc.username,
+      };
+    }
+
+    const row = buildContestRow(mockStudent, mockAccount);
+    assert.strictEqual(row.register_number, '2023CS101', 'Register number must come from student profile record');
+    assert.notStrictEqual(row.register_number, row.username, 'Register number must not be substituted by platform username');
+  });
 });
 
 

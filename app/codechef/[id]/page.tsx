@@ -240,6 +240,7 @@ export default function CodeChefContestDetailPage({ params }: PageProps) {
       const q = searchQuery.toLowerCase();
       return (
         item.student_name.toLowerCase().includes(q) ||
+        (item.register_number && item.register_number.toLowerCase().includes(q)) ||
         item.username.toLowerCase().includes(q)
       );
     }
@@ -596,6 +597,7 @@ export default function CodeChefContestDetailPage({ params }: PageProps) {
                   <th className="py-3 px-4">
                     <div>Student Name</div>
                   </th>
+                  <th className="py-3 px-4">Register Number</th>
                   <th className="py-3 px-4">CodeChef Username</th>
                   <th className="py-3 px-4 text-center">Participation Status</th>
                   <th className="py-3 px-4 text-center bg-orange-50/50 text-orange-950 border-x border-orange-100">
@@ -605,8 +607,8 @@ export default function CodeChefContestDetailPage({ params }: PageProps) {
                   <th className="py-3 px-4 text-center">Contest Rating</th>
                   <th className="py-3 px-4 text-center">Highest Rating</th>
                   <th className="py-3 px-4 text-center">Global Rank</th>
+                  <th className="py-3 px-4 text-center">Current Rank</th>
                   <th className="py-3 px-4 text-center">Country Rank</th>
-                  <th className="py-3 px-4 text-right">Last Sync</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -619,6 +621,9 @@ export default function CodeChefContestDetailPage({ params }: PageProps) {
                       >
                         {st.student_name}
                       </Link>
+                    </td>
+                    <td className="py-3 px-4 font-mono text-slate-700 font-medium whitespace-nowrap">
+                      {st.register_number ? st.register_number : <span className="text-slate-400 font-mono">—</span>}
                     </td>
                     <td className="py-3 px-4 whitespace-nowrap">
                       <div className="flex items-center gap-1.5 font-mono text-slate-800">
@@ -675,10 +680,10 @@ export default function CodeChefContestDetailPage({ params }: PageProps) {
                       {st.profile_rank ? `#${st.profile_rank.toLocaleString()}` : 'Inactive'}
                     </td>
                     <td className="py-3 px-4 text-center font-mono text-slate-500 whitespace-nowrap">
-                      {st.country_rank ? `#${st.country_rank.toLocaleString()}` : 'Inactive'}
+                      {st.contest_rank ? `#${st.contest_rank.toLocaleString()}` : '—'}
                     </td>
-                    <td className="py-3 px-4 text-right text-slate-400 text-[11px] whitespace-nowrap">
-                      {st.last_sync ? new Date(st.last_sync).toLocaleDateString() : 'Pending'}
+                    <td className="py-3 px-4 text-center font-mono text-slate-500 whitespace-nowrap">
+                      {st.country_rank ? `#${st.country_rank.toLocaleString()}` : 'Inactive'}
                     </td>
                   </tr>
                 ))}
