@@ -597,29 +597,20 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
-                  <th className="py-3 px-4">
-                    <div>Student Name</div>
-                  </th>
-                  <th className="py-3 px-4">Register Number</th>
-                  <th className="py-3 px-4">LeetCode Username</th>
-                  <th className="py-3 px-4 text-center">Contest Status</th>
-                  <th className="py-3 px-4 text-center bg-blue-50/50 text-blue-900 border-x border-blue-100">
+                  <th className="py-3.5 px-4 w-[28%] sm:w-[26%]">Student Name</th>
+                  <th className="py-3.5 px-4 w-[20%] sm:w-[18%]">Register Number</th>
+                  <th className="py-3.5 px-4 w-[22%] sm:w-[22%]">LeetCode Username</th>
+                  <th className="py-3.5 px-4 text-center w-[16%] sm:w-[18%]">Contest Status</th>
+                  <th className="py-3.5 px-4 text-center bg-blue-50/50 text-blue-900 border-l border-blue-100 w-[14%] sm:w-[16%]">
                     Contest Problems Solved
                   </th>
-                  <th className="py-3 px-4 text-center">Contest Rank</th>
-                  <th className="py-3 px-4 text-center">Total Solved</th>
-                  <th className="py-3 px-4 text-center">Easy</th>
-                  <th className="py-3 px-4 text-center">Medium</th>
-                  <th className="py-3 px-4 text-center">Hard</th>
-                  <th className="py-3 px-4 text-center">Accepted</th>
-                  <th className="py-3 px-4 text-center">Contest Rating</th>
-                  <th className="py-3 px-4 text-center">Profile Rank</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-700">
                 {filteredList.map((st, idx) => (
                   <tr key={idx} className="hover:bg-slate-50/70 transition">
-                    <td className="py-3 px-4 font-semibold text-slate-900 whitespace-nowrap">
+                    {/* 1. Student Name */}
+                    <td className="py-3.5 px-4 font-semibold text-slate-900 whitespace-nowrap">
                       <Link
                         href={`/students/${st.student_id}?platform=leetcode`}
                         className="hover:text-amber-600 hover:underline transition"
@@ -627,10 +618,14 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
                         {st.student_name}
                       </Link>
                     </td>
-                    <td className="py-3 px-4 font-mono text-slate-700 font-medium whitespace-nowrap">
+
+                    {/* 2. Register Number */}
+                    <td className="py-3.5 px-4 font-mono text-slate-700 font-medium whitespace-nowrap">
                       {st.register_number ? st.register_number : <span className="text-slate-400 font-mono">—</span>}
                     </td>
-                    <td className="py-3 px-4 whitespace-nowrap">
+
+                    {/* 3. LeetCode Username */}
+                    <td className="py-3.5 px-4 whitespace-nowrap">
                       <div className="flex items-center gap-1.5 font-mono text-slate-800">
                         <span>{st.username}</span>
                         {st.public_profile_url && (
@@ -646,51 +641,31 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
                         )}
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-center whitespace-nowrap">
+
+                    {/* 4. Contest Status */}
+                    <td className="py-3.5 px-4 text-center whitespace-nowrap">
                       {st.participation_status === 'attended' ? (
-                        <span className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded text-[11px] font-semibold border border-emerald-200">
+                        <span className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded text-[11px] font-semibold border border-emerald-200">
                           <CheckCircle2 className="w-3 h-3" /> Attended
                         </span>
                       ) : st.participation_status === 'pending_verification' ? (
-                        <span className="inline-flex items-center gap-1 text-blue-700 bg-blue-50 px-2 py-0.5 rounded text-[11px] font-semibold border border-blue-200">
+                        <span className="inline-flex items-center gap-1 text-blue-700 bg-blue-50 px-2.5 py-1 rounded text-[11px] font-semibold border border-blue-200">
                           <Clock className="w-3 h-3" /> Pending Verification
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-slate-600 bg-slate-50 px-2 py-0.5 rounded text-[11px] font-semibold border border-slate-200">
+                        <span className="inline-flex items-center gap-1 text-slate-600 bg-slate-50 px-2.5 py-1 rounded text-[11px] font-semibold border border-slate-200">
                           <XCircle className="w-3 h-3" /> Absent
                         </span>
                       )}
                     </td>
-                    <td className="py-3 px-4 text-center font-bold text-base bg-blue-50/30 text-blue-900 border-x border-blue-100/60 font-mono">
+
+                    {/* 5. Contest Problems Solved */}
+                    <td className="py-3.5 px-4 text-center font-bold text-base bg-blue-50/30 text-blue-900 border-l border-blue-100/60 font-mono">
                       {st.participation_status === 'attended'
                         ? st.contest_problems_solved !== null
                           ? `${st.contest_problems_solved} / ${st.contest_total_problems || 4}`
                           : '—'
                         : '—'}
-                    </td>
-                    <td className="py-3 px-4 text-center font-mono font-bold text-slate-800 whitespace-nowrap">
-                      {st.contest_rank ? `#${st.contest_rank.toLocaleString()}` : '—'}
-                    </td>
-                    <td className="py-3 px-4 text-center font-semibold text-slate-900">
-                      {st.lifetime_total_solved !== null ? st.lifetime_total_solved : '—'}
-                    </td>
-                    <td className="py-3 px-4 text-center text-emerald-600 font-medium">
-                      {st.easy_solved !== null ? st.easy_solved : '—'}
-                    </td>
-                    <td className="py-3 px-4 text-center text-amber-600 font-medium">
-                      {st.medium_solved !== null ? st.medium_solved : '—'}
-                    </td>
-                    <td className="py-3 px-4 text-center text-red-600 font-medium">
-                      {st.hard_solved !== null ? st.hard_solved : '—'}
-                    </td>
-                    <td className="py-3 px-4 text-center font-mono">
-                      {st.accepted_submissions !== null ? st.accepted_submissions : '—'}
-                    </td>
-                    <td className="py-3 px-4 text-center font-bold font-mono">
-                      {st.contest_rating ? Math.round(st.contest_rating) : '—'}
-                    </td>
-                    <td className="py-3 px-4 text-center font-mono text-slate-500 whitespace-nowrap">
-                      {st.profile_rank ? `#${st.profile_rank.toLocaleString()}` : '—'}
                     </td>
                   </tr>
                 ))}

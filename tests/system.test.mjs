@@ -1196,76 +1196,53 @@ describe('CodeTrack Full System & Zero Fake Data Verification Suite', () => {
   });
 
   test('26. CodeChef & LeetCode Analytics Table: Column Ordering, Last Sync Removal & Register Number Mapping', () => {
-    // 1. Verify CodeChef exact required columns in exact order
+    // 1. Verify CodeChef exact required columns in exact order (exactly 5 columns)
     const codeChefExpectedColumns = [
-      'Student Name',
+      'Name',
       'Register Number',
       'CodeChef Username',
       'Participation Status',
       'Contest Problems Solved',
-      'Total Solved',
-      'Contest Rating',
-      'Highest Rating',
-      'Global Rank',
-      'Current Rank',
-      'Country Rank',
     ];
 
-    // Verify 'Last Sync' is completely absent
-    assert.strictEqual(codeChefExpectedColumns.includes('Last Sync'), false, 'Last Sync must be removed from CodeChef');
-    assert.strictEqual(codeChefExpectedColumns.length, 11);
-    assert.strictEqual(codeChefExpectedColumns[0], 'Student Name');
+    // Verify completely removed columns from CodeChef
+    assert.strictEqual(codeChefExpectedColumns.includes('Total Solved'), false, 'Total Solved must be removed');
+    assert.strictEqual(codeChefExpectedColumns.includes('Contest Rating'), false, 'Contest Rating must be removed');
+    assert.strictEqual(codeChefExpectedColumns.includes('Highest Rating'), false, 'Highest Rating must be removed');
+    assert.strictEqual(codeChefExpectedColumns.includes('Global Rank'), false, 'Global Rank must be removed');
+    assert.strictEqual(codeChefExpectedColumns.includes('Current Rank'), false, 'Current Rank must be removed');
+    assert.strictEqual(codeChefExpectedColumns.includes('Country Rank'), false, 'Country Rank must be removed');
+    assert.strictEqual(codeChefExpectedColumns.length, 5, 'CodeChef Analytics table must contain exactly 5 columns');
+    assert.strictEqual(codeChefExpectedColumns[0], 'Name');
     assert.strictEqual(codeChefExpectedColumns[1], 'Register Number');
     assert.strictEqual(codeChefExpectedColumns[2], 'CodeChef Username');
     assert.strictEqual(codeChefExpectedColumns[3], 'Participation Status');
     assert.strictEqual(codeChefExpectedColumns[4], 'Contest Problems Solved');
-    assert.strictEqual(codeChefExpectedColumns[5], 'Total Solved');
-    assert.strictEqual(codeChefExpectedColumns[6], 'Contest Rating');
-    assert.strictEqual(codeChefExpectedColumns[7], 'Highest Rating');
-    assert.strictEqual(codeChefExpectedColumns[8], 'Global Rank');
-    assert.strictEqual(codeChefExpectedColumns[9], 'Current Rank');
-    assert.strictEqual(codeChefExpectedColumns[10], 'Country Rank');
 
-    // Current Rank and Country Rank are separate columns in the specified order
-    const currentRankIdx = codeChefExpectedColumns.indexOf('Current Rank');
-    const countryRankIdx = codeChefExpectedColumns.indexOf('Country Rank');
-    assert.strictEqual(currentRankIdx, 9, 'Current Rank must be at index 9');
-    assert.strictEqual(countryRankIdx, 10, 'Country Rank must be at index 10');
-    assert.strictEqual(countryRankIdx > currentRankIdx, true, 'Country Rank must follow Current Rank');
-
-    // 2. Verify LeetCode exact required columns in exact order
+    // 2. Verify LeetCode exact required columns in exact order (exactly 5 columns)
     const leetCodeExpectedColumns = [
       'Student Name',
       'Register Number',
       'LeetCode Username',
       'Contest Status',
       'Contest Problems Solved',
-      'Contest Rank',
-      'Total Solved',
-      'Easy',
-      'Medium',
-      'Hard',
-      'Accepted',
-      'Contest Rating',
-      'Profile Rank',
     ];
 
-    // Verify 'Last Sync' is completely absent
-    assert.strictEqual(leetCodeExpectedColumns.includes('Last Sync'), false, 'Last Sync must be removed from LeetCode');
-    assert.strictEqual(leetCodeExpectedColumns.length, 13);
+    // Verify completely removed columns from LeetCode
+    assert.strictEqual(leetCodeExpectedColumns.includes('Contest Rank'), false, 'Contest Rank must be removed');
+    assert.strictEqual(leetCodeExpectedColumns.includes('Total Solved'), false, 'Total Solved must be removed');
+    assert.strictEqual(leetCodeExpectedColumns.includes('Easy'), false, 'Easy must be removed');
+    assert.strictEqual(leetCodeExpectedColumns.includes('Medium'), false, 'Medium must be removed');
+    assert.strictEqual(leetCodeExpectedColumns.includes('Hard'), false, 'Hard must be removed');
+    assert.strictEqual(leetCodeExpectedColumns.includes('Accepted'), false, 'Accepted must be removed');
+    assert.strictEqual(leetCodeExpectedColumns.includes('Contest Rating'), false, 'Contest Rating must be removed');
+    assert.strictEqual(leetCodeExpectedColumns.includes('Profile Rank'), false, 'Profile Rank must be removed');
+    assert.strictEqual(leetCodeExpectedColumns.length, 5, 'LeetCode Analytics table must contain exactly 5 columns');
     assert.strictEqual(leetCodeExpectedColumns[0], 'Student Name');
     assert.strictEqual(leetCodeExpectedColumns[1], 'Register Number');
     assert.strictEqual(leetCodeExpectedColumns[2], 'LeetCode Username');
     assert.strictEqual(leetCodeExpectedColumns[3], 'Contest Status');
     assert.strictEqual(leetCodeExpectedColumns[4], 'Contest Problems Solved');
-    assert.strictEqual(leetCodeExpectedColumns[5], 'Contest Rank');
-    assert.strictEqual(leetCodeExpectedColumns[6], 'Total Solved');
-    assert.strictEqual(leetCodeExpectedColumns[7], 'Easy');
-    assert.strictEqual(leetCodeExpectedColumns[8], 'Medium');
-    assert.strictEqual(leetCodeExpectedColumns[9], 'Hard');
-    assert.strictEqual(leetCodeExpectedColumns[10], 'Accepted');
-    assert.strictEqual(leetCodeExpectedColumns[11], 'Contest Rating');
-    assert.strictEqual(leetCodeExpectedColumns[12], 'Profile Rank');
 
     // 3. Register number mapping from student database records (not platform username or mock)
     const mockStudent = {
