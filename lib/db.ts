@@ -125,13 +125,6 @@ export async function createUser(profile: {
     throw new Error(`Failed to create user profile: ${error?.message || 'Unknown error'}`);
   }
 
-  // Auto-associate student with matching classrooms if class_name is provided
-  if (data.role === 'student' && data.class_name) {
-    try {
-      await syncStudentClassroomMemberships(data.id, data.class_name, data.section);
-    } catch {}
-  }
-
   return data as UserProfile;
 }
 
@@ -181,90 +174,7 @@ export async function updateStudentProfile(
 
   if (error || !data) return null;
 
-  // Auto-associate with classrooms matching class_name and section
-  if (payload.class_name) {
-    try {
-      await syncStudentClassroomMemberships(id, payload.class_name, payload.section);
-    } catch {}
-  }
-
   return data as UserProfile;
-}
-
-export async function syncStudentClassroomMemberships(
-  studentId: string,
-  className?: string | null,
-  section?: string | null
-): Promise<void> {
-  if (!className || !className.trim()) return;
-  const supabase = getSupabase();
-  const cleanClass = className.trim().toLowerCase();
-  const cleanSection = section ? section.trim().toLowerCase() : '';
-
-  const { data: classrooms } = await supabase
-    .from('classrooms')
-    .select('id, name, course, section')
-    .is('archived_at', null);
-
-  if (!classrooms || classrooms.length === 0) return;
-
-  for (const c of classrooms) {
-    const courseMatch = c.course && c.course.trim().toLowerCase() === cleanClass;
-    const nameMatch = c.name && c.name.trim().toLowerCase() === cleanClass;
-    if (courseMatch || nameMatch) {
-      if (!cleanSection || !c.section || c.section.trim().toLowerCase() === cleanSection) {
-        try {
-          await joinClassroom(c.id, studentId);
-        } catch {}
-      }
-    }
-  }
-}
-
-export async function syncClassroomMatchingStudents(classroomId: string): Promise<void> {
-  const supabase = getSupabase();
-  const { data: classroom } = await supabase
-    .from('classrooms')
-    .select('*')
-    .eq('id', classroomId)
-    .maybeSingle();
-
-  if (!classroom) return;
-  const { data: students } = await supabase
-    .from('user_profiles')
-    .select('id, class_name, section')
-    .eq('role', 'student');
-
-  if (!students || students.length === 0) return;
-
-  const targetCourse = classroom.course ? classroom.course.trim().toLowerCase() : '';
-  const targetName = classroom.name ? classroom.name.trim().toLowerCase() : '';
-  const targetSection = classroom.section ? classroom.section.trim().toLowerCase() : '';
-
-  for (const s of students) {
-    if (!s.class_name) continue;
-    const studentClass = s.class_name.trim().toLowerCase();
-    const studentSection = s.section ? s.section.trim().toLowerCase() : '';
-    const classMatches = (targetCourse && studentClass === targetCourse) || (targetName && studentClass === targetName);
-
-    if (classMatches) {
-      if (!targetSection || !studentSection || targetSection === studentSection) {
-        // Check if previously dropped before auto-joining
-        const { data: existing } = await supabase
-          .from('classroom_memberships')
-          .select('membership_status')
-          .eq('classroom_id', classroomId)
-          .eq('student_id', s.id)
-          .maybeSingle();
-
-        if (!existing) {
-          try {
-            await joinClassroom(classroomId, s.id);
-          } catch {}
-        }
-      }
-    }
-  }
 }
 
 // ----------------------------------------------------
@@ -320,10 +230,6 @@ export async function createClassroom(data: {
 }
 
 export async function getClassroomById(id: string): Promise<Classroom | null> {
-  try {
-    await syncClassroomMatchingStudents(id);
-  } catch {}
-
   const supabase = getSupabase();
   const { data, error } = await supabase
     .from('classrooms')
@@ -475,10 +381,10 @@ export async function joinClassroom(classroomId: string, studentId: string): Pro
     if (existing.membership_status !== 'enrolled') {
       await supabase
         .from('classroom_memberships')
-        .update({ membership_status: 'enrolled' })
+        .update({ membership_status: 'enrolled', joined_at: now })
         .eq('id', existing.id);
     }
-    return { ...existing, membership_status: 'enrolled' } as ClassroomMembership;
+    return { ...existing, membership_status: 'enrolled', joined_at: now } as ClassroomMembership;
   }
 
   const id = crypto.randomUUID();
@@ -514,10 +420,6 @@ export async function removeStudentFromClassroom(classroomId: string, studentId:
 }
 
 export async function isStudentInClassroom(classroomId: string, studentId: string): Promise<boolean> {
-  try {
-    await syncClassroomMatchingStudents(classroomId);
-  } catch {}
-
   const supabase = getSupabase();
   const { data, error } = await supabase
     .from('classroom_memberships')
@@ -532,10 +434,6 @@ export async function isStudentInClassroom(classroomId: string, studentId: strin
 }
 
 export async function getEnrolledStudents(classroomId: string): Promise<UserProfile[]> {
-  try {
-    await syncClassroomMatchingStudents(classroomId);
-  } catch {}
-
   const supabase = getSupabase();
   const { data: memberships, error: memError } = await supabase
     .from('classroom_memberships')

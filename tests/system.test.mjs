@@ -1292,6 +1292,188 @@ describe('CodeTrack Full System & Zero Fake Data Verification Suite', () => {
     assert.strictEqual(row.register_number, '2023CS101', 'Register number must come from student profile record');
     assert.notStrictEqual(row.register_number, row.username, 'Register number must not be substituted by platform username');
   });
+
+  test('27. Classroom Removal, Profile Decoupling, and Join Code Rejoin Enforcement', () => {
+    const now = new Date().toISOString();
+
+    // Setup: 2 classrooms and 1 student enrolled in both
+    const classAId = 'c-math-101';
+    const classBId = 'c-physics-201';
+    const studentId = 'u-student-rohit';
+
+    db.prepare(`
+      INSERT OR IGNORE INTO user_profiles (id, auth_user_id, email, display_name, role, register_number, class_name, section, profile_completed, created_at, updated_at)
+      VALUES (?, ?, ?, ?, 'student', ?, ?, ?, 1, ?, ?)
+    `).run(studentId, 'auth-rohit', 'rohit@college.edu', 'Rohit Sharma', '2026CS501', 'Mathematics', 'A', now, now);
+
+    db.prepare(`
+      INSERT OR IGNORE INTO classrooms (id, owner_teacher_id, name, course, batch, department, academic_year, section, join_code, join_code_hash, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(classAId, 'u-teacher-1', 'Advanced Mathematics', 'Mathematics', '2026', 'Mathematics', '2026-2027', 'A', 'MATH-JOIN-101', 'hash-math', now, now);
+
+    db.prepare(`
+      INSERT OR IGNORE INTO classrooms (id, owner_teacher_id, name, course, batch, department, academic_year, section, join_code, join_code_hash, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(classBId, 'u-teacher-1', 'Classical Physics', 'Physics', '2026', 'Physics', '2026-2027', 'A', 'PHYS-JOIN-201', 'hash-phys', now, now);
+
+    // Initial enrollment in both classrooms
+    db.prepare(`
+      INSERT OR REPLACE INTO classroom_memberships (id, classroom_id, student_id, joined_at, membership_status)
+      VALUES (?, ?, ?, ?, 'enrolled')
+    `).run('mem-rohit-a', classAId, studentId, now);
+
+    db.prepare(`
+      INSERT OR REPLACE INTO classroom_memberships (id, classroom_id, student_id, joined_at, membership_status)
+      VALUES (?, ?, ?, ?, 'enrolled')
+    `).run('mem-rohit-b', classBId, studentId, now);
+
+    // Helper functions modeling backend queries
+    function getEnrolledCount(classId) {
+      return db.prepare("SELECT COUNT(*) as count FROM classroom_memberships WHERE classroom_id = ? AND membership_status = 'enrolled'").get(classId).count;
+    }
+
+    function getEnrolledStudents(classId) {
+      return db.prepare(`
+        SELECT u.id, u.display_name, u.email
+        FROM classroom_memberships cm
+        JOIN user_profiles u ON u.id = cm.student_id
+        WHERE cm.classroom_id = ? AND cm.membership_status = 'enrolled'
+      `).all(classId);
+    }
+
+    function getStudentClassrooms(stId) {
+      return db.prepare(`
+        SELECT c.id, c.name, c.join_code
+        FROM classroom_memberships cm
+        JOIN classrooms c ON c.id = cm.classroom_id
+        WHERE cm.student_id = ? AND cm.membership_status = 'enrolled'
+      `).all(stId);
+    }
+
+    // Verify initial enrolled state
+    assert.strictEqual(getEnrolledCount(classAId), 1);
+    assert.strictEqual(getEnrolledCount(classBId), 1);
+    assert.strictEqual(getStudentClassrooms(studentId).length, 2);
+
+    // ----------------------------------------------------
+    // TEST 1: Teacher removes student from classroom A
+    // ----------------------------------------------------
+    function removeStudent(classId, stId) {
+      db.prepare(`
+        UPDATE classroom_memberships
+        SET membership_status = 'dropped'
+        WHERE classroom_id = ? AND student_id = ?
+      `).run(classId, stId);
+    }
+
+    removeStudent(classAId, studentId);
+
+    // Verified: Enrolled count for classroom A is 0, student is not in enrolled list
+    assert.strictEqual(getEnrolledCount(classAId), 0, 'Classroom A student count must be 0 after removal');
+    assert.strictEqual(getEnrolledStudents(classAId).length, 0, 'Classroom A enrolled student list must be empty');
+
+    // Multi-classroom isolation: Valid enrollment in classroom B is untouched!
+    assert.strictEqual(getEnrolledCount(classBId), 1, 'Classroom B student count must remain 1');
+    assert.strictEqual(getStudentClassrooms(studentId).length, 1, 'Student must still be enrolled in Classroom B');
+    assert.strictEqual(getStudentClassrooms(studentId)[0].id, classBId);
+
+    // Student account is not deleted
+    const profile = db.prepare('SELECT * FROM user_profiles WHERE id = ?').get(studentId);
+    assert(profile, 'Student account must not be deleted');
+
+    // ----------------------------------------------------
+    // TEST 2: Student saves their profile in Settings → Profile
+    // ----------------------------------------------------
+    function updateStudentProfile(stId, updates) {
+      const ts = new Date().toISOString();
+      db.prepare(`
+        UPDATE user_profiles
+        SET display_name = ?, register_number = ?, class_name = ?, section = ?, updated_at = ?
+        WHERE id = ?
+      `).run(updates.display_name, updates.register_number, updates.class_name, updates.section, ts, stId);
+      // NOTE: Profile update must NOT call any auto-enrollment or membership sync functions
+    }
+
+    // Student updates profile with details that match Classroom A's course name
+    updateStudentProfile(studentId, {
+      display_name: 'Rohit Sharma (Updated)',
+      register_number: '2026CS501-REV',
+      class_name: 'Mathematics',
+      section: 'A',
+    });
+
+    const updatedProfile = db.prepare('SELECT * FROM user_profiles WHERE id = ?').get(studentId);
+    assert.strictEqual(updatedProfile.display_name, 'Rohit Sharma (Updated)');
+    assert.strictEqual(updatedProfile.register_number, '2026CS501-REV');
+
+    // CRITICAL: Student MUST REMAIN UNENROLLED from Classroom A after profile save
+    assert.strictEqual(getEnrolledCount(classAId), 0, 'Classroom A student count must remain 0 after profile update');
+    assert.strictEqual(getEnrolledStudents(classAId).length, 0, 'Classroom A enrolled list must remain 0 after profile update');
+    assert.strictEqual(getStudentClassrooms(studentId).length, 1, 'Student must not be re-enrolled into Classroom A on profile update');
+
+    // ----------------------------------------------------
+    // TEST 3: Student logs in again (session restoration / page refresh)
+    // ----------------------------------------------------
+    const loggedInStudentClassrooms = getStudentClassrooms(studentId);
+    assert.strictEqual(loggedInStudentClassrooms.length, 1, 'Removed classroom must not appear on student login/refresh');
+    assert.strictEqual(loggedInStudentClassrooms[0].id, classBId);
+
+    // ----------------------------------------------------
+    // TEST 4: Student attempts to rejoin without a code or with invalid code
+    // ----------------------------------------------------
+    function joinClassroomWithValidation(stId, code) {
+      if (!code || !code.trim()) {
+        return { success: false, error: 'Join code is required' };
+      }
+      const cls = db.prepare('SELECT * FROM classrooms WHERE join_code = ?').get(code.trim());
+      if (!cls) {
+        return { success: false, error: 'Invalid or expired classroom join code' };
+      }
+
+      // Re-enroll or insert
+      const existing = db.prepare('SELECT * FROM classroom_memberships WHERE classroom_id = ? AND student_id = ?').get(cls.id, stId);
+      const joinTs = new Date().toISOString();
+      if (existing) {
+        if (existing.membership_status !== 'enrolled') {
+          db.prepare("UPDATE classroom_memberships SET membership_status = 'enrolled', joined_at = ? WHERE id = ?").run(joinTs, existing.id);
+        }
+      } else {
+        db.prepare("INSERT INTO classroom_memberships (id, classroom_id, student_id, joined_at, membership_status) VALUES (?, ?, ?, ?, 'enrolled')")
+          .run(crypto.randomUUID(), cls.id, stId, joinTs);
+      }
+      return { success: true, classroom: cls };
+    }
+
+    const noCodeResult = joinClassroomWithValidation(studentId, '');
+    assert.strictEqual(noCodeResult.success, false);
+    assert.strictEqual(noCodeResult.error, 'Join code is required');
+    assert.strictEqual(getEnrolledCount(classAId), 0, 'Classroom A must still have 0 enrolled students');
+
+    const invalidCodeResult = joinClassroomWithValidation(studentId, 'WRONG-CODE-999');
+    assert.strictEqual(invalidCodeResult.success, false);
+    assert.strictEqual(invalidCodeResult.error, 'Invalid or expired classroom join code');
+    assert.strictEqual(getEnrolledCount(classAId), 0, 'Classroom A must still have 0 enrolled students');
+
+    // ----------------------------------------------------
+    // TEST 5: Student rejoins with a valid code
+    // ----------------------------------------------------
+    const validCodeResult = joinClassroomWithValidation(studentId, 'MATH-JOIN-101');
+    assert.strictEqual(validCodeResult.success, true);
+    assert.strictEqual(validCodeResult.classroom.id, classAId);
+
+    // Classroom count and enrolled roster are correctly updated
+    assert.strictEqual(getEnrolledCount(classAId), 1, 'Classroom A count must now be 1 after valid rejoin');
+    assert.strictEqual(getEnrolledStudents(classAId).length, 1);
+    assert.strictEqual(getEnrolledStudents(classAId)[0].id, studentId);
+    assert.strictEqual(getStudentClassrooms(studentId).length, 2, 'Student should now have 2 active classrooms');
+
+    // Duplicate join attempts do not create duplicate rows
+    const duplicateJoinResult = joinClassroomWithValidation(studentId, 'MATH-JOIN-101');
+    assert.strictEqual(duplicateJoinResult.success, true);
+    assert.strictEqual(getEnrolledCount(classAId), 1, 'Count must remain 1 after repeated join attempts');
+    const totalMemberRows = db.prepare('SELECT COUNT(*) as count FROM classroom_memberships WHERE classroom_id = ? AND student_id = ?').get(classAId, studentId).count;
+    assert.strictEqual(totalMemberRows, 1, 'Duplicate enrollment rows must be prevented');
+  });
 });
 
 
