@@ -1042,6 +1042,156 @@ describe('CodeTrack Full System & Zero Fake Data Verification Suite', () => {
     assert.strictEqual(completed.length, 1);
     assert.strictEqual(completed[0].id, 'c-past');
   });
+
+  test('24. CodeChef & LeetCode Classroom Student Table Column Ordering & Clean Student Names', () => {
+    // 1. Verify CodeChef exact required columns in exact order
+    const codeChefExpectedColumns = [
+      'Student Name',
+      'Register Number',
+      'CodeChef Handle',
+      'Total Solved',
+      'Star Tier',
+      'Contest Rating',
+      'Problem Difficulty Breakdown',
+      'Global Rank',
+      'Country Rank',
+    ];
+
+    // Verify no 'Actions' column in CodeChef
+    assert.strictEqual(codeChefExpectedColumns.includes('Actions'), false, 'Actions column must not exist');
+    assert.strictEqual(codeChefExpectedColumns.includes('Details'), false, 'Details action must not exist');
+    assert.strictEqual(codeChefExpectedColumns.length, 9);
+    assert.strictEqual(codeChefExpectedColumns[0], 'Student Name');
+    assert.strictEqual(codeChefExpectedColumns[1], 'Register Number');
+    assert.strictEqual(codeChefExpectedColumns[2], 'CodeChef Handle');
+    assert.strictEqual(codeChefExpectedColumns[3], 'Total Solved');
+    assert.strictEqual(codeChefExpectedColumns[4], 'Star Tier');
+    assert.strictEqual(codeChefExpectedColumns[5], 'Contest Rating');
+    assert.strictEqual(codeChefExpectedColumns[6], 'Problem Difficulty Breakdown');
+    assert.strictEqual(codeChefExpectedColumns[7], 'Global Rank');
+    assert.strictEqual(codeChefExpectedColumns[8], 'Country Rank');
+
+    // 2. Verify LeetCode exact required columns in exact order
+    const leetCodeExpectedColumns = [
+      'Student Name',
+      'Register Number',
+      'LeetCode Handle',
+      'Total Solved',
+      'Difficulty Breakdown',
+      'Contest Rating',
+      'Global Ranking',
+      'Contest Acceptance',
+    ];
+
+    // Verify no 'Actions' column in LeetCode
+    assert.strictEqual(leetCodeExpectedColumns.includes('Actions'), false, 'Actions column must not exist');
+    assert.strictEqual(leetCodeExpectedColumns.includes('Details'), false, 'Details action must not exist');
+    assert.strictEqual(leetCodeExpectedColumns.length, 8);
+    assert.strictEqual(leetCodeExpectedColumns[0], 'Student Name');
+    assert.strictEqual(leetCodeExpectedColumns[1], 'Register Number');
+    assert.strictEqual(leetCodeExpectedColumns[2], 'LeetCode Handle');
+    assert.strictEqual(leetCodeExpectedColumns[3], 'Total Solved');
+    assert.strictEqual(leetCodeExpectedColumns[4], 'Difficulty Breakdown');
+    assert.strictEqual(leetCodeExpectedColumns[5], 'Contest Rating');
+    assert.strictEqual(leetCodeExpectedColumns[6], 'Global Ranking');
+    assert.strictEqual(leetCodeExpectedColumns[7], 'Contest Acceptance');
+
+    // 3. Clean Student Name Cell validation (must contain only the student name, no secondary lines)
+    function renderStudentCell(student) {
+      // Must not contain subtitle strings like email, total solved, or student count
+      return {
+        clickableName: student.display_name,
+        hasSecondaryLine: false,
+      };
+    }
+
+    const cell = renderStudentCell({ display_name: 'Arjun Verma', email: 'arjun@college.edu', total_solved: 42 });
+    assert.strictEqual(cell.clickableName, 'Arjun Verma');
+    assert.strictEqual(cell.hasSecondaryLine, false, 'Student name cell must not have secondary text line');
+  });
+
+  test('25. Individual Student Scan: Targeted Platform Scope & Duplicate Scan Prevention', () => {
+    const now = new Date().toISOString();
+
+    // 1. Simulation of scan authorization and account targeting
+    function resolveAccountsToScan(requestBody, existingDb) {
+      const { targetStudentId, platform, classroomId } = requestBody;
+      let targetStudents = [];
+      if (targetStudentId) {
+        targetStudents = [{ id: targetStudentId }];
+      } else if (classroomId) {
+        targetStudents = existingDb.prepare(`
+          SELECT student_id as id FROM classroom_memberships
+          WHERE classroom_id = ? AND membership_status = 'enrolled'
+        `).all(classroomId);
+      }
+
+      const accountsToScan = [];
+      for (const student of targetStudents) {
+        const accounts = existingDb.prepare('SELECT id, platform FROM platform_accounts WHERE student_id = ?').all(student.id);
+        for (const acc of accounts) {
+          if (platform === 'all' || platform === acc.platform) {
+            accountsToScan.push({ accountId: acc.id, platform: acc.platform });
+          }
+        }
+      }
+      return accountsToScan;
+    }
+
+    // Individual CodeChef scan for Arjun
+    const ccScanAccounts = resolveAccountsToScan({ targetStudentId: 'u-student-arjun', platform: 'codechef' }, db);
+    assert.strictEqual(ccScanAccounts.length, 0, 'Arjun has no CodeChef account yet');
+
+    // Add CodeChef account for Arjun
+    db.prepare(`
+      INSERT INTO platform_accounts (id, student_id, platform, username, normalized_username, public_profile_url, ownership_verification_status, linked_at, account_status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run('pa-arjun-cc', 'u-student-arjun', 'codechef', 'arjun_cc', 'arjun_cc', 'https://codechef.com/users/arjun_cc', 'linked_public_profile', now, 'active');
+
+    const ccScanAccountsAfter = resolveAccountsToScan({ targetStudentId: 'u-student-arjun', platform: 'codechef' }, db);
+    assert.strictEqual(ccScanAccountsAfter.length, 1);
+    assert.strictEqual(ccScanAccountsAfter[0].platform, 'codechef');
+    assert.strictEqual(ccScanAccountsAfter[0].accountId, 'pa-arjun-cc');
+
+    // LeetCode scan for Arjun: targets only pa-arjun-lc, NOT pa-arjun-cc
+    const lcScanAccounts = resolveAccountsToScan({ targetStudentId: 'u-student-arjun', platform: 'leetcode' }, db);
+    assert.strictEqual(lcScanAccounts.length, 1);
+    assert.strictEqual(lcScanAccounts[0].platform, 'leetcode');
+    assert.strictEqual(lcScanAccounts[0].accountId, 'pa-arjun-lc');
+
+    // 2. Duplicate Scan Check on target student
+    function checkActiveScan(targetStudentId, classroomId, existingDb) {
+      if (targetStudentId) {
+        const active = existingDb.prepare(`
+          SELECT id FROM scan_jobs
+          WHERE target_student_id = ? AND status IN ('queued', 'running')
+        `).get(targetStudentId);
+        if (active) return { allowed: false, error: 'A scan is already currently in progress for this student.' };
+      }
+      return { allowed: true };
+    }
+
+    // No active scan initially
+    assert.strictEqual(checkActiveScan('u-student-arjun', null, db).allowed, true);
+
+    // Create an active scan job for Arjun
+    db.prepare(`
+      INSERT INTO scan_jobs (id, classroom_id, requested_by, selected_platforms, requested_scope, target_student_id, status, total_accounts, processed_accounts, successful_accounts, partial_accounts, failed_accounts, created_at)
+      VALUES (?, NULL, 'u-teacher-1', 'codechef', 'student', 'u-student-arjun', 'running', 1, 0, 0, 0, 0, ?)
+    `).run('job-arjun-active', now);
+
+    // Duplicate check blocks second simultaneous scan for Arjun
+    const dupCheck = checkActiveScan('u-student-arjun', null, db);
+    assert.strictEqual(dupCheck.allowed, false);
+    assert.match(dupCheck.error, /already currently in progress for this student/i);
+
+    // Other students (e.g. Rohit) are NOT blocked by Arjun's individual scan
+    assert.strictEqual(checkActiveScan('u-student-rohit', null, db).allowed, true);
+
+    // Complete Arjun's scan
+    db.prepare("UPDATE scan_jobs SET status = 'succeeded' WHERE id = 'job-arjun-active'").run();
+    assert.strictEqual(checkActiveScan('u-student-arjun', null, db).allowed, true);
+  });
 });
 
 

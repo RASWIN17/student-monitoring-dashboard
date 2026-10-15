@@ -595,11 +595,6 @@ export default function CodeChefContestDetailPage({ params }: PageProps) {
                 <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
                   <th className="py-3 px-4">
                     <div>Student Name</div>
-                    {solvedFilter !== null && (
-                      <div className="text-[10px] font-normal normal-case text-orange-700 mt-0.5 whitespace-nowrap">
-                        Total number of students solved {solvedFilter} {solvedFilter === 1 ? 'problem' : 'problems'} ({totalSolvedCount})
-                      </div>
-                    )}
                   </th>
                   <th className="py-3 px-4">CodeChef Username</th>
                   <th className="py-3 px-4 text-center">Participation Status</th>
@@ -618,7 +613,12 @@ export default function CodeChefContestDetailPage({ params }: PageProps) {
                 {filteredList.map((st, idx) => (
                   <tr key={idx} className="hover:bg-slate-50/70 transition">
                     <td className="py-3 px-4 font-semibold text-slate-900 whitespace-nowrap">
-                      {st.student_name}
+                      <Link
+                        href={`/students/${st.student_id}?platform=codechef`}
+                        className="hover:text-orange-600 hover:underline transition"
+                      >
+                        {st.student_name}
+                      </Link>
                     </td>
                     <td className="py-3 px-4 whitespace-nowrap">
                       <div className="flex items-center gap-1.5 font-mono text-slate-800">

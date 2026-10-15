@@ -8,6 +8,7 @@ import {
   createScanJobItem,
   getScanJobsForClassroom,
   logAuditAction,
+  getClassroomsForStudent,
 } from '@/lib/db';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { ScanEngine } from '@/lib/connectors/scanner';
@@ -50,6 +51,12 @@ export async function POST(req: Request) {
       if (classroom.owner_teacher_id !== user.id && user.role !== 'admin') {
         return NextResponse.json({ error: 'Unauthorized to scan this classroom' }, { status: 403 });
       }
+    } else if (targetStudentId && user.role !== 'admin') {
+      const studentClassrooms = await getClassroomsForStudent(targetStudentId);
+      const teacherOwnsClassroom = studentClassrooms.some((c) => c.owner_teacher_id === user.id);
+      if (!teacherOwnsClassroom) {
+        return NextResponse.json({ error: 'Unauthorized to scan this student' }, { status: 403 });
+      }
     }
 
     // Check for duplicate active scans running right now
@@ -59,7 +66,9 @@ export async function POST(req: Request) {
       .select('id')
       .in('status', ['queued', 'running']);
 
-    if (classroomId) {
+    if (targetStudentId) {
+      activeQuery = activeQuery.eq('target_student_id', targetStudentId);
+    } else if (classroomId) {
       activeQuery = activeQuery.eq('classroom_id', classroomId);
     }
 
@@ -67,7 +76,11 @@ export async function POST(req: Request) {
 
     if (activeRunning && activeRunning.length > 0) {
       return NextResponse.json(
-        { error: 'A scan is already currently in progress for this classroom. Please wait for it to complete.' },
+        {
+          error: targetStudentId
+            ? 'A scan is already currently in progress for this student. Please wait for it to complete.'
+            : 'A scan is already currently in progress for this classroom. Please wait for it to complete.',
+        },
         { status: 429 }
       );
     }

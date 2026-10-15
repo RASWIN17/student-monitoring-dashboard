@@ -40,7 +40,7 @@ export type SortOption =
   | 'rating_asc'
   | 'name_asc';
 
-function getCodeChefStars(rating: number | null): string {
+export function getCodeChefStars(rating: number | null): string {
   if (rating === null || rating === undefined || rating <= 0) return 'Unrated';
   if (rating < 1400) return '1★';
   if (rating < 1600) return '2★';
@@ -83,7 +83,6 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
 
   // Scan modal state
   const [isScanClassroomOpen, setIsScanClassroomOpen] = useState(false);
-  const [scanStudent, setScanStudent] = useState<{ id: string; name: string } | null>(null);
 
   const platformDisplayName = platform === 'leetcode' ? 'LeetCode' : 'CodeChef';
   const platformSelectionUrl = `/students/${platform}`;
@@ -554,25 +553,26 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-slate-50/80 border-b border-slate-200 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
-                  <th className="py-3 px-4">Student</th>
-                  <th className="py-3 px-4">{platformDisplayName} Handle</th>
+                  <th className="py-3 px-4">Student Name</th>
+                  <th className="py-3 px-4">Register Number</th>
+                  <th className="py-3 px-4">{platform === 'leetcode' ? 'LeetCode Handle' : 'CodeChef Handle'}</th>
                   <th className="py-3 px-4">Total Solved</th>
                   {platform === 'leetcode' ? (
                     <>
                       <th className="py-3 px-4">Difficulty Breakdown</th>
                       <th className="py-3 px-4">Contest Rating</th>
-                      <th className="py-3 px-4">Global Rank</th>
-                      <th className="py-3 px-4">Contests / Acceptance</th>
+                      <th className="py-3 px-4">Global Ranking</th>
+                      <th className="py-3 px-4">Contest Acceptance</th>
                     </>
                   ) : (
                     <>
                       <th className="py-3 px-4">Star Tier</th>
                       <th className="py-3 px-4">Contest Rating</th>
-                      <th className="py-3 px-4">Peak Rating</th>
-                      <th className="py-3 px-4">Global / Country Rank</th>
+                      <th className="py-3 px-4">Problem Difficulty Breakdown</th>
+                      <th className="py-3 px-4">Global Rank</th>
+                      <th className="py-3 px-4">Country Rank</th>
                     </>
                   )}
-                  <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs">
@@ -589,26 +589,27 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
                       key={s.id}
                       className="hover:bg-slate-50/70 transition-colors group"
                     >
-                      {/* Student Name & Email */}
-                      <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-700 text-xs shrink-0">
-                            {s.display_name?.charAt(0).toUpperCase() || 'S'}
-                          </div>
-                          <div className="overflow-hidden">
-                            <Link
-                              href={`/students/${s.id}`}
-                              className="font-semibold text-slate-900 hover:text-blue-600 transition block truncate"
-                            >
-                              {s.display_name}
-                            </Link>
-                            <span className="text-[11px] text-slate-400 block truncate">{s.email}</span>
-                          </div>
-                        </div>
+                      {/* 1. Student Name: Clean, simple, clickable without any secondary line underneath */}
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <Link
+                          href={`/students/${s.id}?platform=${platform}&classroomId=${classroomId}`}
+                          className="font-semibold text-slate-900 hover:text-blue-600 transition truncate hover:underline"
+                        >
+                          {s.display_name}
+                        </Link>
                       </td>
 
-                      {/* Platform Handle */}
-                      <td className="py-3.5 px-4">
+                      {/* 2. Register Number */}
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        {s.register_number ? (
+                          <span className="font-mono text-slate-700 font-medium">{s.register_number}</span>
+                        ) : (
+                          <span className="text-slate-400 font-mono">—</span>
+                        )}
+                      </td>
+
+                      {/* 3. Platform Handle (LeetCode Handle / CodeChef Handle) */}
+                      <td className="py-3.5 px-4 whitespace-nowrap">
                         {isLinked ? (
                           <div className="flex items-center gap-1.5">
                             <a
@@ -631,8 +632,8 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
                         )}
                       </td>
 
-                      {/* Total Solved */}
-                      <td className="py-3.5 px-4">
+                      {/* 4. Total Solved */}
+                      <td className="py-3.5 px-4 whitespace-nowrap">
                         {totalSolved != null ? (
                           <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-extrabold bg-blue-50 text-blue-700 border border-blue-200">
                             {totalSolved.toLocaleString()}
@@ -642,11 +643,11 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
                         )}
                       </td>
 
-                      {/* LeetCode Specific Columns */}
+                      {/* LeetCode Specific Columns (5 to 8) */}
                       {platform === 'leetcode' && (
                         <>
-                          {/* Difficulty Breakdown */}
-                          <td className="py-3.5 px-4">
+                          {/* 5. Difficulty Breakdown */}
+                          <td className="py-3.5 px-4 whitespace-nowrap">
                             {snap ? (
                               <div className="flex items-center gap-1.5 text-[11px]">
                                 <span
@@ -673,8 +674,8 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
                             )}
                           </td>
 
-                          {/* Contest Rating */}
-                          <td className="py-3.5 px-4 font-semibold text-slate-800">
+                          {/* 6. Contest Rating */}
+                          <td className="py-3.5 px-4 whitespace-nowrap font-semibold text-slate-800">
                             {snap?.contest_rating != null ? (
                               <span className="text-amber-700 font-mono font-bold">
                                 {Number(snap.contest_rating).toFixed(1)}
@@ -684,8 +685,8 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
                             )}
                           </td>
 
-                          {/* Global Rank */}
-                          <td className="py-3.5 px-4 text-slate-700">
+                          {/* 7. Global Ranking */}
+                          <td className="py-3.5 px-4 whitespace-nowrap text-slate-700">
                             {snap?.global_rank != null ? (
                               <span className="font-mono text-[11px]">#{snap.global_rank.toLocaleString()}</span>
                             ) : (
@@ -693,17 +694,22 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
                             )}
                           </td>
 
-                          {/* Contests / Acceptance Rate */}
-                          <td className="py-3.5 px-4 text-slate-600 text-[11px]">
+                          {/* 8. Contest Acceptance */}
+                          <td className="py-3.5 px-4 whitespace-nowrap text-slate-600 text-[11px]">
                             {snap ? (
                               <div>
-                                <span className="font-medium text-slate-800">
-                                  {snap.contests_attended ?? 0} contests
-                                </span>
-                                {snap.acceptance_rate != null && (
-                                  <span className="text-slate-400 block text-[10px]">
-                                    {snap.acceptance_rate}% acc
+                                {snap.acceptance_rate != null ? (
+                                  <span className="font-semibold text-slate-800">
+                                    {snap.acceptance_rate}%
                                   </span>
+                                ) : null}
+                                {snap.contests_attended != null && (
+                                  <span className="text-slate-400 block text-[10px]">
+                                    {snap.contests_attended} attended
+                                  </span>
+                                )}
+                                {snap.acceptance_rate == null && snap.contests_attended == null && (
+                                  <span className="text-slate-400">—</span>
                                 )}
                               </div>
                             ) : (
@@ -713,11 +719,11 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
                         </>
                       )}
 
-                      {/* CodeChef Specific Columns */}
+                      {/* CodeChef Specific Columns (5 to 9) */}
                       {platform === 'codechef' && (
                         <>
-                          {/* Star Tier */}
-                          <td className="py-3.5 px-4">
+                          {/* 5. Star Tier */}
+                          <td className="py-3.5 px-4 whitespace-nowrap">
                             {snap ? (
                               <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
                                 {getCodeChefStars(snap.contest_rating ?? snap.highest_rating)}
@@ -727,8 +733,8 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
                             )}
                           </td>
 
-                          {/* Contest Rating */}
-                          <td className="py-3.5 px-4 font-semibold text-slate-800">
+                          {/* 6. Contest Rating */}
+                          <td className="py-3.5 px-4 whitespace-nowrap font-semibold text-slate-800">
                             {snap?.contest_rating != null ? (
                               <span className="text-orange-700 font-mono font-bold">
                                 {snap.contest_rating}
@@ -738,55 +744,53 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
                             )}
                           </td>
 
-                          {/* Peak Rating */}
-                          <td className="py-3.5 px-4 text-slate-700">
-                            {snap?.highest_rating != null ? (
-                              <span className="font-mono font-semibold text-[11px] text-slate-800">
-                                {snap.highest_rating}
-                              </span>
-                            ) : (
-                              <span className="text-slate-400">—</span>
-                            )}
-                          </td>
-
-                          {/* Global / Country Rank */}
-                          <td className="py-3.5 px-4 text-slate-600 text-[11px]">
-                            {snap ? (
-                              <div>
-                                <span className="font-mono block">
-                                  Global: {snap.global_rank != null ? `#${snap.global_rank.toLocaleString()}` : '—'}
+                          {/* 7. Problem Difficulty Breakdown */}
+                          <td className="py-3.5 px-4 whitespace-nowrap">
+                            {snap && (snap.easy_solved != null || snap.medium_solved != null || snap.hard_solved != null) ? (
+                              <div className="flex items-center gap-1.5 text-[11px]">
+                                <span
+                                  className="px-2 py-0.5 rounded font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                  title="Easy problems solved"
+                                >
+                                  E: {snap.easy_solved ?? 0}
                                 </span>
-                                <span className="font-mono block text-slate-400 text-[10px]">
-                                  Country: {snap.country_rank != null ? `#${snap.country_rank.toLocaleString()}` : '—'}
+                                <span
+                                  className="px-2 py-0.5 rounded font-semibold bg-amber-50 text-amber-700 border border-amber-200"
+                                  title="Medium problems solved"
+                                >
+                                  M: {snap.medium_solved ?? 0}
+                                </span>
+                                <span
+                                  className="px-2 py-0.5 rounded font-semibold bg-rose-50 text-rose-700 border border-rose-200"
+                                  title="Hard problems solved"
+                                >
+                                  H: {snap.hard_solved ?? 0}
                                 </span>
                               </div>
                             ) : (
                               <span className="text-slate-400">—</span>
                             )}
                           </td>
+
+                          {/* 8. Global Rank */}
+                          <td className="py-3.5 px-4 whitespace-nowrap text-slate-700">
+                            {snap?.global_rank != null ? (
+                              <span className="font-mono text-[11px]">#{snap.global_rank.toLocaleString()}</span>
+                            ) : (
+                              <span className="text-slate-400">—</span>
+                            )}
+                          </td>
+
+                          {/* 9. Country Rank */}
+                          <td className="py-3.5 px-4 whitespace-nowrap text-slate-700">
+                            {snap?.country_rank != null ? (
+                              <span className="font-mono text-[11px]">#{snap.country_rank.toLocaleString()}</span>
+                            ) : (
+                              <span className="text-slate-400">—</span>
+                            )}
+                          </td>
                         </>
                       )}
-
-                      {/* Actions */}
-                      <td className="py-3.5 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <Link
-                            href={`/students/${s.id}`}
-                            className="px-2.5 py-1 text-[11px] font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-md transition"
-                          >
-                            Details
-                          </Link>
-                          {isTeacher && isLinked && (
-                            <button
-                              onClick={() => setScanStudent({ id: s.id, name: s.display_name })}
-                              title={`Scan ${s.display_name}`}
-                              className="p-1 text-slate-400 hover:text-blue-600 hover:bg-slate-100 rounded transition"
-                            >
-                              <Play className="w-3.5 h-3.5 fill-current" />
-                            </button>
-                          )}
-                        </div>
-                      </td>
                     </tr>
                   );
                 })}
@@ -804,19 +808,6 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
         initialPlatform={platform}
         onScanCompleted={() => fetchData(true)}
       />
-
-      {/* Individual Student Scan Modal */}
-      {scanStudent && (
-        <ScanModal
-          isOpen={true}
-          onClose={() => setScanStudent(null)}
-          classroomId={classroom.id}
-          targetStudentId={scanStudent.id}
-          targetStudentName={scanStudent.name}
-          initialPlatform={platform}
-          onScanCompleted={() => fetchData(true)}
-        />
-      )}
     </div>
   );
 }
