@@ -568,7 +568,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
                     <>
                       <th className="py-3 px-4">Star Tier</th>
                       <th className="py-3 px-4">Contest Rating</th>
-                      <th className="py-3 px-4">Problem Difficulty Breakdown</th>
+                      <th className="py-3 px-4">Highest Rating</th>
                       <th className="py-3 px-4">Global Rank</th>
                       <th className="py-3 px-4">Country Rank</th>
                     </>
@@ -744,31 +744,18 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
                             )}
                           </td>
 
-                          {/* 7. Problem Difficulty Breakdown */}
-                          <td className="py-3.5 px-4 whitespace-nowrap">
-                            {snap && (snap.easy_solved != null || snap.medium_solved != null || snap.hard_solved != null) ? (
-                              <div className="flex items-center gap-1.5 text-[11px]">
-                                <span
-                                  className="px-2 py-0.5 rounded font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200"
-                                  title="Easy problems solved"
-                                >
-                                  E: {snap.easy_solved ?? 0}
-                                </span>
-                                <span
-                                  className="px-2 py-0.5 rounded font-semibold bg-amber-50 text-amber-700 border border-amber-200"
-                                  title="Medium problems solved"
-                                >
-                                  M: {snap.medium_solved ?? 0}
-                                </span>
-                                <span
-                                  className="px-2 py-0.5 rounded font-semibold bg-rose-50 text-rose-700 border border-rose-200"
-                                  title="Hard problems solved"
-                                >
-                                  H: {snap.hard_solved ?? 0}
-                                </span>
-                              </div>
+                          {/* 7. Highest Rating */}
+                          <td className="py-3.5 px-4 whitespace-nowrap font-semibold text-slate-800">
+                            {snap?.highest_rating != null ? (
+                              <span className="font-mono font-bold text-slate-800">
+                                {Math.round(snap.highest_rating)}
+                              </span>
+                            ) : snap?.highest_score != null ? (
+                              <span className="font-mono font-bold text-slate-800">
+                                {Math.round(snap.highest_score)}
+                              </span>
                             ) : (
-                              <span className="text-slate-400">—</span>
+                              <span className="text-slate-400 font-normal">—</span>
                             )}
                           </td>
 

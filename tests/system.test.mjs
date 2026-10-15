@@ -1052,14 +1052,15 @@ describe('CodeTrack Full System & Zero Fake Data Verification Suite', () => {
       'Total Solved',
       'Star Tier',
       'Contest Rating',
-      'Problem Difficulty Breakdown',
+      'Highest Rating',
       'Global Rank',
       'Country Rank',
     ];
 
-    // Verify no 'Actions' column in CodeChef
+    // Verify no 'Actions' column in CodeChef and Problem Difficulty Breakdown replaced with Highest Rating
     assert.strictEqual(codeChefExpectedColumns.includes('Actions'), false, 'Actions column must not exist');
     assert.strictEqual(codeChefExpectedColumns.includes('Details'), false, 'Details action must not exist');
+    assert.strictEqual(codeChefExpectedColumns.includes('Problem Difficulty Breakdown'), false, 'Problem Difficulty Breakdown must be removed');
     assert.strictEqual(codeChefExpectedColumns.length, 9);
     assert.strictEqual(codeChefExpectedColumns[0], 'Student Name');
     assert.strictEqual(codeChefExpectedColumns[1], 'Register Number');
@@ -1067,7 +1068,7 @@ describe('CodeTrack Full System & Zero Fake Data Verification Suite', () => {
     assert.strictEqual(codeChefExpectedColumns[3], 'Total Solved');
     assert.strictEqual(codeChefExpectedColumns[4], 'Star Tier');
     assert.strictEqual(codeChefExpectedColumns[5], 'Contest Rating');
-    assert.strictEqual(codeChefExpectedColumns[6], 'Problem Difficulty Breakdown');
+    assert.strictEqual(codeChefExpectedColumns[6], 'Highest Rating');
     assert.strictEqual(codeChefExpectedColumns[7], 'Global Rank');
     assert.strictEqual(codeChefExpectedColumns[8], 'Country Rank');
 
