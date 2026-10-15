@@ -1500,12 +1500,18 @@ describe('CodeTrack Full System & Zero Fake Data Verification Suite', () => {
     assert.strictEqual(expectedColumns[6], 'Highest Rating');
     assert.strictEqual(expectedColumns[7], 'Global Ranking');
 
-    // 2. Difficulty Breakdown formatting
-    function formatDifficultyBreakdown(easy, medium, hard) {
-      return `Easy: ${easy ?? 0} | Medium: ${medium ?? 0} | Hard: ${hard ?? 0}`;
+    // 2. Difficulty Breakdown badge UI structure
+    function renderDifficultyBadges(easy, medium, hard) {
+      return {
+        easyBadge: `E: ${easy ?? 0}`,
+        mediumBadge: `M: ${medium ?? 0}`,
+        hardBadge: `H: ${hard ?? 0}`,
+      };
     }
-    const sampleBreakdown = formatDifficultyBreakdown(120, 85, 15);
-    assert.strictEqual(sampleBreakdown, 'Easy: 120 | Medium: 85 | Hard: 15');
+    const sampleBadges = renderDifficultyBadges(120, 85, 15);
+    assert.strictEqual(sampleBadges.easyBadge, 'E: 120');
+    assert.strictEqual(sampleBadges.mediumBadge, 'M: 85');
+    assert.strictEqual(sampleBadges.hardBadge, 'H: 15');
 
     // 3. Historical Highest Rating calculation from attended contest history
     function calculateHighestRating(contestHistory) {

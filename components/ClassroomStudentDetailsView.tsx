@@ -650,15 +650,28 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
                           {/* 5. Difficulty Breakdown */}
                           <td className="py-3.5 px-4 whitespace-nowrap">
                             {snap ? (
-                              <span className="font-mono text-xs text-slate-700 font-medium">
-                                Easy: <strong className="text-emerald-700 font-bold">{snap.easy_solved ?? 0}</strong>
-                                <span className="text-slate-300 mx-1.5 font-normal">|</span>
-                                Medium: <strong className="text-amber-700 font-bold">{snap.medium_solved ?? 0}</strong>
-                                <span className="text-slate-300 mx-1.5 font-normal">|</span>
-                                Hard: <strong className="text-rose-700 font-bold">{snap.hard_solved ?? 0}</strong>
-                              </span>
+                              <div className="flex items-center gap-1.5 text-[11px]">
+                                <span
+                                  className="px-2 py-0.5 rounded font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                  title="Easy problems solved"
+                                >
+                                  E: {snap.easy_solved ?? 0}
+                                </span>
+                                <span
+                                  className="px-2 py-0.5 rounded font-semibold bg-amber-50 text-amber-700 border border-amber-200"
+                                  title="Medium problems solved"
+                                >
+                                  M: {snap.medium_solved ?? 0}
+                                </span>
+                                <span
+                                  className="px-2 py-0.5 rounded font-semibold bg-rose-50 text-rose-700 border border-rose-200"
+                                  title="Hard problems solved"
+                                >
+                                  H: {snap.hard_solved ?? 0}
+                                </span>
+                              </div>
                             ) : (
-                              <span className="text-slate-400">N/A</span>
+                              <span className="text-slate-400">—</span>
                             )}
                           </td>
 
