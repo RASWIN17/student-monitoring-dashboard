@@ -7,6 +7,7 @@ import { useAuth } from '@/components/AuthContext';
 import { Classroom, StudentPerformanceOverview } from '@/lib/types';
 import { ScanModal } from '@/components/ScanModal';
 import { LeetCodeIcon, CodeChefIcon } from '@/components/PlatformIcons';
+import { BackButton } from '@/components/BackButton';
 import {
   Users,
   Search,
@@ -283,18 +284,10 @@ export function ClassroomStudentDetailsView({ platform, classroomId: propClassro
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
-      {/* 1. Breadcrumb Navigation */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs font-medium text-[#64748b]">
-        <Link href="/students" className="hover:text-[#1769ff] transition">
-          Students
-        </Link>
-        <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-        <Link href={platformSelectionUrl} className="hover:text-[#1769ff] transition">
-          {platformDisplayName}
-        </Link>
-        <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-        <span className="font-bold text-[#0f1b35]">{classroom.name}</span>
-      </nav>
+      {/* Top Back Button */}
+      <div>
+        <BackButton fallbackHref={platformSelectionUrl} />
+      </div>
 
       {/* 2. Classroom Header Card */}
       <div className="bg-white rounded-2xl border border-[#e1eaf5] p-6 sm:p-7 shadow-[0_2px_12px_rgba(30,64,175,0.03)]">

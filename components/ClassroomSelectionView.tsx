@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '@/components/AuthContext';
 import { Classroom } from '@/lib/types';
 import { LeetCodeIcon, CodeChefIcon } from '@/components/PlatformIcons';
+import { BackButton } from '@/components/BackButton';
 import {
   GraduationCap,
   Users,
@@ -68,14 +69,10 @@ export function ClassroomSelectionView({ platform }: Props) {
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-12">
-      {/* Breadcrumb Navigation */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-slate-500">
-        <Link href="/students" className="hover:text-blue-600 transition">
-          Students
-        </Link>
-        <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-        <span className="font-semibold text-slate-800">{platformDisplayName}</span>
-      </nav>
+      {/* Top Back Button */}
+      <div>
+        <BackButton fallbackHref="/students" />
+      </div>
 
       {/* Top Header Card */}
       <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">

@@ -10,7 +10,6 @@ import {
   History,
   FileSpreadsheet,
   Settings,
-  Scan,
   LogOut,
 } from 'lucide-react';
 
@@ -25,7 +24,6 @@ export function Sidebar() {
     { label: 'Students', href: '/students', icon: Users, roles: ['teacher', 'admin'] },
     { label: 'Scan History', href: '/scans', icon: History, roles: ['teacher', 'admin'] },
     { label: 'Reports & Export', href: '/reports', icon: FileSpreadsheet, roles: ['teacher', 'admin'] },
-    { label: 'Connector Test', href: '/admin/test-connectors', icon: Scan, roles: ['teacher', 'admin'] },
     { label: 'Settings', href: '/settings', icon: Settings, roles: ['teacher', 'admin', 'student'] },
   ];
 

@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthContext';
+import { BackButton } from '@/components/BackButton';
 import {
   ArrowLeft,
   Calendar,
@@ -320,14 +321,9 @@ export function ContestDetailView({ platform, contestId }: ContestDetailViewProp
 
   return (
     <div className="space-y-6">
-      {/* Navigation Breadcrumb */}
-      <div className="flex items-center gap-2 text-xs text-slate-500">
-        <Link href={backLink} className="inline-flex items-center gap-1.5 hover:text-blue-600 transition font-medium">
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>{backText}</span>
-        </Link>
-        <span className="text-slate-400">/</span>
-        <span className="text-[#0f1b35] font-bold">{contest?.title || 'Contest Details'}</span>
+      {/* Top Back Button */}
+      <div>
+        <BackButton fallbackHref={backLink} />
       </div>
 
       {/* Contest Information Header Card */}

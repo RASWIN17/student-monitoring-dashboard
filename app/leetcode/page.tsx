@@ -13,12 +13,20 @@ import {
 } from 'lucide-react';
 
 import { StudentLeetCodeAnalytics } from '@/components/StudentLeetCodeAnalytics';
+import { BackButton } from '@/components/BackButton';
 
 export default function LeetCodeContestsPage() {
   const { user, selectedClassroom } = useAuth();
 
   if (user?.role === 'student') {
-    return <StudentLeetCodeAnalytics user={user} />;
+    return (
+      <div className="space-y-6">
+        <div>
+          <BackButton fallbackHref="/students/leetcode" />
+        </div>
+        <StudentLeetCodeAnalytics user={user} />
+      </div>
+    );
   }
 
   const cacheKey = `contests:leetcode:${selectedClassroom?.id || 'all'}`;
@@ -107,6 +115,11 @@ export default function LeetCodeContestsPage() {
 
   return (
     <div className="space-y-6">
+      {/* Top Back Button */}
+      <div>
+        <BackButton fallbackHref="/students/leetcode" />
+      </div>
+
       {/* 1. Shorter Header Banner without refresh icon */}
       <ContestAnalyticsBanner
         platform="leetcode"

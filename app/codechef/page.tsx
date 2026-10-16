@@ -13,12 +13,20 @@ import {
 } from 'lucide-react';
 
 import { StudentCodeChefAnalytics } from '@/components/StudentCodeChefAnalytics';
+import { BackButton } from '@/components/BackButton';
 
 export default function CodeChefContestsPage() {
   const { user, selectedClassroom } = useAuth();
 
   if (user?.role === 'student') {
-    return <StudentCodeChefAnalytics user={user} />;
+    return (
+      <div className="space-y-6">
+        <div>
+          <BackButton fallbackHref="/students/codechef" />
+        </div>
+        <StudentCodeChefAnalytics user={user} />
+      </div>
+    );
   }
 
   const cacheKey = `contests:codechef:${selectedClassroom?.id || 'all'}`;
@@ -107,6 +115,11 @@ export default function CodeChefContestsPage() {
 
   return (
     <div className="space-y-6">
+      {/* Top Back Button */}
+      <div>
+        <BackButton fallbackHref="/students/codechef" />
+      </div>
+
       {/* 1. Shorter Header Banner without refresh icon */}
       <ContestAnalyticsBanner
         platform="codechef"

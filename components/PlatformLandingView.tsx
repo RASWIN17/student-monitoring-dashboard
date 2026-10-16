@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { LeetCodeIcon, CodeChefIcon } from '@/components/PlatformIcons';
-import { ChevronRight } from 'lucide-react';
+import { BackButton } from '@/components/BackButton';
 
 interface Props {
   platform: 'leetcode' | 'codechef';
@@ -100,14 +100,10 @@ export function PlatformLandingView({ platform }: Props) {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-16">
-      {/* 1. Breadcrumb */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-500 font-medium mb-10 sm:mb-14">
-        <Link href="/students" className="hover:text-blue-600 transition">
-          Students
-        </Link>
-        <ChevronRight className="w-3.5 h-3.5 text-slate-400 stroke-[2]" />
-        <span className="font-bold text-slate-900">{platformDisplayName}</span>
-      </nav>
+      {/* 1. Back Button */}
+      <div className="mb-8 sm:mb-10">
+        <BackButton fallbackHref="/students" />
+      </div>
 
       {/* 2. Platform Logo & Title (Centered) */}
       <div className="flex items-center justify-center gap-4 sm:gap-5 mb-12 sm:mb-16">

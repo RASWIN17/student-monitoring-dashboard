@@ -7,6 +7,7 @@ import { useAuth } from '@/components/AuthContext';
 import { dataCache } from '@/components/DataCacheContext';
 import { getCodeChefStars } from '@/components/ClassroomStudentDetailsView';
 import { LeetCodeIcon, CodeChefIcon } from '@/components/PlatformIcons';
+import { BackButton } from '@/components/BackButton';
 import {
   Users,
   Code2,
@@ -484,13 +485,7 @@ function StudentDetailContent() {
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Top Bar with Context-Aware Back Link & Individual Scan Now Button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <Link
-          href={backHref}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>{backLabel}</span>
-        </Link>
+        <BackButton fallbackHref={backHref} />
 
         {isTeacher && (
           <div className="flex items-center gap-2">

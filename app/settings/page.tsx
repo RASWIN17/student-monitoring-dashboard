@@ -61,7 +61,7 @@ export default function SettingsPage() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   const fetchAccounts = async (force = false) => {
-    if (!user) return;
+    if (!user || user.role !== 'student') return;
     if (!force && cacheKey && dataCache.get(cacheKey)) return;
     if (!cacheKey || !dataCache.get(cacheKey)) setLoading(true);
     try {
@@ -77,7 +77,7 @@ export default function SettingsPage() {
   };
 
   useEffect(() => {
-    if (user && cacheKey) {
+    if (user && user.role === 'student' && cacheKey) {
       const cached = dataCache.get<any[]>(cacheKey);
       if (cached) {
         setAccounts(cached);
@@ -85,6 +85,8 @@ export default function SettingsPage() {
       } else {
         fetchAccounts();
       }
+    } else {
+      setLoading(false);
     }
   }, [user, cacheKey]);
 
@@ -399,9 +401,10 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {/* Connected Handles Section */}
-      <div className="space-y-4">
-        <h2 className="text-sm font-bold text-slate-900">Connected Coding Handles</h2>
+      {/* Connected Handles Section - Strictly restricted to Students */}
+      {user?.role === 'student' && (
+        <div className="space-y-4">
+          <h2 className="text-sm font-bold text-slate-900">Connected Coding Handles</h2>
 
         {/* LeetCode Card */}
         <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-2xs">
@@ -553,6 +556,7 @@ export default function SettingsPage() {
           )}
         </div>
       </div>
+      )}
 
       {/* Security Notice */}
       <div className="p-4 bg-slate-100/70 border border-slate-200 rounded-xl text-xs text-slate-600 flex items-start gap-3">
