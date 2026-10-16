@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthContext';
+import { LeetCodeIcon, CodeChefIcon } from '@/components/PlatformIcons';
 import {
   Terminal,
   Play,
@@ -103,7 +104,7 @@ export default function TestConnectorsPage() {
                       : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                   }`}
                 >
-                  <Code2 className="w-3.5 h-3.5" />
+                  <LeetCodeIcon className="w-3.5 h-3.5" />
                   <span>LeetCode</span>
                 </button>
                 <button
@@ -118,7 +119,7 @@ export default function TestConnectorsPage() {
                       : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                   }`}
                 >
-                  <ChefHat className="w-3.5 h-3.5" />
+                  <CodeChefIcon className="w-3.5 h-3.5" />
                   <span>CodeChef</span>
                 </button>
               </div>

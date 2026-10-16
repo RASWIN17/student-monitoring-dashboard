@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthContext';
 import { dataCache } from '@/components/DataCacheContext';
 import { ScanModal } from '@/components/ScanModal';
+import { LeetCodeIcon, CodeChefIcon } from '@/components/PlatformIcons';
 import {
   Users,
   CheckCircle2,
@@ -267,8 +268,8 @@ export default function TeacherDashboardPage() {
         <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 bg-amber-50 text-amber-600 rounded-md">
-                <Code2 className="w-4 h-4" />
+              <div className="w-7 h-7 rounded-md bg-white border border-slate-200 shadow-2xs flex items-center justify-center p-1 shrink-0">
+                <LeetCodeIcon className="w-5 h-5" />
               </div>
               <span className="text-xs font-bold text-slate-800">LeetCode Solved</span>
             </div>
@@ -286,8 +287,8 @@ export default function TeacherDashboardPage() {
         <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 bg-orange-50 text-orange-600 rounded-md">
-                <ChefHat className="w-4 h-4" />
+              <div className="w-7 h-7 rounded-md bg-white border border-slate-200 shadow-2xs flex items-center justify-center p-1 shrink-0">
+                <CodeChefIcon className="w-5 h-5" />
               </div>
               <span className="text-xs font-bold text-slate-800">CodeChef Solved</span>
             </div>

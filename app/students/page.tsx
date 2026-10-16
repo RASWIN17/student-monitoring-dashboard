@@ -157,7 +157,9 @@ export default function StudentsLandingPage() {
           {/* Button CTA */}
           <div className="relative z-10 pt-8">
             <div className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-orange-600 via-orange-500 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-bold text-xs flex items-center justify-center gap-3 shadow-[0_6px_20px_rgba(249,115,22,0.35)] transition-all">
-              <CodeChefIcon className="w-5 h-5 text-white shrink-0" monochrome={true} />
+              <div className="w-6 h-6 rounded-md bg-white flex items-center justify-center p-0.5 shrink-0 shadow-2xs">
+                <CodeChefIcon className="w-4 h-4" />
+              </div>
               <span>Select Classroom for CodeChef</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" />
             </div>

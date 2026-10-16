@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '@/components/AuthContext';
 import { dataCache } from '@/components/DataCacheContext';
 import { getCodeChefStars } from '@/components/ClassroomStudentDetailsView';
+import { LeetCodeIcon, CodeChefIcon } from '@/components/PlatformIcons';
 import {
   Users,
   Code2,
@@ -202,8 +203,8 @@ function StudentDetailContent() {
     <div key="leetcode-section" className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-2xs">
       <div className="p-5 border-b border-slate-100 bg-slate-50/60 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 bg-amber-100 text-amber-700 rounded-lg">
-            <Code2 className="w-5 h-5" />
+          <div className="p-1.5 bg-white border border-amber-200/80 rounded-lg shadow-2xs flex items-center justify-center">
+            <LeetCodeIcon className="w-6 h-6" />
           </div>
           <div>
             <h2 className="text-base font-bold text-slate-900">LeetCode Verified Performance</h2>
@@ -342,8 +343,8 @@ function StudentDetailContent() {
     <div key="codechef-section" className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-2xs">
       <div className="p-5 border-b border-slate-100 bg-slate-50/60 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 bg-orange-100 text-orange-700 rounded-lg">
-            <ChefHat className="w-5 h-5" />
+          <div className="p-1.5 bg-white border border-orange-200/80 rounded-lg shadow-2xs flex items-center justify-center">
+            <CodeChefIcon className="w-6 h-6" />
           </div>
           <div>
             <h2 className="text-base font-bold text-slate-900">CodeChef Verified Performance</h2>

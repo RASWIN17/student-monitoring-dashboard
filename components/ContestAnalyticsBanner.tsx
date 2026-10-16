@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { LeetCodeIcon, CodeChefIcon } from '@/components/PlatformIcons';
 
 interface ContestAnalyticsBannerProps {
   platform: 'leetcode' | 'codechef';
@@ -145,51 +146,9 @@ export function ContestAnalyticsBanner({
       <div className="flex items-center gap-3.5 sm:gap-4 z-10">
         <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white border border-slate-100/90 shadow-[0_4px_16px_rgba(30,64,175,0.06)] flex items-center justify-center p-2.5 sm:p-3 shrink-0">
           {platform === 'leetcode' ? (
-            <svg viewBox="0 0 24 24" fill="none" className="w-7 h-7 sm:w-8 sm:h-8">
-              <path
-                d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 4.792 3.635 6.002 6.002 0 0 0 2.457-.184 5.922 5.922 0 0 0 2.158-1.144l4.24-4.24a1.374 1.374 0 1 0-1.943-1.944l-4.24 4.24a3.175 3.175 0 0 1-1.156.612 3.255 3.255 0 0 1-1.334.1 3.208 3.208 0 0 1-2.585-1.961 2.977 2.977 0 0 1-.189-.55 2.984 2.984 0 0 1-.033-1.275 2.844 2.844 0 0 1 .653-1.137l3.854-4.126 5.406-5.788A1.374 1.374 0 0 0 13.483 0z"
-                fill="#262626"
-              />
-              <path
-                d="M9.832 10.903a1.4 1.4 0 0 0-.99.41l-2.073 2.073a1.4 1.4 0 1 0 1.98 1.98l2.073-2.073a1.4 1.4 0 0 0-.99-2.39z"
-                fill="#FFA116"
-              />
-              <path
-                d="M20.311 17.09a1.374 1.374 0 0 0-1.374-1.374h-8.032a1.374 1.374 0 1 0 0 2.748h8.032a1.374 1.374 0 0 0 1.374-1.374z"
-                fill="#262626"
-              />
-            </svg>
+            <LeetCodeIcon className="w-8 h-8 sm:w-9 sm:h-9" />
           ) : (
-            <svg viewBox="0 0 48 48" fill="none" className="w-8 h-8 sm:w-9 sm:h-9">
-              <path
-                d="M12 28 C9.5 28 7 26 7 22.5 C7 19.5 9 17.5 12 17.5 C12 17 12.1 16.5 12.3 16 C13.5 11.5 17.5 8 22.5 8 C27.5 8 31.5 11.5 32.7 16 C32.9 16.5 33 17 33 17.5 C36 17.5 38 19.5 38 22.5 C38 26 35.5 28 33 28"
-                stroke="#f97316"
-                strokeWidth="3.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                fill="none"
-              />
-              <path
-                d="M13 28 L14 36 L31 36 L32 28"
-                stroke="#f97316"
-                strokeWidth="3.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                fill="none"
-              />
-              <rect
-                x="11"
-                y="36"
-                width="23"
-                height="5"
-                rx="2.5"
-                stroke="#f97316"
-                strokeWidth="3.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                fill="none"
-              />
-            </svg>
+            <CodeChefIcon className="w-8 h-8 sm:w-9 sm:h-9" />
           )}
         </div>
         <h1 className="text-lg sm:text-xl lg:text-[22px] font-extrabold text-[#0f1b35] tracking-tight">

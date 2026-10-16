@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/components/AuthContext';
 import { dataCache } from '@/components/DataCacheContext';
+import { LeetCodeIcon, CodeChefIcon } from '@/components/PlatformIcons';
 import {
   Settings,
   Code2,
@@ -406,8 +407,8 @@ export default function SettingsPage() {
         <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-2xs">
           <div className="flex items-start justify-between gap-4 mb-4">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-amber-50 text-amber-600 rounded-lg">
-                <Code2 className="w-5 h-5" />
+              <div className="w-10 h-10 rounded-lg bg-white border border-slate-200 shadow-2xs flex items-center justify-center p-1.5 shrink-0">
+                <LeetCodeIcon className="w-6 h-6" />
               </div>
               <div>
                 <h3 className="text-sm font-bold text-slate-900">LeetCode Public Profile</h3>
@@ -481,8 +482,8 @@ export default function SettingsPage() {
         <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-2xs">
           <div className="flex items-start justify-between gap-4 mb-4">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-orange-50 text-orange-600 rounded-lg">
-                <ChefHat className="w-5 h-5" />
+              <div className="w-10 h-10 rounded-lg bg-white border border-slate-200 shadow-2xs flex items-center justify-center p-1.5 shrink-0">
+                <CodeChefIcon className="w-6 h-6" />
               </div>
               <div>
                 <h3 className="text-sm font-bold text-slate-900">CodeChef Public Profile</h3>

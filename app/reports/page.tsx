@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '@/components/AuthContext';
+import { LeetCodeIcon, CodeChefIcon } from '@/components/PlatformIcons';
 import {
   FileSpreadsheet,
   Download,
@@ -94,8 +95,8 @@ export default function ReportsPage() {
           {/* Card 2: LeetCode */}
           <div className="bg-white rounded-xl border border-slate-200 p-6 flex flex-col justify-between shadow-2xs">
             <div>
-              <div className="p-2.5 bg-amber-50 text-amber-600 rounded-lg w-fit mb-3">
-                <Code2 className="w-5 h-5" />
+              <div className="w-10 h-10 rounded-lg bg-white border border-slate-200 shadow-2xs flex items-center justify-center p-1.5 shrink-0 mb-3">
+                <LeetCodeIcon className="w-6 h-6" />
               </div>
               <h3 className="text-sm font-bold text-slate-900">LeetCode Full Statistics</h3>
               <p className="text-xs text-slate-500 mt-1 leading-relaxed">
@@ -115,8 +116,8 @@ export default function ReportsPage() {
           {/* Card 3: CodeChef */}
           <div className="bg-white rounded-xl border border-slate-200 p-6 flex flex-col justify-between shadow-2xs">
             <div>
-              <div className="p-2.5 bg-orange-50 text-orange-600 rounded-lg w-fit mb-3">
-                <ChefHat className="w-5 h-5" />
+              <div className="w-10 h-10 rounded-lg bg-white border border-slate-200 shadow-2xs flex items-center justify-center p-1.5 shrink-0 mb-3">
+                <CodeChefIcon className="w-6 h-6" />
               </div>
               <h3 className="text-sm font-bold text-slate-900">CodeChef Full Statistics</h3>
               <p className="text-xs text-slate-500 mt-1 leading-relaxed">
