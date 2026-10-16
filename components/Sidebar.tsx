@@ -40,7 +40,7 @@ export function Sidebar() {
   const userInitial = user?.display_name ? user.display_name.charAt(0).toUpperCase() : 'T';
 
   return (
-    <aside className="w-[325px] min-w-[325px] bg-gradient-to-b from-[#081226] via-[#0b1736] to-[#081226] text-white flex flex-col h-screen border-r border-[#152549] shrink-0 select-none sticky top-0 z-40">
+    <aside className="w-[228px] min-w-[228px] bg-gradient-to-b from-[#081226] via-[#0b1736] to-[#081226] text-white flex flex-col h-screen border-r border-[#152549] shrink-0 select-none sticky top-0 z-40">
       {/* Brand Header */}
       <div className="pt-7 pb-5 px-7 flex items-center gap-3.5">
         <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-[#1d68ff] to-[#0a4ed8] flex items-center justify-center text-white font-extrabold text-lg shadow-[0_4px_14px_rgba(29,104,255,0.45)] shrink-0">
