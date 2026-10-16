@@ -7,8 +7,6 @@ import { useAuth } from './AuthContext';
 import {
   GraduationCap,
   Users,
-  Code2,
-  ChefHat,
   History,
   FileSpreadsheet,
   Settings,
@@ -25,8 +23,6 @@ export function Sidebar() {
   const navItems = [
     { label: 'Classrooms', href: '/classrooms', icon: GraduationCap, roles: ['teacher', 'admin', 'student'] },
     { label: 'Students', href: '/students', icon: Users, roles: ['teacher', 'admin'] },
-    { label: 'LeetCode Analytics', href: '/leetcode', icon: Code2, roles: ['teacher', 'admin', 'student'] },
-    { label: 'CodeChef Analytics', href: '/codechef', icon: ChefHat, roles: ['teacher', 'admin', 'student'] },
     { label: 'Scan History', href: '/scans', icon: History, roles: ['teacher', 'admin'] },
     { label: 'Reports & Export', href: '/reports', icon: FileSpreadsheet, roles: ['teacher', 'admin'] },
     { label: 'Connector Test', href: '/admin/test-connectors', icon: Scan, roles: ['teacher', 'admin'] },

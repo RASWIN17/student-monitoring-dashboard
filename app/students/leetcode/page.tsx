@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { ClassroomSelectionView } from '@/components/ClassroomSelectionView';
+import { PlatformLandingView } from '@/components/PlatformLandingView';
 
-export default function LeetCodeClassroomSelectionPage() {
-  return <ClassroomSelectionView platform="leetcode" />;
+export default function LeetCodePlatformLandingPage() {
+  return <PlatformLandingView platform="leetcode" />;
 }

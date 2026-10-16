@@ -25,7 +25,7 @@ import {
 
 interface Props {
   platform: 'leetcode' | 'codechef';
-  classroomId: string;
+  classroomId?: string;
 }
 
 export type SortOption =
@@ -53,28 +53,32 @@ interface ClassroomDataCache {
   students: StudentPerformanceOverview[];
 }
 
-export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
+export function ClassroomStudentDetailsView({ platform, classroomId: propClassroomId }: Props) {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, selectedClassroom, classrooms, setSelectedClassroom, loading: authLoading } = useAuth();
   const isTeacher = user?.role === 'teacher' || user?.role === 'admin';
 
-  const cacheKey = `classroom:students:${classroomId}:${platform}:v2`;
-  const uiKey = `ui:classroom:students:${classroomId}:${platform}:v2`;
+  const effectiveClassroomId = propClassroomId || selectedClassroom?.id || (classrooms.length > 0 ? classrooms[0].id : '');
 
-  const cachedData = dataCache.get<ClassroomDataCache>(cacheKey);
+  const cacheKey = `classroom:students:${effectiveClassroomId}:${platform}:v2`;
+  const uiKey = `ui:classroom:students:${effectiveClassroomId}:${platform}:v2`;
+
+  const cachedData = effectiveClassroomId ? dataCache.get<ClassroomDataCache>(cacheKey) : null;
   const [classroom, setClassroom] = useState<Classroom | null>(() => cachedData?.classroom || null);
   const [students, setStudents] = useState<StudentPerformanceOverview[]>(() => cachedData?.students || []);
   const [loading, setLoading] = useState(() => !cachedData);
   const [error, setError] = useState<string | null>(null);
 
-  const savedUI = dataCache.getUI<{ searchTerm: string; sortOption: SortOption }>(uiKey);
+  const savedUI = effectiveClassroomId ? dataCache.getUI<{ searchTerm: string; sortOption: SortOption }>(uiKey) : null;
   // Search & Sorting state
   const [searchTerm, setSearchTerm] = useState(savedUI?.searchTerm || '');
   const [sortOption, setSortOption] = useState<SortOption>(savedUI?.sortOption || 'problems_desc');
 
   useEffect(() => {
-    dataCache.setUI(uiKey, { searchTerm, sortOption });
-  }, [uiKey, searchTerm, sortOption]);
+    if (effectiveClassroomId) {
+      dataCache.setUI(uiKey, { searchTerm, sortOption });
+    }
+  }, [uiKey, searchTerm, sortOption, effectiveClassroomId]);
 
   // Scan modal state
   const [isScanClassroomOpen, setIsScanClassroomOpen] = useState(false);
@@ -83,12 +87,13 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
   const platformSelectionUrl = `/students/${platform}`;
 
   const fetchData = async (force = false) => {
+    if (!effectiveClassroomId) return;
     if (!force && dataCache.get(cacheKey)) return;
     if (!dataCache.get(cacheKey)) setLoading(true);
     setError(null);
     try {
       // 1. Fetch classroom details
-      const cRes = await fetch(`/api/classrooms/${classroomId}`);
+      const cRes = await fetch(`/api/classrooms/${effectiveClassroomId}`);
       if (!cRes.ok) {
         if (cRes.status === 404) throw new Error('Classroom not found.');
         throw new Error('Failed to load classroom details.');
@@ -96,9 +101,12 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
       const cData = await cRes.json();
       const loadedClassroom = cData.classroom;
       setClassroom(loadedClassroom);
+      if (loadedClassroom && selectedClassroom?.id !== loadedClassroom.id) {
+        setSelectedClassroom(loadedClassroom);
+      }
 
       // 2. Fetch classroom students overview
-      const sRes = await fetch(`/api/classrooms/${classroomId}/students`);
+      const sRes = await fetch(`/api/classrooms/${effectiveClassroomId}/students`);
       if (!sRes.ok) {
         throw new Error('Failed to load student records.');
       }
@@ -114,7 +122,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
   };
 
   useEffect(() => {
-    if (classroomId) {
+    if (effectiveClassroomId) {
       const cached = dataCache.get<ClassroomDataCache>(cacheKey);
       if (cached) {
         setClassroom(cached.classroom);
@@ -123,8 +131,10 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
       } else {
         fetchData();
       }
+    } else if (!authLoading && classrooms.length === 0) {
+      setLoading(false);
     }
-  }, [cacheKey, classroomId]);
+  }, [cacheKey, effectiveClassroomId, authLoading, classrooms.length]);
 
   // Derived filtered & sorted list
   const processedStudents = useMemo(() => {
@@ -260,7 +270,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
           href={platformSelectionUrl}
           className="px-4 py-2 bg-[#1769ff] text-white rounded-xl text-xs font-semibold hover:bg-blue-700 transition"
         >
-          Back to Classroom Selection
+          Back to {platformDisplayName}
         </Link>
       </div>
     );
@@ -341,7 +351,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
               className="px-4 py-2.5 bg-white border border-[#e1eaf5] hover:bg-slate-50 text-[#0f1b35] text-xs font-bold rounded-xl shadow-2xs flex items-center gap-2 transition"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>Change Classroom</span>
+              <span>Back to {platformDisplayName}</span>
             </Link>
 
             {isTeacher && (
@@ -572,7 +582,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
                       {/* 1. Student Name */}
                       <td className="py-4 px-5 whitespace-nowrap">
                         <Link
-                          href={`/students/${s.id}?platform=${platform}&classroomId=${classroomId}`}
+                          href={`/students/${s.id}?platform=${platform}&classroomId=${effectiveClassroomId}`}
                           className="font-bold text-sm text-[#0f1b35] hover:text-[#1769ff] transition truncate hover:underline"
                         >
                           {s.display_name}

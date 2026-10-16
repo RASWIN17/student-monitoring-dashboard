@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { ClassroomSelectionView } from '@/components/ClassroomSelectionView';
+import { PlatformLandingView } from '@/components/PlatformLandingView';
 
-export default function CodeChefClassroomSelectionPage() {
-  return <ClassroomSelectionView platform="codechef" />;
+export default function CodeChefPlatformLandingPage() {
+  return <PlatformLandingView platform="codechef" />;
 }
