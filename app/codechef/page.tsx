@@ -107,15 +107,13 @@ export default function CodeChefContestsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Page Banner matching Reference Image 2 */}
+      {/* 1. Shorter Header Banner without refresh icon */}
       <ContestAnalyticsBanner
         platform="codechef"
         title="CodeChef Contest Analytics"
-        refreshing={refreshing}
-        onRefresh={() => fetchContests(true)}
       />
 
-      {/* Contest Navigation and Search Container */}
+      {/* 2. Contest Navigation and Search Container */}
       <div className="bg-white rounded-2xl border border-[#e1eaf5] p-2 sm:px-4 sm:py-2.5 shadow-[0_2px_12px_rgba(30,64,175,0.03)] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         {/* Filter Tabs */}
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
@@ -166,29 +164,31 @@ export default function CodeChefContestsPage() {
 
       {/* Content Area */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div
-              key={i}
-              className="bg-white rounded-2xl border border-[#e1eaf5] border-t-[3.5px] border-t-[#1769ff] p-6 space-y-4 animate-pulse"
-            >
-              <div className="flex justify-between items-center">
-                <div className="h-5 bg-slate-200 rounded-lg w-36" />
-                <div className="h-5 bg-slate-200 rounded-lg w-20" />
+        <div className="bg-white rounded-2xl border border-[#e1eaf5] p-6 shadow-xs">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="bg-white rounded-2xl border border-[#e1eaf5] border-t-[3.5px] border-t-[#1769ff] p-6 space-y-4 animate-pulse"
+              >
+                <div className="flex justify-between items-center">
+                  <div className="h-5 bg-slate-200 rounded-lg w-36" />
+                  <div className="h-5 bg-slate-200 rounded-lg w-20" />
+                </div>
+                <div className="h-6 bg-slate-200 rounded-lg w-3/4" />
+                <div className="space-y-2">
+                  <div className="h-4 bg-slate-100 rounded w-1/2" />
+                  <div className="h-4 bg-slate-100 rounded w-1/3" />
+                </div>
+                <div className="border-t border-[#edf2f9] my-4" />
+                <div className="h-7 bg-slate-100 rounded-lg w-44" />
+                <div className="flex justify-between items-center pt-2">
+                  <div className="h-4 bg-slate-100 rounded w-28" />
+                  <div className="h-4 bg-slate-200 rounded w-16" />
+                </div>
               </div>
-              <div className="h-6 bg-slate-200 rounded-lg w-3/4" />
-              <div className="space-y-2">
-                <div className="h-4 bg-slate-100 rounded w-1/2" />
-                <div className="h-4 bg-slate-100 rounded w-1/3" />
-              </div>
-              <div className="border-t border-[#edf2f9] my-4" />
-              <div className="h-7 bg-slate-100 rounded-lg w-44" />
-              <div className="flex justify-between items-center pt-2">
-                <div className="h-4 bg-slate-100 rounded w-28" />
-                <div className="h-4 bg-slate-200 rounded w-16" />
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       ) : filteredContests.length === 0 ? (
         <div className="py-20 text-center bg-white rounded-2xl border border-[#e1eaf5] p-8 shadow-xs">
@@ -197,7 +197,7 @@ export default function CodeChefContestsPage() {
           <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
             {searchQuery
               ? `No contests matching "${searchQuery}". Clear your search query to see all contests.`
-              : 'Click the sync button above to fetch the latest official CodeChef Starters and rated challenges.'}
+              : 'There are currently no contests scheduled or recorded.'}
           </p>
           {searchQuery && (
             <button
@@ -209,17 +209,17 @@ export default function CodeChefContestsPage() {
           )}
         </div>
       ) : (
-        <div className="space-y-8">
-          {/* Section 1: Upcoming & Active Contests (3-column desktop grid matching Reference Image 2) */}
+        <div className="space-y-6">
+          {/* Section 1: Upcoming & Active Contests inside Large Rectangular Container */}
           {activeTab !== 'completed' && upcomingAndLive.length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-4">
+            <div className="bg-white rounded-2xl border border-[#e1eaf5] p-6 shadow-xs">
+              <div className="flex items-center gap-2 mb-5">
                 <Trophy className="w-4 h-4 text-[#1769ff]" />
                 <h2 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-[#0f1b35]">
                   UPCOMING & ACTIVE CONTESTS ({upcomingAndLive.length})
                 </h2>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {upcomingAndLive.map((c) => (
                   <ContestCard key={c.id} contest={c} href={`/codechef/${c.id}`} />
                 ))}
@@ -227,16 +227,16 @@ export default function CodeChefContestsPage() {
             </div>
           )}
 
-          {/* Section 2: Completed Contests (3-column desktop grid) */}
+          {/* Section 2: Completed Contests inside Separate Large Rectangular Container */}
           {activeTab !== 'upcoming' && completed.length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-4">
+            <div className="bg-white rounded-2xl border border-[#e1eaf5] p-6 shadow-xs">
+              <div className="flex items-center gap-2 mb-5">
                 <Trophy className="w-4 h-4 text-[#1769ff]" />
                 <h2 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-[#0f1b35]">
                   COMPLETED CONTESTS ({completed.length})
                 </h2>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {completed.map((c) => (
                   <ContestCard key={c.id} contest={c} href={`/codechef/${c.id}`} />
                 ))}
