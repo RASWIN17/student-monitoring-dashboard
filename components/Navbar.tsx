@@ -51,7 +51,7 @@ export function Navbar({ onDataRefreshed }: { onDataRefreshed?: () => void }) {
 
   return (
     <>
-      <header className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between sticky top-0 z-30 shrink-0">
+      <header className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between sticky top-0 z-30 shadow-2xs shrink-0">
         {/* Left Section: Classroom Selector */}
         <div className="flex items-center gap-4">
           {classrooms.length > 0 ? (
@@ -63,7 +63,7 @@ export function Navbar({ onDataRefreshed }: { onDataRefreshed?: () => void }) {
                   const target = classrooms.find((c) => c.id === e.target.value);
                   if (target) setSelectedClassroom(target);
                 }}
-                className="appearance-none bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 text-xs font-medium rounded-lg pl-3 pr-8 py-2 focus:ring-1 focus:ring-indigo-500 focus:outline-none cursor-pointer transition-colors"
+                className="appearance-none bg-slate-50 border border-slate-300 text-slate-800 text-xs font-semibold rounded-lg pl-3 pr-8 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none cursor-pointer"
               >
                 {classrooms.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -71,14 +71,14 @@ export function Navbar({ onDataRefreshed }: { onDataRefreshed?: () => void }) {
                   </option>
                 ))}
               </select>
-              <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2.5 pointer-events-none" />
+              <ChevronDown className="w-4 h-4 text-slate-500 absolute right-2.5 pointer-events-none" />
             </div>
           ) : (
-            <div className="text-xs text-slate-400 italic">No classrooms available</div>
+            <div className="text-xs text-slate-500 italic">No classrooms available</div>
           )}
 
           {/* Timezone badge */}
-          <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-[11px] text-slate-600 font-medium">
+          <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-100 text-[11px] text-slate-600 font-medium">
             <Clock className="w-3.5 h-3.5 text-slate-400" />
             <span>Timezone: Asia/Kolkata</span>
           </div>
@@ -90,7 +90,7 @@ export function Navbar({ onDataRefreshed }: { onDataRefreshed?: () => void }) {
           {user?.role === 'student' && (
             <button
               onClick={() => setIsJoinModalOpen(true)}
-              className="px-3 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs font-medium rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="px-3 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Join Classroom</span>
@@ -101,7 +101,7 @@ export function Navbar({ onDataRefreshed }: { onDataRefreshed?: () => void }) {
           {user?.role === 'student' && (
             <Link
               href="/settings"
-              className="px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 text-xs font-medium rounded-lg flex items-center gap-1.5 transition-colors"
+              className="px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition"
             >
               <Link2 className="w-3.5 h-3.5" />
               <span>Link Profiles</span>
@@ -112,7 +112,7 @@ export function Navbar({ onDataRefreshed }: { onDataRefreshed?: () => void }) {
           {isTeacher && (
             <button
               onClick={() => setIsScanModalOpen(true)}
-              className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs font-semibold rounded-lg flex items-center gap-2 transition-colors cursor-pointer"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-2 transition"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               <span>Scan Now</span>
@@ -132,13 +132,13 @@ export function Navbar({ onDataRefreshed }: { onDataRefreshed?: () => void }) {
 
       {/* Join Classroom Modal */}
       {isJoinModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
-          <div className="bg-white rounded-xl max-w-sm w-full p-6 border border-slate-200">
-            <h3 className="text-sm font-semibold text-slate-900 mb-1">Join Classroom</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 border border-slate-200">
+            <h3 className="text-base font-semibold text-slate-900 mb-1">Join Classroom</h3>
             <p className="text-xs text-slate-500 mb-4">Enter the 6-character code provided by your teacher.</p>
 
             {joinError && (
-              <div className="p-2.5 bg-rose-50 text-rose-700 text-xs rounded-lg border border-rose-200 mb-3">{joinError}</div>
+              <div className="p-2.5 bg-red-50 text-red-700 text-xs rounded-md mb-3">{joinError}</div>
             )}
 
             <form onSubmit={handleJoinClassroom} className="space-y-4">
@@ -148,23 +148,23 @@ export function Navbar({ onDataRefreshed }: { onDataRefreshed?: () => void }) {
                   placeholder="e.g. CT-ABC123"
                   value={joinCode}
                   onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm uppercase tracking-wider focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm uppercase font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setIsJoinModalOpen(false)}
-                  className="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-800 transition-colors cursor-pointer"
+                  className="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-800"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={joining}
-                  className="px-4 py-2 bg-indigo-600 text-white text-xs font-semibold rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors cursor-pointer"
+                  className="px-4 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50"
                 >
                   {joining ? 'Joining...' : 'Join Classroom'}
                 </button>

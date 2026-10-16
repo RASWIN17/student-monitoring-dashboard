@@ -38,30 +38,30 @@ export function Sidebar() {
   );
 
   return (
-    <aside className="w-64 bg-white text-slate-600 flex flex-col h-screen border-r border-slate-200 shrink-0 select-none sticky top-0">
+    <aside className="w-64 bg-sidebar-bg text-sidebar-text flex flex-col h-screen border-r border-sidebar-border shrink-0 select-none sticky top-0">
       {/* Brand Header */}
-      <div className="h-16 flex items-center px-6 border-b border-slate-200 gap-3">
-        <div className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm tracking-tight">
+      <div className="h-16 flex items-center px-6 border-b border-sidebar-border gap-3">
+        <div className="h-9 w-9 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
           CT
         </div>
         <div>
-          <div className="text-slate-900 font-semibold text-sm tracking-tight leading-none">CodeTrack</div>
-          <div className="text-[11px] text-slate-500 mt-1">Activity Monitor</div>
+          <div className="text-white font-semibold text-base tracking-tight leading-none">CodeTrack</div>
+          <div className="text-xs text-slate-400 mt-1">Activity Monitor</div>
         </div>
       </div>
 
       {/* User Info Capsule */}
       {user && (
-        <div className="px-3.5 py-2.5 mx-3 my-3 bg-slate-50 rounded-lg border border-slate-200/80 flex items-center justify-between">
-          <div className="overflow-hidden pr-2">
-            <div className="text-xs text-slate-900 font-medium truncate">{user.display_name}</div>
-            <div className="text-[11px] text-slate-500 capitalize">{user.role}</div>
+        <div className="px-4 py-3 mx-3 my-3 bg-slate-800/60 rounded-lg border border-slate-700/60 flex items-center justify-between">
+          <div className="overflow-hidden">
+            <div className="text-xs text-white font-medium truncate">{user.display_name}</div>
+            <div className="text-[11px] text-slate-400 capitalize">{user.role}</div>
           </div>
           <span
-            className={`text-[10px] font-semibold px-2 py-0.5 rounded border capitalize shrink-0 ${
+            className={`text-[10px] uppercase font-semibold px-2 py-0.5 rounded border ${
               isTeacher
-                ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
-                : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                ? 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+                : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
             }`}
           >
             {user.role}
@@ -80,13 +80,13 @@ export function Sidebar() {
             <Link
               key={item.label}
               href={item.href}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
                 isActive
-                  ? 'bg-slate-100 text-slate-900 font-semibold'
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                  ? 'bg-blue-600 text-white font-semibold shadow-sm'
+                  : 'text-slate-300 hover:bg-slate-800 hover:text-white'
               }`}
             >
-              <Icon className={`w-4 h-4 ${isActive ? 'text-indigo-600' : 'text-slate-400'}`} />
+              <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
               <span>{item.label}</span>
             </Link>
           );
@@ -94,11 +94,11 @@ export function Sidebar() {
       </nav>
 
       {/* Footer / Logout */}
-      <div className="p-3 border-t border-slate-200">
+      <div className="p-3 border-t border-sidebar-border">
         {user ? (
           <button
             onClick={logout}
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-500 hover:bg-rose-50 hover:text-rose-700 transition-colors"
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-slate-400 hover:bg-red-950/40 hover:text-red-400 transition-colors"
           >
             <LogOut className="w-4 h-4" />
             <span>Sign Out</span>
@@ -106,7 +106,7 @@ export function Sidebar() {
         ) : (
           <Link
             href="/login"
-            className="w-full flex items-center justify-center py-2 px-3 rounded-lg bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700 transition-colors"
+            className="w-full flex items-center justify-center py-2 px-3 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition"
           >
             Sign In
           </Link>

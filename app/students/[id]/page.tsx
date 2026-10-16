@@ -169,7 +169,7 @@ function StudentDetailContent() {
   if (loading || !data) {
     return (
       <div className="py-24 text-center text-slate-400">
-        <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-indigo-600" />
+        <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-blue-600" />
         <span className="text-xs font-semibold">Loading verified student metrics...</span>
       </div>
     );
@@ -199,10 +199,10 @@ function StudentDetailContent() {
 
   // Render LeetCode section JSX
   const renderLeetCodeSection = () => (
-    <div key="leetcode-section" className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <div key="leetcode-section" className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-2xs">
       <div className="p-5 border-b border-slate-100 bg-slate-50/60 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 bg-amber-50 text-amber-700 rounded-lg border border-amber-100">
+          <div className="p-2 bg-amber-100 text-amber-700 rounded-lg">
             <Code2 className="w-5 h-5" />
           </div>
           <div>
@@ -219,7 +219,7 @@ function StudentDetailContent() {
           <button
             onClick={() => handleSingleScan('leetcode')}
             disabled={isScanning}
-            className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition disabled:opacity-50 cursor-pointer"
+            className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition disabled:opacity-50"
             title="Scan LeetCode only for this student"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isScanning ? 'animate-spin' : ''}`} />
@@ -339,10 +339,10 @@ function StudentDetailContent() {
 
   // Render CodeChef section JSX
   const renderCodeChefSection = () => (
-    <div key="codechef-section" className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <div key="codechef-section" className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-2xs">
       <div className="p-5 border-b border-slate-100 bg-slate-50/60 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 bg-orange-50 text-orange-700 rounded-lg border border-orange-100">
+          <div className="p-2 bg-orange-100 text-orange-700 rounded-lg">
             <ChefHat className="w-5 h-5" />
           </div>
           <div>
@@ -359,7 +359,7 @@ function StudentDetailContent() {
           <button
             onClick={() => handleSingleScan('codechef')}
             disabled={isScanning}
-            className="px-3 py-1.5 bg-orange-50 hover:bg-orange-100 border border-orange-200 text-orange-800 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition disabled:opacity-50 cursor-pointer"
+            className="px-3 py-1.5 bg-orange-50 hover:bg-orange-100 border border-orange-200 text-orange-800 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition disabled:opacity-50"
             title="Scan CodeChef only for this student"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isScanning ? 'animate-spin' : ''}`} />
@@ -496,12 +496,12 @@ function StudentDetailContent() {
             <button
               onClick={() => handleSingleScan(activeScanPlatform)}
               disabled={isScanning}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold text-white flex items-center gap-2 transition disabled:opacity-50 cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold text-white shadow-xs flex items-center gap-2 transition disabled:opacity-50 ${
                 activeScanPlatform === 'codechef'
                   ? 'bg-orange-600 hover:bg-orange-700 active:bg-orange-800'
                   : activeScanPlatform === 'leetcode'
                   ? 'bg-amber-600 hover:bg-amber-700 active:bg-amber-800'
-                  : 'bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800'
+                  : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800'
               }`}
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isScanning ? 'animate-spin' : ''}`} />
@@ -520,14 +520,14 @@ function StudentDetailContent() {
         <div
           className={`p-3.5 rounded-xl border flex items-center justify-between text-xs transition ${
             scanStatus.type === 'running'
-              ? 'bg-indigo-50 border-indigo-200 text-indigo-900'
+              ? 'bg-blue-50 border-blue-200 text-blue-900'
               : scanStatus.type === 'success'
               ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
               : 'bg-rose-50 border-rose-200 text-rose-900'
           }`}
         >
           <div className="flex items-center gap-2.5">
-            {scanStatus.type === 'running' && <RefreshCw className="w-4 h-4 text-indigo-600 animate-spin shrink-0" />}
+            {scanStatus.type === 'running' && <RefreshCw className="w-4 h-4 text-blue-600 animate-spin shrink-0" />}
             {scanStatus.type === 'success' && <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />}
             {scanStatus.type === 'error' && <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />}
             <span className="font-semibold">{scanStatus.message}</span>
@@ -536,7 +536,7 @@ function StudentDetailContent() {
           {scanStatus.type !== 'running' && (
             <button
               onClick={() => setScanStatus({ type: 'idle', message: '' })}
-              className="p-1 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+              className="p-1 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition"
               title="Dismiss message"
             >
               <X className="w-4 h-4" />
@@ -546,7 +546,7 @@ function StudentDetailContent() {
       )}
 
       {/* Student Identity Card */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-2xs">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="h-14 w-14 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-700 text-xl">
@@ -573,7 +573,7 @@ function StudentDetailContent() {
                 {classrooms?.map((c: any) => (
                   <span
                     key={c.id}
-                    className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200"
+                    className="text-[11px] font-semibold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200"
                   >
                     {c.name} ({c.course})
                   </span>
@@ -593,7 +593,7 @@ function StudentDetailContent() {
                     href={leetcode.account.public_profile_url}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-slate-400 hover:text-indigo-600"
+                    className="text-slate-400 hover:text-blue-600"
                     title="Open public profile"
                   >
                     <ExternalLink className="w-3 h-3" />
@@ -614,7 +614,7 @@ function StudentDetailContent() {
                     href={codechef.account.public_profile_url}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-slate-400 hover:text-orange-600"
+                    className="text-slate-400 hover:text-blue-600"
                     title="Open public profile"
                   >
                     <ExternalLink className="w-3 h-3" />
@@ -649,7 +649,7 @@ export default function StudentDetailPage() {
     <Suspense
       fallback={
         <div className="py-24 text-center text-slate-400">
-          <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-indigo-600" />
+          <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-blue-600" />
           <span className="text-xs font-semibold">Loading student analytics...</span>
         </div>
       }

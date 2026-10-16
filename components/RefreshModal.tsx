@@ -21,20 +21,20 @@ export function RefreshModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
-      <div className="bg-white rounded-xl border border-slate-200 max-w-sm w-full p-6 text-center space-y-4">
-        <div className="w-12 h-12 bg-emerald-50 text-emerald-600 border border-emerald-200/80 rounded-xl flex items-center justify-center mx-auto">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+      <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full border border-slate-200 p-6 text-center space-y-4">
+        <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
           <CheckCircle2 className="w-6 h-6" />
         </div>
         <div className="space-y-1.5">
           <h3 className="text-base font-bold text-slate-900">{title}</h3>
-          <p className="text-xs text-slate-500 leading-relaxed">{message}</p>
+          <p className="text-xs text-slate-600 leading-relaxed">{message}</p>
         </div>
         <div className="pt-2">
           <button
             type="button"
             onClick={handleRefresh}
-            className="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition cursor-pointer"
+            className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition shadow-sm cursor-pointer"
           >
             <RefreshCw className="w-4 h-4" />
             <span>Refresh Now</span>

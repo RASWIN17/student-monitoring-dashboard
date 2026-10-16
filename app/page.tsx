@@ -25,7 +25,7 @@ export default function RootPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-400 gap-2">
-      <RefreshCw className="w-5 h-5 animate-spin text-indigo-600" />
+      <RefreshCw className="w-5 h-5 animate-spin text-blue-600" />
       <span className="text-sm font-medium">Checking authentication status...</span>
     </div>
   );

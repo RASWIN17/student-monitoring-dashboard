@@ -112,7 +112,7 @@ export default function LeetCodeContestsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center font-bold">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold">
               <Code2 className="w-5 h-5" />
             </div>
             <div>
@@ -129,10 +129,10 @@ export default function LeetCodeContestsPage() {
           <button
             onClick={() => fetchContests(true)}
             disabled={refreshing}
-            className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg flex items-center gap-2 transition disabled:opacity-50 cursor-pointer"
+            className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg shadow-2xs flex items-center gap-2 transition disabled:opacity-50"
             title="Refresh contest schedules"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin text-indigo-600' : 'text-slate-500'}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin text-blue-600' : 'text-slate-500'}`} />
             <span>{refreshing ? 'Refreshing...' : 'Sync Schedules'}</span>
           </button>
         </div>
@@ -140,23 +140,23 @@ export default function LeetCodeContestsPage() {
 
       {/* Classroom Context Notice */}
       {selectedClassroom && (
-        <div className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs text-slate-800">
+        <div className="px-4 py-2.5 bg-blue-50/70 border border-blue-200/60 rounded-xl flex items-center justify-between text-xs text-blue-900">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-slate-700">Selected Classroom:</span>
+            <span className="font-semibold">Selected Classroom:</span>
             <span>{selectedClassroom.name} ({selectedClassroom.course} - Sec {selectedClassroom.section})</span>
           </div>
-          <span className="text-[11px] text-slate-500 font-medium">Timezone: Asia/Kolkata</span>
+          <span className="text-[11px] text-blue-700 font-medium">Timezone: Asia/Kolkata</span>
         </div>
       )}
 
       {/* Filter Tabs and Search Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="inline-flex p-1 bg-slate-100 rounded-lg text-xs font-semibold text-slate-600 border border-slate-200">
+        <div className="inline-flex p-1 bg-slate-100 rounded-lg text-xs font-semibold text-slate-600">
           <button
             onClick={() => setActiveTab('all')}
-            className={`px-3 py-1.5 rounded-md transition cursor-pointer ${
+            className={`px-3 py-1.5 rounded-md transition ${
               activeTab === 'all'
-                ? 'bg-white text-slate-900 font-bold border border-slate-200'
+                ? 'bg-white text-slate-900 shadow-2xs'
                 : 'hover:text-slate-900'
             }`}
           >
@@ -164,9 +164,9 @@ export default function LeetCodeContestsPage() {
           </button>
           <button
             onClick={() => setActiveTab('upcoming')}
-            className={`px-3 py-1.5 rounded-md transition cursor-pointer ${
+            className={`px-3 py-1.5 rounded-md transition ${
               activeTab === 'upcoming'
-                ? 'bg-white text-slate-900 font-bold border border-slate-200'
+                ? 'bg-white text-slate-900 shadow-2xs'
                 : 'hover:text-slate-900'
             }`}
           >
@@ -174,9 +174,9 @@ export default function LeetCodeContestsPage() {
           </button>
           <button
             onClick={() => setActiveTab('completed')}
-            className={`px-3 py-1.5 rounded-md transition cursor-pointer ${
+            className={`px-3 py-1.5 rounded-md transition ${
               activeTab === 'completed'
-                ? 'bg-white text-slate-900 font-bold border border-slate-200'
+                ? 'bg-white text-slate-900 shadow-2xs'
                 : 'hover:text-slate-900'
             }`}
           >
@@ -192,7 +192,7 @@ export default function LeetCodeContestsPage() {
             placeholder="Search contest name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+            className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>
@@ -216,7 +216,7 @@ export default function LeetCodeContestsPage() {
           ))}
         </div>
       ) : filteredContests.length === 0 ? (
-        <div className="py-20 text-center bg-white rounded-xl border border-slate-200 p-8">
+        <div className="py-20 text-center bg-white rounded-xl border border-slate-200 p-8 shadow-2xs">
           <HelpCircle className="w-10 h-10 text-slate-300 mx-auto mb-3" />
           <h3 className="text-sm font-bold text-slate-800">No LeetCode Contests Found</h3>
           <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
@@ -227,7 +227,7 @@ export default function LeetCodeContestsPage() {
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="mt-3 px-3 py-1.5 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded-lg hover:bg-indigo-100 transition cursor-pointer"
+              className="mt-3 px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-semibold rounded-lg hover:bg-blue-100 transition"
             >
               Clear Search
             </button>
