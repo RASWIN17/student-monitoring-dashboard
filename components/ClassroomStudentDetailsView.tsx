@@ -6,26 +6,20 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthContext';
 import { Classroom, StudentPerformanceOverview } from '@/lib/types';
 import { ScanModal } from '@/components/ScanModal';
-import { LeetCodeIcon, CodeChefIcon } from '@/components/PlatformIcons';
 import {
   Users,
   Search,
   ArrowLeft,
   RefreshCw,
   ExternalLink,
-  Play,
   ArrowUpDown,
   Trophy,
   CheckCircle2,
   AlertTriangle,
-  HelpCircle,
   Hash,
-  Award,
   ChevronRight,
   TrendingUp,
-  Sparkles,
-  BarChart2,
-  GraduationCap,
+  Star,
 } from 'lucide-react';
 
 interface Props {
@@ -244,26 +238,26 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
   if (loading) {
     return (
       <div className="py-24 text-center space-y-4">
-        <RefreshCw className="w-8 h-8 animate-spin mx-auto text-blue-600" />
-        <p className="text-sm font-semibold text-slate-700">
+        <RefreshCw className="w-8 h-8 animate-spin mx-auto text-[#1769ff]" />
+        <p className="text-sm font-bold text-[#0f1b35]">
           Loading {platformDisplayName} analytics for classroom...
         </p>
-        <p className="text-xs text-slate-400">Verifying student records and profile snapshots</p>
+        <p className="text-xs text-[#64748b]">Verifying student records and profile snapshots</p>
       </div>
     );
   }
 
   if (error || !classroom) {
     return (
-      <div className="max-w-md mx-auto my-12 bg-white rounded-xl border border-red-200 p-8 text-center shadow-xs">
-        <div className="h-12 w-12 bg-red-100 text-red-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+      <div className="max-w-md mx-auto my-12 bg-white rounded-2xl border border-red-200 p-8 text-center shadow-xs">
+        <div className="h-12 w-12 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
           <AlertTriangle className="w-6 h-6" />
         </div>
         <h2 className="text-lg font-bold text-slate-900 mb-2">Classroom Not Found</h2>
         <p className="text-xs text-slate-500 mb-6">{error || 'Could not locate the requested classroom.'}</p>
         <Link
           href={platformSelectionUrl}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition"
+          className="px-4 py-2 bg-[#1769ff] text-white rounded-xl text-xs font-semibold hover:bg-blue-700 transition"
         >
           Back to Classroom Selection
         </Link>
@@ -271,93 +265,132 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
     );
   }
 
+  const percentLinked =
+    stats.totalStudents > 0
+      ? `${Math.round((stats.linkedAccountsCount / stats.totalStudents) * 100)}% linked`
+      : '0% linked';
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
-      {/* Breadcrumb Navigation */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-slate-500">
-        <Link href="/students" className="hover:text-blue-600 transition">
+      {/* 1. Breadcrumb Navigation */}
+      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs font-medium text-[#64748b]">
+        <Link href="/students" className="hover:text-[#1769ff] transition">
           Students
         </Link>
         <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-        <Link href={platformSelectionUrl} className="hover:text-blue-600 transition">
+        <Link href={platformSelectionUrl} className="hover:text-[#1769ff] transition">
           {platformDisplayName}
         </Link>
         <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-        <span className="font-semibold text-slate-800">{classroom.name}</span>
+        <span className="font-bold text-[#0f1b35]">{classroom.name}</span>
       </nav>
 
-      {/* Classroom & Platform Header */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+      {/* 2. Classroom Header Card */}
+      <div className="bg-white rounded-2xl border border-[#e1eaf5] p-6 sm:p-7 shadow-[0_2px_12px_rgba(30,64,175,0.03)]">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex items-start gap-4">
-            <div
-              className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 border ${
-                platform === 'leetcode'
-                  ? 'bg-amber-500/10 border-amber-500/20 text-amber-600'
-                  : 'bg-orange-500/10 border-orange-500/20 text-orange-600'
-              }`}
-            >
+          <div className="flex items-start gap-4 sm:gap-5">
+            {/* Logo Box */}
+            <div className="w-16 h-16 rounded-2xl bg-white border border-slate-100/90 shadow-[0_4px_16px_rgba(30,64,175,0.06)] flex items-center justify-center p-3 shrink-0">
               {platform === 'leetcode' ? (
-                <LeetCodeIcon className="w-8 h-8" />
+                <svg viewBox="0 0 24 24" fill="none" className="w-9 h-9">
+                  <path
+                    d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 4.792 3.635 6.002 6.002 0 0 0 2.457-.184 5.922 5.922 0 0 0 2.158-1.144l4.24-4.24a1.374 1.374 0 1 0-1.943-1.944l-4.24 4.24a3.175 3.175 0 0 1-1.156.612 3.255 3.255 0 0 1-1.334.1 3.208 3.208 0 0 1-2.585-1.961 2.977 2.977 0 0 1-.189-.55 2.984 2.984 0 0 1-.033-1.275 2.844 2.844 0 0 1 .653-1.137l3.854-4.126 5.406-5.788A1.374 1.374 0 0 0 13.483 0z"
+                    fill="#262626"
+                  />
+                  <path
+                    d="M9.832 10.903a1.4 1.4 0 0 0-.99.41l-2.073 2.073a1.4 1.4 0 1 0 1.98 1.98l2.073-2.073a1.4 1.4 0 0 0-.99-2.39z"
+                    fill="#FFA116"
+                  />
+                  <path
+                    d="M20.311 17.09a1.374 1.374 0 0 0-1.374-1.374h-8.032a1.374 1.374 0 1 0 0 2.748h8.032a1.374 1.374 0 0 0 1.374-1.374z"
+                    fill="#262626"
+                  />
+                </svg>
               ) : (
-                <CodeChefIcon className="w-8 h-8" />
+                <svg viewBox="0 0 48 48" fill="none" className="w-10 h-10">
+                  <path
+                    d="M12 28 C9.5 28 7 26 7 22.5 C7 19.5 9 17.5 12 17.5 C12 17 12.1 16.5 12.3 16 C13.5 11.5 17.5 8 22.5 8 C27.5 8 31.5 11.5 32.7 16 C32.9 16.5 33 17 33 17.5 C36 17.5 38 19.5 38 22.5 C38 26 35.5 28 33 28"
+                    stroke="#f97316"
+                    strokeWidth="3.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill="none"
+                  />
+                  <path
+                    d="M13 28 L14 36 L31 36 L32 28"
+                    stroke="#f97316"
+                    strokeWidth="3.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill="none"
+                  />
+                  <rect
+                    x="11"
+                    y="36"
+                    width="23"
+                    height="5"
+                    rx="2.5"
+                    stroke="#f97316"
+                    strokeWidth="3.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill="none"
+                  />
+                </svg>
               )}
             </div>
 
             <div>
+              {/* Badges Row */}
               <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                <span
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wide ${
-                    platform === 'leetcode'
-                      ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                      : 'bg-orange-100 text-orange-800 border border-orange-300'
-                  }`}
-                >
-                  <Sparkles className="w-3 h-3" />
-                  <span>{platformDisplayName} Analytics</span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-[#eef4ff] text-[#1769ff]">
+                  {platform === 'leetcode' ? (
+                    <Hash className="w-3.5 h-3.5 stroke-[2.5]" />
+                  ) : (
+                    <TrendingUp className="w-3.5 h-3.5 stroke-[2.5]" />
+                  )}
+                  <span>{platform === 'leetcode' ? 'LEETCODE ANALYTICS' : 'CODECHEF ANALYTICS'}</span>
                 </span>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
-                  Join Code: <strong className="text-slate-800 tracking-wider">{classroom.join_code}</strong>
+                <span className="px-3 py-1 rounded-lg text-[11px] font-semibold bg-[#f1f5f9] text-[#475569]">
+                  Join Code: <strong className="text-slate-800 tracking-wider font-bold">{classroom.join_code}</strong>
                 </span>
               </div>
 
-              <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+              {/* Title */}
+              <h1 className="text-2xl font-black text-[#0f1b35] tracking-tight mt-1 mb-1">
                 {classroom.name}{' '}
-                <span className="text-slate-500 font-normal text-lg">
-                  ({classroom.course} — Section {classroom.section})
+                <span className="text-[#64748b] font-medium text-lg">
+                  ({classroom.course || 'demo'} — Section {classroom.section})
                 </span>
               </h1>
 
-              <p className="text-xs text-slate-500 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-                <span><strong>Department:</strong> {classroom.department}</span>
+              {/* Department, Batch, Year line */}
+              <p className="text-xs text-[#64748b] mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 font-medium">
+                <span><strong>Department:</strong> <span className="text-[#334155]">{classroom.department}</span></span>
                 <span>•</span>
-                <span><strong>Batch:</strong> {classroom.batch}</span>
+                <span><strong>Batch:</strong> <span className="text-[#334155]">{classroom.batch}</span></span>
                 <span>•</span>
-                <span><strong>Year:</strong> {classroom.academic_year}</span>
+                <span><strong>Year:</strong> <span className="text-[#334155]">{classroom.academic_year}</span></span>
               </p>
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-2.5 self-start md:self-center shrink-0">
+          <div className="flex items-center gap-3 self-start md:self-center shrink-0">
             <Link
               href={platformSelectionUrl}
-              className="px-3.5 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg shadow-2xs flex items-center gap-1.5 transition"
+              className="px-4 py-2.5 bg-white border border-[#e1eaf5] hover:bg-slate-50 text-[#0f1b35] text-xs font-bold rounded-xl shadow-2xs flex items-center gap-2 transition"
             >
-              <ArrowLeft className="w-3.5 h-3.5" />
+              <ArrowLeft className="w-4 h-4" />
               <span>Change Classroom</span>
             </Link>
 
             {isTeacher && (
               <button
                 onClick={() => setIsScanClassroomOpen(true)}
-                className={`px-4 py-2 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-2 transition ${
-                  platform === 'leetcode'
-                    ? 'bg-amber-600 hover:bg-amber-700 active:bg-amber-800'
-                    : 'bg-orange-600 hover:bg-orange-700 active:bg-orange-800'
-                }`}
+                className="px-5 py-2.5 bg-[#1769ff] hover:bg-[#0052cc] text-white text-xs font-bold rounded-xl shadow-[0_4px_14px_rgba(23,105,255,0.25)] flex items-center gap-2 transition"
               >
-                <RefreshCw className="w-3.5 h-3.5" />
+                <RefreshCw className="w-4 h-4" />
                 <span>Scan Classroom</span>
               </button>
             )}
@@ -365,165 +398,228 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
         </div>
       </div>
 
-      {/* KPI Summary Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3.5">
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs">
-          <div className="flex items-center justify-between text-slate-500 mb-1">
-            <span className="text-[11px] font-semibold uppercase tracking-wider">Total Students</span>
-            <Users className="w-4 h-4 text-blue-600" />
+      {/* 3. KPI Summary Cards Row */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        {/* Total Students */}
+        <div className="bg-white rounded-2xl border border-[#e1eaf5] p-5 shadow-[0_2px_10px_rgba(30,64,175,0.03)] flex flex-col justify-between">
+          <div className="flex items-center justify-between text-[#64748b] mb-1">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#64748b]">Total Students</span>
+            <Users className="w-4 h-4 text-[#1769ff]" />
           </div>
-          <div className="text-2xl font-bold text-slate-900">{stats.totalStudents}</div>
-          <div className="text-[11px] text-slate-400 mt-0.5">Enrolled in classroom</div>
+          <div className="text-2xl lg:text-[28px] font-black text-[#0f1b35] mt-2 mb-0.5 tracking-tight">
+            {stats.totalStudents}
+          </div>
+          <div className="text-xs text-[#64748b] font-medium">Enrolled in classroom</div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs">
-          <div className="flex items-center justify-between text-slate-500 mb-1">
-            <span className="text-[11px] font-semibold uppercase tracking-wider">Profiles Linked</span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+        {/* Profiles Linked */}
+        <div className="bg-white rounded-2xl border border-[#e1eaf5] p-5 shadow-[0_2px_10px_rgba(30,64,175,0.03)] flex flex-col justify-between">
+          <div className="flex items-center justify-between text-[#64748b] mb-1">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#64748b]">Profiles Linked</span>
+            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
           </div>
-          <div className="text-2xl font-bold text-slate-900">
-            {stats.linkedAccountsCount}
-            <span className="text-xs font-normal text-slate-400 ml-1">/ {stats.totalStudents}</span>
+          <div className="text-2xl lg:text-[28px] font-black text-[#0f1b35] mt-2 mb-0.5 tracking-tight flex items-baseline">
+            <span>{stats.linkedAccountsCount}</span>
+            <span className="text-sm font-normal text-slate-400 ml-1.5">/ {stats.totalStudents}</span>
           </div>
-          <div className="text-[11px] text-slate-400 mt-0.5">
-            {stats.totalStudents > 0
-              ? `${Math.round((stats.linkedAccountsCount / stats.totalStudents) * 100)}% linked`
-              : '0% linked'}
-          </div>
+          <div className="text-xs text-[#64748b] font-medium">{percentLinked}</div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs">
-          <div className="flex items-center justify-between text-slate-500 mb-1">
-            <span className="text-[11px] font-semibold uppercase tracking-wider">Total Problems Solved</span>
-            <Hash className="w-4 h-4 text-indigo-600" />
+        {/* Total Problems Solved */}
+        <div className="bg-white rounded-2xl border border-[#e1eaf5] p-5 shadow-[0_2px_10px_rgba(30,64,175,0.03)] flex flex-col justify-between">
+          <div className="flex items-center justify-between text-[#64748b] mb-1">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#64748b]">Total Problems Solved</span>
+            <Hash className="w-4 h-4 text-[#1769ff]" />
           </div>
-          <div className="text-2xl font-bold text-slate-900">
+          <div className="text-2xl lg:text-[28px] font-black text-[#0f1b35] mt-2 mb-0.5 tracking-tight">
             {stats.totalProblemsSolved.toLocaleString()}
           </div>
-          <div className="text-[11px] text-slate-400 mt-0.5">Combined lifetime solves</div>
+          <div className="text-xs text-[#64748b] font-medium">Combined lifetime solves</div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs">
-          <div className="flex items-center justify-between text-slate-500 mb-1">
-            <span className="text-[11px] font-semibold uppercase tracking-wider">Average Rating</span>
-            <TrendingUp className="w-4 h-4 text-amber-600" />
+        {/* Average Rating */}
+        <div className="bg-white rounded-2xl border border-[#e1eaf5] p-5 shadow-[0_2px_10px_rgba(30,64,175,0.03)] flex flex-col justify-between">
+          <div className="flex items-center justify-between text-[#64748b] mb-1">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#64748b]">Average Rating</span>
+            <TrendingUp className="w-4 h-4 text-[#1769ff]" />
           </div>
-          <div className="text-2xl font-bold text-slate-900">{stats.avgRating}</div>
-          <div className="text-[11px] text-slate-400 mt-0.5">Across rated students</div>
+          <div className="text-2xl lg:text-[28px] font-black text-[#0f1b35] mt-2 mb-0.5 tracking-tight">
+            {stats.avgRating}
+          </div>
+          <div className="text-xs text-[#64748b] font-medium">Across rated students</div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs col-span-2 lg:col-span-1">
-          <div className="flex items-center justify-between text-slate-500 mb-1">
-            <span className="text-[11px] font-semibold uppercase tracking-wider">Highest Rating</span>
-            <Trophy className="w-4 h-4 text-yellow-500" />
+        {/* Highest Rating */}
+        <div className="bg-white rounded-2xl border border-[#e1eaf5] p-5 shadow-[0_2px_10px_rgba(30,64,175,0.03)] flex flex-col justify-between col-span-2 md:col-span-1">
+          <div className="flex items-center justify-between text-[#64748b] mb-1">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#64748b]">Highest Rating</span>
+            <Trophy className="w-4 h-4 text-[#1769ff]" />
           </div>
-          <div className="text-2xl font-bold text-slate-900">{stats.highestRating}</div>
-          <div className="text-[11px] text-slate-400 mt-0.5">Classroom peak rating</div>
+          <div className="text-2xl lg:text-[28px] font-black text-[#0f1b35] mt-2 mb-0.5 tracking-tight">
+            {stats.highestRating}
+          </div>
+          <div className="text-xs text-[#64748b] font-medium">Classroom peak rating</div>
         </div>
       </div>
 
-      {/* Search, Filter & Sort Toolbar */}
-      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs space-y-3">
+      {/* 4. Search, Filter & Sort Controls */}
+      <div className="bg-white rounded-2xl border border-[#e1eaf5] p-4 shadow-[0_2px_10px_rgba(30,64,175,0.03)] space-y-3">
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           {/* Search Box */}
           <div className="relative flex-1">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               placeholder={`Search by student name, email, or ${platformDisplayName} handle...`}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              className="w-full pl-9 pr-4 py-2 bg-white border border-[#e1eaf5] rounded-xl text-xs sm:text-sm text-slate-800 placeholder-[#94a3b8] focus:outline-none focus:border-[#1769ff] focus:ring-1 focus:ring-[#1769ff] transition-all"
             />
           </div>
 
-          {/* Sorting Dropdown Control */}
-          <div className="flex items-center gap-2 shrink-0">
-            <label htmlFor="student-sort-select" className="text-xs font-semibold text-slate-600 flex items-center gap-1.5 shrink-0">
-              <ArrowUpDown className="w-3.5 h-3.5 text-slate-500" />
-              <span>Sort By:</span>
-            </label>
-            <select
-              id="student-sort-select"
-              value={sortOption}
-              onChange={(e) => setSortOption(e.target.value as SortOption)}
-              className="bg-slate-50 border border-slate-300 text-slate-800 text-xs font-medium rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-            >
-              <optgroup label="Problem-Solving Filters">
+          {/* Platform Specific Sort Header / Controls */}
+          {platform === 'leetcode' ? (
+            /* LeetCode: Single Row Sort By Pills */
+            <div className="flex items-center gap-1.5 shrink-0 overflow-x-auto no-scrollbar">
+              <span className="text-xs font-bold text-[#64748b] mr-1">Sort By:</span>
+              <button
+                onClick={() => setSortOption('problems_desc')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                  sortOption === 'problems_desc'
+                    ? 'bg-[#1769ff] text-white shadow-xs'
+                    : 'bg-white border border-[#e1eaf5] text-[#475569] hover:bg-slate-50'
+                }`}
+              >
+                🔥 Most Solved
+              </button>
+              <button
+                onClick={() => setSortOption('problems_asc')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                  sortOption === 'problems_asc'
+                    ? 'bg-[#1769ff] text-white shadow-xs'
+                    : 'bg-white border border-[#e1eaf5] text-[#475569] hover:bg-slate-50'
+                }`}
+              >
+                Least Solved
+              </button>
+              <button
+                onClick={() => setSortOption('rating_desc')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                  sortOption === 'rating_desc'
+                    ? 'bg-[#1769ff] text-white shadow-xs'
+                    : 'bg-white border border-[#e1eaf5] text-[#475569] hover:bg-slate-50'
+                }`}
+              >
+                ⭐ Highest Rating
+              </button>
+              <button
+                onClick={() => setSortOption('rating_asc')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                  sortOption === 'rating_asc'
+                    ? 'bg-[#1769ff] text-white shadow-xs'
+                    : 'bg-white border border-[#e1eaf5] text-[#475569] hover:bg-slate-50'
+                }`}
+              >
+                Lowest Rating
+              </button>
+            </div>
+          ) : (
+            /* CodeChef: Dropdown selector matching Reference Image 2 */
+            <div className="flex items-center gap-2 shrink-0">
+              <label htmlFor="codechef-sort-select" className="text-xs font-bold text-[#64748b] flex items-center gap-1.5 shrink-0">
+                <ArrowUpDown className="w-3.5 h-3.5 text-slate-500" />
+                <span>Sort By:</span>
+              </label>
+              <select
+                id="codechef-sort-select"
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value as SortOption)}
+                className="bg-white border border-[#e1eaf5] text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2 focus:outline-none focus:border-[#1769ff] cursor-pointer"
+              >
                 <option value="problems_desc">Highest Problems Solved → Lowest Problems Solved</option>
                 <option value="problems_asc">Lowest Problems Solved → Highest Problems Solved</option>
-              </optgroup>
-              <optgroup label="Rating Filters">
                 <option value="rating_desc">Highest Rating → Lowest Rating</option>
                 <option value="rating_asc">Lowest Rating → Highest Rating</option>
-              </optgroup>
-              <optgroup label="Alphabetical">
                 <option value="name_asc">Student Name (A → Z)</option>
-              </optgroup>
-            </select>
-          </div>
+              </select>
+            </div>
+          )}
         </div>
 
-        {/* Quick Filter Pill Buttons */}
-        <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-slate-100 text-xs">
-          <span className="text-slate-400 font-medium mr-1 text-[11px]">Quick sort:</span>
-          <button
-            onClick={() => setSortOption('problems_desc')}
-            className={`px-2.5 py-1 rounded-md text-xs font-medium transition ${
-              sortOption === 'problems_desc'
-                ? 'bg-blue-600 text-white font-semibold'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-            }`}
-          >
-            🔥 Most Solved
-          </button>
-          <button
-            onClick={() => setSortOption('problems_asc')}
-            className={`px-2.5 py-1 rounded-md text-xs font-medium transition ${
-              sortOption === 'problems_asc'
-                ? 'bg-blue-600 text-white font-semibold'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-            }`}
-          >
-            Least Solved
-          </button>
-          <button
-            onClick={() => setSortOption('rating_desc')}
-            className={`px-2.5 py-1 rounded-md text-xs font-medium transition ${
-              sortOption === 'rating_desc'
-                ? 'bg-blue-600 text-white font-semibold'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-            }`}
-          >
-            ⭐ Highest Rating
-          </button>
-          <button
-            onClick={() => setSortOption('rating_asc')}
-            className={`px-2.5 py-1 rounded-md text-xs font-medium transition ${
-              sortOption === 'rating_asc'
-                ? 'bg-blue-600 text-white font-semibold'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-            }`}
-          >
-            Lowest Rating
-          </button>
+        {/* CodeChef Quick Filter Buttons Row (matching Reference Image 2) */}
+        {platform === 'codechef' && (
+          <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-[#edf2f9] text-xs">
+            <span className="text-[#64748b] font-semibold text-xs mr-1">Quick sort:</span>
+            <button
+              onClick={() => setSortOption('problems_desc')}
+              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
+                sortOption === 'problems_desc'
+                  ? 'bg-[#1769ff] text-white shadow-xs'
+                  : 'bg-white border border-[#e1eaf5] text-[#475569] hover:bg-slate-50'
+              }`}
+            >
+              🔥 Most Solved
+            </button>
+            <button
+              onClick={() => setSortOption('problems_asc')}
+              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
+                sortOption === 'problems_asc'
+                  ? 'bg-[#1769ff] text-white shadow-xs'
+                  : 'bg-white border border-[#e1eaf5] text-[#475569] hover:bg-slate-50'
+              }`}
+            >
+              Least Solved
+            </button>
+            <button
+              onClick={() => setSortOption('rating_desc')}
+              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
+                sortOption === 'rating_desc'
+                  ? 'bg-[#1769ff] text-white shadow-xs'
+                  : 'bg-white border border-[#e1eaf5] text-[#475569] hover:bg-slate-50'
+              }`}
+            >
+              ⭐ Highest Rating
+            </button>
+            <button
+              onClick={() => setSortOption('rating_asc')}
+              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
+                sortOption === 'rating_asc'
+                  ? 'bg-[#1769ff] text-white shadow-xs'
+                  : 'bg-white border border-[#e1eaf5] text-[#475569] hover:bg-slate-50'
+              }`}
+            >
+              Lowest Rating
+            </button>
 
-          {searchTerm && (
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="ml-auto text-[#1769ff] hover:underline text-xs font-bold"
+              >
+                Clear Search
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* LeetCode Clear Search (if typed) */}
+        {platform === 'leetcode' && searchTerm && (
+          <div className="flex justify-end pt-1">
             <button
               onClick={() => setSearchTerm('')}
-              className="ml-auto text-blue-600 hover:underline text-xs font-medium"
+              className="text-[#1769ff] hover:underline text-xs font-bold"
             >
               Clear Search
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
-      {/* Student Details Responsive Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
+      {/* 5. Student Details Table */}
+      <div className="bg-white rounded-2xl border border-[#e1eaf5] shadow-[0_4px_20px_rgba(30,64,175,0.03)] overflow-hidden">
         {processedStudents.length === 0 ? (
           <div className="py-16 text-center px-4">
-            <div className="h-12 w-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
+            <div className="h-12 w-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
               <Users className="w-6 h-6" />
             </div>
             {students.length === 0 ? (
@@ -542,7 +638,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
                 </p>
                 <button
                   onClick={() => setSearchTerm('')}
-                  className="mt-3 px-3 py-1.5 text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-md transition"
+                  className="mt-3 px-3.5 py-1.5 text-xs font-bold bg-[#eef4ff] text-[#1769ff] hover:bg-blue-100 rounded-xl transition"
                 >
                   Clear search query
                 </button>
@@ -553,30 +649,30 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50/80 border-b border-slate-200 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
-                  <th className="py-3 px-4">Student Name</th>
-                  <th className="py-3 px-4">Registration Number</th>
-                  <th className="py-3 px-4">{platform === 'leetcode' ? 'LeetCode Handle' : 'CodeChef Handle'}</th>
-                  <th className="py-3 px-4">Total Solved</th>
+                <tr className="bg-white border-b border-[#edf2f9] text-[11px] font-extrabold text-[#64748b] uppercase tracking-wider">
+                  <th className="py-4 px-5 whitespace-nowrap">STUDENT NAME</th>
+                  <th className="py-4 px-5 whitespace-nowrap">REGISTRATION NUMBER</th>
+                  <th className="py-4 px-5 whitespace-nowrap">{platform === 'leetcode' ? 'LEETCODE HANDLE' : 'CODECHEF HANDLE'}</th>
+                  <th className="py-4 px-5 whitespace-nowrap">TOTAL SOLVED</th>
                   {platform === 'leetcode' ? (
                     <>
-                      <th className="py-3 px-4">Difficulty Breakdown</th>
-                      <th className="py-3 px-4">Contest Rating</th>
-                      <th className="py-3 px-4">Highest Rating</th>
-                      <th className="py-3 px-4">Global Ranking</th>
+                      <th className="py-4 px-5 whitespace-nowrap">DIFFICULTY BREAKDOWN</th>
+                      <th className="py-4 px-5 whitespace-nowrap">CONTEST RATING</th>
+                      <th className="py-4 px-5 whitespace-nowrap">HIGHEST RATING</th>
+                      <th className="py-4 px-5 whitespace-nowrap">GLOBAL RANKING</th>
                     </>
                   ) : (
                     <>
-                      <th className="py-3 px-4">Star Tier</th>
-                      <th className="py-3 px-4">Contest Rating</th>
-                      <th className="py-3 px-4">Highest Rating</th>
-                      <th className="py-3 px-4">Global Rank</th>
-                      <th className="py-3 px-4">Country Rank</th>
+                      <th className="py-4 px-5 whitespace-nowrap">STAR TIER</th>
+                      <th className="py-4 px-5 whitespace-nowrap">CONTEST RATING</th>
+                      <th className="py-4 px-5 whitespace-nowrap">HIGHEST RATING</th>
+                      <th className="py-4 px-5 whitespace-nowrap">GLOBAL RANK</th>
+                      <th className="py-4 px-5 whitespace-nowrap">COUNTRY RANK</th>
                     </>
                   )}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-xs">
+              <tbody className="divide-y divide-[#edf2f9] text-xs">
                 {processedStudents.map((item) => {
                   const s = item.student;
                   const account = platform === 'leetcode' ? item.leetcodeAccount : item.codechefAccount;
@@ -590,53 +686,53 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
                       key={s.id}
                       className="hover:bg-slate-50/70 transition-colors group"
                     >
-                      {/* 1. Student Name: Clean, simple, clickable without any secondary line underneath */}
-                      <td className="py-3.5 px-4 whitespace-nowrap">
+                      {/* 1. Student Name */}
+                      <td className="py-4 px-5 whitespace-nowrap">
                         <Link
                           href={`/students/${s.id}?platform=${platform}&classroomId=${classroomId}`}
-                          className="font-semibold text-slate-900 hover:text-blue-600 transition truncate hover:underline"
+                          className="font-bold text-sm text-[#0f1b35] hover:text-[#1769ff] transition truncate hover:underline"
                         >
                           {s.display_name}
                         </Link>
                       </td>
 
-                      {/* 2. Register Number */}
-                      <td className="py-3.5 px-4 whitespace-nowrap">
+                      {/* 2. Registration Number */}
+                      <td className="py-4 px-5 whitespace-nowrap">
                         {s.register_number ? (
-                          <span className="font-mono text-slate-700 font-medium">{s.register_number}</span>
+                          <span className="font-mono text-xs font-medium text-[#475569]">{s.register_number}</span>
                         ) : (
                           <span className="text-slate-400 font-mono">—</span>
                         )}
                       </td>
 
-                      {/* 3. Platform Handle (LeetCode Handle / CodeChef Handle) */}
-                      <td className="py-3.5 px-4 whitespace-nowrap">
+                      {/* 3. Platform Handle */}
+                      <td className="py-4 px-5 whitespace-nowrap">
                         {isLinked ? (
                           <div className="flex items-center gap-1.5">
                             <a
                               href={account.public_profile_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="font-mono text-xs font-semibold text-blue-600 hover:underline flex items-center gap-1"
+                              className="font-mono text-xs font-bold text-[#1769ff] hover:underline flex items-center gap-1"
                             >
                               <span>{account.username}</span>
-                              <ExternalLink className="w-3 h-3 text-slate-400" />
+                              <ExternalLink className="w-3.5 h-3.5 text-[#1769ff]" />
                             </a>
                             {account.account_status === 'error' && (
-                              <span className="px-1.5 py-0.5 rounded text-[10px] bg-red-100 text-red-700">Error</span>
+                              <span className="px-1.5 py-0.5 rounded text-[10px] bg-red-100 text-red-700 font-semibold">Error</span>
                             )}
                           </div>
                         ) : (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-500 border border-slate-200">
+                          <span className="px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-slate-100 text-slate-500 border border-slate-200">
                             Not Linked
                           </span>
                         )}
                       </td>
 
                       {/* 4. Total Solved */}
-                      <td className="py-3.5 px-4 whitespace-nowrap">
+                      <td className="py-4 px-5 whitespace-nowrap">
                         {totalSolved != null ? (
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-extrabold bg-blue-50 text-blue-700 border border-blue-200">
+                          <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-black bg-[#eef4ff] text-[#1769ff]">
                             {totalSolved.toLocaleString()}
                           </span>
                         ) : (
@@ -648,23 +744,23 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
                       {platform === 'leetcode' && (
                         <>
                           {/* 5. Difficulty Breakdown */}
-                          <td className="py-3.5 px-4 whitespace-nowrap">
+                          <td className="py-4 px-5 whitespace-nowrap">
                             {snap ? (
-                              <div className="flex items-center gap-1.5 text-[11px]">
+                              <div className="flex items-center gap-2 text-[11px]">
                                 <span
-                                  className="px-2 py-0.5 rounded font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                  className="px-2.5 py-0.5 rounded-md font-bold bg-[#ecfdf5] text-[#059669]"
                                   title="Easy problems solved"
                                 >
                                   E: {snap.easy_solved ?? 0}
                                 </span>
                                 <span
-                                  className="px-2 py-0.5 rounded font-semibold bg-amber-50 text-amber-700 border border-amber-200"
+                                  className="px-2.5 py-0.5 rounded-md font-bold bg-[#fffbeb] text-[#d97706]"
                                   title="Medium problems solved"
                                 >
                                   M: {snap.medium_solved ?? 0}
                                 </span>
                                 <span
-                                  className="px-2 py-0.5 rounded font-semibold bg-rose-50 text-rose-700 border border-rose-200"
+                                  className="px-2.5 py-0.5 rounded-md font-bold bg-[#fff1f2] text-[#e11d48]"
                                   title="Hard problems solved"
                                 >
                                   H: {snap.hard_solved ?? 0}
@@ -676,9 +772,9 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
                           </td>
 
                           {/* 6. Contest Rating */}
-                          <td className="py-3.5 px-4 whitespace-nowrap font-semibold text-slate-800">
+                          <td className="py-4 px-5 whitespace-nowrap">
                             {snap?.contest_rating != null && Number(snap.contest_rating) > 0 ? (
-                              <span className="text-amber-700 font-mono font-bold">
+                              <span className="text-[#ea580c] font-mono font-bold text-xs">
                                 {Number(snap.contest_rating).toFixed(1)}
                               </span>
                             ) : (
@@ -687,9 +783,9 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
                           </td>
 
                           {/* 7. Highest Rating */}
-                          <td className="py-3.5 px-4 whitespace-nowrap font-semibold text-slate-800">
+                          <td className="py-4 px-5 whitespace-nowrap">
                             {snap?.highest_rating != null && Number(snap.highest_rating) > 0 ? (
-                              <span className="font-mono font-bold text-slate-900">
+                              <span className="font-mono font-bold text-xs text-[#0f1b35]">
                                 {Number(snap.highest_rating).toFixed(1)}
                               </span>
                             ) : (
@@ -697,16 +793,16 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
                             )}
                           </td>
 
-                            {/* 8. Global Ranking */}
-                            <td className="py-3.5 px-4 whitespace-nowrap text-slate-700">
-                              {snap?.global_rank != null && Number(snap.global_rank) > 0 && Number(snap.global_rank) < 5000000 ? (
-                                <span className="font-mono text-xs font-bold text-slate-900">
-                                  #{Number(snap.global_rank).toLocaleString('en-US')}
-                                </span>
-                              ) : (
-                                <span className="text-slate-400 font-normal">N/A</span>
-                              )}
-                            </td>
+                          {/* 8. Global Ranking */}
+                          <td className="py-4 px-5 whitespace-nowrap">
+                            {snap?.global_rank != null && Number(snap.global_rank) > 0 && Number(snap.global_rank) < 5000000 ? (
+                              <span className="font-mono text-xs font-bold text-[#0f1b35]">
+                                #{Number(snap.global_rank).toLocaleString('en-US')}
+                              </span>
+                            ) : (
+                              <span className="text-slate-400 font-normal">N/A</span>
+                            )}
+                          </td>
                         </>
                       )}
 
@@ -714,10 +810,11 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
                       {platform === 'codechef' && (
                         <>
                           {/* 5. Star Tier */}
-                          <td className="py-3.5 px-4 whitespace-nowrap">
+                          <td className="py-4 px-5 whitespace-nowrap">
                             {snap ? (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
-                                {getCodeChefStars(snap.contest_rating ?? snap.highest_rating)}
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-[#fef3c7] text-[#b45309]">
+                                <span>{getCodeChefStars(snap.contest_rating ?? snap.highest_rating).replace('★', '')}</span>
+                                <Star className="w-3 h-3 fill-[#b45309] text-[#b45309]" />
                               </span>
                             ) : (
                               <span className="text-slate-400">—</span>
@@ -725,9 +822,9 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
                           </td>
 
                           {/* 6. Contest Rating */}
-                          <td className="py-3.5 px-4 whitespace-nowrap font-semibold text-slate-800">
+                          <td className="py-4 px-5 whitespace-nowrap">
                             {snap?.contest_rating != null ? (
-                              <span className="text-orange-700 font-mono font-bold">
+                              <span className="text-[#ea580c] font-mono font-bold text-xs">
                                 {snap.contest_rating}
                               </span>
                             ) : (
@@ -736,13 +833,13 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
                           </td>
 
                           {/* 7. Highest Rating */}
-                          <td className="py-3.5 px-4 whitespace-nowrap font-semibold text-slate-800">
+                          <td className="py-4 px-5 whitespace-nowrap">
                             {snap?.highest_rating != null ? (
-                              <span className="font-mono font-bold text-slate-800">
+                              <span className="font-mono font-bold text-xs text-[#0f1b35]">
                                 {Math.round(snap.highest_rating)}
                               </span>
                             ) : snap?.highest_score != null ? (
-                              <span className="font-mono font-bold text-slate-800">
+                              <span className="font-mono font-bold text-xs text-[#0f1b35]">
                                 {Math.round(snap.highest_score)}
                               </span>
                             ) : (
@@ -751,18 +848,22 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
                           </td>
 
                           {/* 8. Global Rank */}
-                          <td className="py-3.5 px-4 whitespace-nowrap text-slate-700">
+                          <td className="py-4 px-5 whitespace-nowrap">
                             {snap?.global_rank != null ? (
-                              <span className="font-mono text-[11px]">#{snap.global_rank.toLocaleString()}</span>
+                              <span className="font-mono text-xs font-medium text-[#475569]">
+                                #{snap.global_rank.toLocaleString()}
+                              </span>
                             ) : (
                               <span className="text-slate-400">—</span>
                             )}
                           </td>
 
                           {/* 9. Country Rank */}
-                          <td className="py-3.5 px-4 whitespace-nowrap text-slate-700">
+                          <td className="py-4 px-5 whitespace-nowrap">
                             {snap?.country_rank != null ? (
-                              <span className="font-mono text-[11px]">#{snap.country_rank.toLocaleString()}</span>
+                              <span className="font-mono text-xs font-medium text-[#475569]">
+                                #{snap.country_rank.toLocaleString()}
+                              </span>
                             ) : (
                               <span className="text-slate-400">—</span>
                             )}
