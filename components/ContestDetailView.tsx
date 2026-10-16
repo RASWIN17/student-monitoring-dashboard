@@ -647,7 +647,7 @@ export function ContestDetailView({ platform, contestId }: ContestDetailViewProp
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-[#fbfcfd] border-b border-[#e1eaf5] text-[#64748b] font-extrabold uppercase tracking-wider text-[11px]">
+                <tr className="bg-[#fbfcfd] border-b border-[#e1eaf5] text-black font-extrabold uppercase tracking-wider text-[11px]">
                   <th className="py-4 px-6">
                     {platform === 'codechef' ? 'NAME' : 'STUDENT NAME'}
                   </th>
@@ -658,7 +658,7 @@ export function ContestDetailView({ platform, contestId }: ContestDetailViewProp
                   <th className="py-4 px-6 text-center">
                     {platform === 'codechef' ? 'PARTICIPATION STATUS' : 'CONTEST STATUS'}
                   </th>
-                  <th className="py-4 px-6 text-center bg-[#fff8f5] text-[#9a3412] font-black border-l border-[#ffedd5]/60 w-[220px]">
+                  <th className="py-4 px-6 text-center bg-[#fff8f5] text-black font-black border-l border-[#ffedd5]/60 w-[220px]">
                     CONTEST PROBLEMS SOLVED
                   </th>
                 </tr>

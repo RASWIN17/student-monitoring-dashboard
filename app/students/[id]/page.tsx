@@ -303,7 +303,7 @@ function StudentDetailContent() {
               </h3>
               <div className="border border-slate-200 rounded-lg overflow-hidden">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
+                  <thead className="bg-slate-50 border-b border-slate-200 text-black font-bold">
                     <tr>
                       <th className="py-2.5 px-3">Contest Title</th>
                       <th className="py-2.5 px-3 text-center">Rank</th>
@@ -449,7 +449,7 @@ function StudentDetailContent() {
               </h3>
               <div className="border border-slate-200 rounded-lg overflow-hidden">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
+                  <thead className="bg-slate-50 border-b border-slate-200 text-black font-bold">
                     <tr>
                       <th className="py-2.5 px-3">Contest Name</th>
                       <th className="py-2.5 px-3 text-center">Rank</th>

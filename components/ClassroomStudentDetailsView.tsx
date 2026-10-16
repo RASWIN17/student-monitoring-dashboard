@@ -532,7 +532,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-white border-b border-[#edf2f9] text-[11px] font-extrabold text-[#64748b] uppercase tracking-wider">
+                <tr className="bg-white border-b border-[#edf2f9] text-[11px] font-extrabold text-black uppercase tracking-wider">
                   <th className="py-4 px-5 whitespace-nowrap">STUDENT NAME</th>
                   <th className="py-4 px-5 whitespace-nowrap">REGISTRATION NUMBER</th>
                   <th className="py-4 px-5 whitespace-nowrap">{platform === 'leetcode' ? 'LEETCODE HANDLE' : 'CODECHEF HANDLE'}</th>

@@ -435,7 +435,7 @@ export function StudentLeetCodeAnalytics({ user }: StudentLeetCodeAnalyticsProps
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-600 font-semibold uppercase text-[10px] tracking-wider">
+                <tr className="bg-slate-50/80 border-b border-slate-200 text-black font-bold uppercase text-[10px] tracking-wider">
                   <th className="py-2.5 px-3">Contest Name</th>
                   <th className="py-2.5 px-3">Date</th>
                   <th className="py-2.5 px-3">Rank</th>

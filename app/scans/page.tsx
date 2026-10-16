@@ -114,7 +114,7 @@ export default function ScansPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
+                <tr className="bg-slate-50 border-b border-slate-200 text-black font-bold uppercase tracking-wider text-[11px]">
                   <th className="py-3 px-4">Job ID</th>
                   <th className="py-3 px-4">Status</th>
                   <th className="py-3 px-4 text-center">Accounts Total</th>

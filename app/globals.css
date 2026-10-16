@@ -32,3 +32,11 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* Global table headings style: black color across the website */
+th,
+thead th,
+thead tr {
+  color: #000000 !important;
+}
+

@@ -380,7 +380,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-[#f8faff] border-y border-[#edf2f9] text-[#667a9e] font-bold uppercase text-[11px] tracking-wider">
+                <tr className="bg-[#f8faff] border-y border-[#edf2f9] text-black font-bold uppercase text-[11px] tracking-wider">
                   <th className="py-3.5 px-6">STUDENT NAME</th>
                   <th className="py-3.5 px-6">REGISTER NUMBER</th>
                   <th className="py-3.5 px-6">SECTION</th>
