@@ -40,7 +40,7 @@ export default function StudentsLandingPage() {
         {/* Card 1: LeetCode */}
         <Link
           href="/students/leetcode"
-          className="group relative bg-white rounded-[24px] sm:rounded-[28px] border-[1.5px] border-[#fbb024] p-8 sm:p-9 flex flex-col items-center justify-center min-h-[260px] sm:min-h-[280px] shadow-[0_8px_30px_rgba(245,158,11,0.06)] hover:shadow-[0_14px_40px_rgba(245,158,11,0.14)] hover:-translate-y-1 transition-all duration-300 overflow-hidden cursor-pointer"
+          className="clickable-card group relative bg-white rounded-[24px] sm:rounded-[28px] border-[1.5px] border-[#fbb024] p-8 sm:p-9 flex flex-col items-center justify-center min-h-[260px] sm:min-h-[280px] shadow-[0_8px_30px_rgba(245,158,11,0.06)] hover:shadow-[0_14px_40px_rgba(245,158,11,0.14)] overflow-hidden cursor-pointer"
         >
           {/* Subtle background decoration: Top-left pastel shape */}
           <div className="absolute -top-10 -left-10 w-40 h-40 sm:w-48 sm:h-48 rounded-full bg-[#fef5e1] pointer-events-none transition-transform duration-500 group-hover:scale-105" />
@@ -67,7 +67,7 @@ export default function StudentsLandingPage() {
         {/* Card 2: CodeChef */}
         <Link
           href="/students/codechef"
-          className="group relative bg-white rounded-[24px] sm:rounded-[28px] border-[1.5px] border-[#f97316] p-8 sm:p-9 flex flex-col items-center justify-center min-h-[260px] sm:min-h-[280px] shadow-[0_8px_30px_rgba(249,115,22,0.06)] hover:shadow-[0_14px_40px_rgba(249,115,22,0.14)] hover:-translate-y-1 transition-all duration-300 overflow-hidden cursor-pointer"
+          className="clickable-card group relative bg-white rounded-[24px] sm:rounded-[28px] border-[1.5px] border-[#f97316] p-8 sm:p-9 flex flex-col items-center justify-center min-h-[260px] sm:min-h-[280px] shadow-[0_8px_30px_rgba(249,115,22,0.06)] hover:shadow-[0_14px_40px_rgba(249,115,22,0.14)] overflow-hidden cursor-pointer"
         >
           {/* Subtle background decoration: Top-left pastel shape */}
           <div className="absolute -top-10 -left-10 w-40 h-40 sm:w-48 sm:h-48 rounded-full bg-[#ffede6] pointer-events-none transition-transform duration-500 group-hover:scale-105" />

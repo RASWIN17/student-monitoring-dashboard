@@ -210,7 +210,7 @@ export function ClassroomSelectionView({ platform }: Props) {
                 <Link
                   key={c.id}
                   href={targetUrl}
-                  className={`group bg-white rounded-2xl border border-slate-200 p-6 flex flex-col justify-between hover:shadow-lg transition-all duration-300 relative overflow-hidden ${
+                  className={`clickable-card group bg-white rounded-2xl border border-slate-200 p-6 flex flex-col justify-between hover:shadow-lg transition-all duration-300 relative overflow-hidden ${
                     platform === 'leetcode'
                       ? 'hover:border-amber-400 hover:ring-2 hover:ring-amber-400/20'
                       : 'hover:border-orange-500 hover:ring-2 hover:ring-orange-500/20'

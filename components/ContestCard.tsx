@@ -422,7 +422,7 @@ export function ContestCard({ contest, href }: ContestCardProps) {
   return (
     <Link
       href={href}
-      className={`group relative ${themeConfig.cardBg} rounded-2xl border ${themeConfig.borderColor} ${themeConfig.borderHover} p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.06)] transition-all duration-200 flex flex-col justify-between overflow-hidden`}
+      className={`clickable-card group relative ${themeConfig.cardBg} rounded-2xl border ${themeConfig.borderColor} ${themeConfig.borderHover} p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.06)] transition-all duration-200 flex flex-col justify-between overflow-hidden`}
     >
       <div>
         {/* Top Area: Badges & Right Illustration */}

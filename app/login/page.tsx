@@ -165,7 +165,7 @@ function LoginFormContent() {
                     setSelectedRole('teacher');
                     setError(null);
                   }}
-                  className={`relative p-4 rounded-xl text-left border-2 transition-all cursor-pointer flex flex-col justify-between ${
+                  className={`clickable-card relative p-4 rounded-xl text-left border-2 transition-all cursor-pointer flex flex-col justify-between ${
                     selectedRole === 'teacher'
                       ? 'border-blue-600 bg-blue-50/50 shadow-sm ring-2 ring-blue-500/20'
                       : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/70 text-slate-700'
@@ -208,7 +208,7 @@ function LoginFormContent() {
                     setSelectedRole('student');
                     setError(null);
                   }}
-                  className={`relative p-4 rounded-xl text-left border-2 transition-all cursor-pointer flex flex-col justify-between ${
+                  className={`clickable-card relative p-4 rounded-xl text-left border-2 transition-all cursor-pointer flex flex-col justify-between ${
                     selectedRole === 'student'
                       ? 'border-blue-600 bg-blue-50/50 shadow-sm ring-2 ring-blue-500/20'
                       : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/70 text-slate-700'

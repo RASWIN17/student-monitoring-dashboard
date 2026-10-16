@@ -6,14 +6,15 @@ import {
   GraduationCap,
   Plus,
   Users,
-  Clock,
-  Layers,
+  Building2,
+  Calendar,
+  Link2,
   Copy,
   Check,
-  Archive,
+  Trash2,
   ArrowRight,
+  Layers,
 } from 'lucide-react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 export default function ClassroomsPage() {
@@ -80,7 +81,7 @@ export default function ClassroomsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: name.trim(),
-          course: course.trim(),
+          course: course.trim() || 'N/A',
           batch: batch.trim(),
           department: department.trim(),
           academic_year: academicYear.trim(),
@@ -115,7 +116,7 @@ export default function ClassroomsPage() {
   };
 
   const handleArchive = async (id: string, cName: string) => {
-    if (!confirm(`Are you sure you want to archive classroom "${cName}"? Historical scan records will be preserved.`)) {
+    if (!confirm(`Are you sure you want to delete classroom "${cName}"? Historical scan records will be preserved.`)) {
       return;
     }
     try {
@@ -125,43 +126,42 @@ export default function ClassroomsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <GraduationCap className="w-5 h-5 text-blue-600" />
-            <span>Classroom Management</span>
+    <div className="space-y-8 max-w-7xl mx-auto pb-12">
+      {/* Top Header matching reference image */}
+      <div className="flex items-center justify-between gap-4 pt-1">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-[#e6f0ff] border border-[#d4e4fe] flex items-center justify-center shadow-xs shrink-0">
+            <GraduationCap className="w-6 h-6 text-[#1769ff]" />
+          </div>
+          <h1 className="text-3xl font-black text-[#0f172a] tracking-tight">
+            Classroom
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Create, manage sections, and distribute join codes for verified student monitoring.
-          </p>
         </div>
 
         {isTeacher ? (
           <button
             onClick={() => setIsCreateOpen(true)}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold flex items-center gap-2 shadow-xs transition cursor-pointer"
+            className="px-5 py-2.5 bg-[#1769ff] hover:bg-[#0052cc] text-white text-sm font-bold rounded-xl shadow-[0_2px_10px_rgba(23,105,255,0.25)] flex items-center gap-2 transition cursor-pointer"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>New Classroom</span>
           </button>
         ) : (
           <button
             onClick={() => setIsJoinOpen(true)}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold flex items-center gap-2 shadow-xs transition cursor-pointer"
+            className="px-5 py-2.5 bg-[#1769ff] hover:bg-[#0052cc] text-white text-sm font-bold rounded-xl shadow-[0_2px_10px_rgba(23,105,255,0.25)] flex items-center gap-2 transition cursor-pointer"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>Join Classroom</span>
           </button>
         )}
       </div>
 
-      {/* Classrooms Grid */}
+      {/* Classrooms Grid matching reference image (2 columns on desktop) */}
       {classrooms.length === 0 ? (
-        <div className="bg-white rounded-xl border border-slate-200 p-12 text-center shadow-2xs">
+        <div className="bg-white rounded-[24px] border border-[#dce6f5] p-12 text-center shadow-[0_2px_16px_rgba(30,64,175,0.04)]">
           <Layers className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-          <h3 className="text-sm font-bold text-slate-800">No classrooms created yet</h3>
+          <h3 className="text-base font-bold text-slate-800">No classrooms created yet</h3>
           <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
             {isTeacher
               ? 'Click "New Classroom" to create a section and invite your students.'
@@ -170,99 +170,150 @@ export default function ClassroomsPage() {
           {!isTeacher && (
             <button
               onClick={() => setIsJoinOpen(true)}
-              className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold inline-flex items-center gap-2 shadow-xs transition cursor-pointer"
+              className="mt-4 px-5 py-2.5 bg-[#1769ff] hover:bg-[#0052cc] text-white text-xs font-bold rounded-xl shadow-xs transition cursor-pointer inline-flex items-center gap-2"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-4 h-4 stroke-[2.5]" />
               <span>Join a Classroom</span>
             </button>
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {classrooms.map((c) => (
-            <div
-              key={c.id}
-              onClick={() => {
-                setSelectedClassroom(c);
-                router.push(`/classrooms/${c.id}`);
-              }}
-              className="bg-white rounded-xl border border-slate-200 hover:border-blue-500 hover:shadow-md p-5 transition-all flex flex-col justify-between cursor-pointer group"
-            >
-              <div>
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 group-hover:bg-blue-100 group-hover:border-blue-300 transition">
-                    Section {c.section}
-                  </span>
-                  {isTeacher && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {classrooms.map((c) => {
+            const count = c.enrolled_count ?? 0;
+            return (
+              <div
+                key={c.id}
+                onClick={() => {
+                  setSelectedClassroom(c);
+                  router.push(`/classrooms/${c.id}`);
+                }}
+                className="clickable-card relative bg-white rounded-[24px] border border-[#dce6f5] p-7 shadow-[0_2px_16px_rgba(30,64,175,0.04)] overflow-hidden flex flex-col justify-between cursor-pointer group"
+              >
+                {/* Decorative curved shapes in the upper-right corner */}
+                <div className="absolute top-0 right-0 w-36 h-36 bg-gradient-to-bl from-[#edf4ff] via-[#f4f8fe]/60 to-transparent rounded-bl-[100px] pointer-events-none" />
+
+                <div>
+                  {/* Card Top Row: Section Badge & Red Delete Button */}
+                  <div className="flex items-start justify-between gap-3 mb-3 relative z-10">
+                    <span className="px-3.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-[#eaf2ff] text-[#1769ff] border border-[#d6e6fe]">
+                      SECTION {c.section}
+                    </span>
+
+                    {isTeacher && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleArchive(c.id, c.name);
+                        }}
+                        className="w-9 h-9 rounded-xl bg-red-50 hover:bg-red-100 active:bg-red-200 text-red-500 hover:text-red-600 border border-red-200/70 flex items-center justify-center transition cursor-pointer"
+                        title="Delete Classroom"
+                        aria-label="Delete Classroom"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-500" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Classroom Title */}
+                  <h3 className="text-2xl font-black text-[#0f172a] group-hover:text-[#1769ff] leading-tight tracking-tight transition-colors mb-2.5">
+                    {c.name}
+                  </h3>
+
+                  {/* Metadata Row: Dept | Batch | Academic Year */}
+                  <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-xs text-[#64748b] font-medium mb-5">
+                    <div className="flex items-center gap-1.5">
+                      <Building2 className="w-3.5 h-3.5 text-[#64748b] shrink-0" />
+                      <span>
+                        Dept: <span className="font-semibold text-[#334155]">{c.department || 'General'}</span>
+                      </span>
+                    </div>
+
+                    <span className="text-[#cbd5e1] font-light">|</span>
+
+                    <div className="flex items-center gap-1.5">
+                      <Users className="w-3.5 h-3.5 text-[#64748b] shrink-0" />
+                      <span>
+                        Batch: <span className="font-semibold text-[#334155]">{c.batch || 'N/A'}</span>
+                      </span>
+                    </div>
+
+                    <span className="text-[#cbd5e1] font-light">|</span>
+
+                    <div className="flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-[#64748b] shrink-0" />
+                      <span className="font-semibold text-[#334155]">{c.academic_year || '2026-2027'}</span>
+                    </div>
+                  </div>
+
+                  {/* Inset Join Code Box */}
+                  <div
+                    className="p-3.5 sm:p-4 rounded-2xl bg-[#f4f8fe] border border-[#dce8f8] flex items-center justify-between transition-colors"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-10 h-10 rounded-xl bg-[#e3efff] text-[#1769ff] flex items-center justify-center shrink-0">
+                        <Link2 className="w-5 h-5 text-[#1769ff] stroke-[2.2]" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-[10px] font-extrabold uppercase tracking-wider text-[#64748b]">
+                          JOIN CODE
+                        </div>
+                        <div className="text-base sm:text-lg font-black text-[#0f172a] font-mono tracking-wider truncate mt-0.5">
+                          {c.join_code}
+                        </div>
+                      </div>
+                    </div>
+
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleArchive(c.id, c.name);
+                        copyToClipboard(c.join_code);
                       }}
-                      className="text-slate-400 hover:text-red-600 p-1 rounded transition"
-                      title="Archive Classroom"
+                      className="w-9 h-9 rounded-xl bg-[#e3efff] hover:bg-[#d5e7fe] active:bg-[#c2dcfe] text-[#1769ff] flex items-center justify-center transition border border-[#cbe1fc] cursor-pointer shrink-0"
+                      title="Copy Join Code"
+                      aria-label="Copy Join Code"
                     >
-                      <Archive className="w-3.5 h-3.5" />
+                      {copiedCode === c.join_code ? (
+                        <Check className="w-4 h-4 text-emerald-600 stroke-[2.5]" />
+                      ) : (
+                        <Copy className="w-4 h-4 text-[#1769ff]" />
+                      )}
                     </button>
-                  )}
+                  </div>
                 </div>
 
-                <h3 className="text-base font-bold text-slate-900 group-hover:text-blue-600 leading-snug transition-colors">
-                  {c.name}
-                </h3>
-                <p className="text-xs text-slate-500 mt-1">
-                  Dept: {c.department} • Batch: {c.batch} • {c.academic_year}
-                </p>
+                <div>
+                  {/* Horizontal Divider */}
+                  <div className="my-5 border-t border-[#eaf0fa]" />
 
-                {/* Join Code Box */}
-                <div
-                  className="mt-4 p-2.5 bg-slate-50 group-hover:bg-blue-50/40 border border-slate-200 group-hover:border-blue-200/80 rounded-lg flex items-center justify-between transition-colors"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div>
-                    <div className="text-[10px] text-slate-400 uppercase font-semibold">Join Code</div>
-                    <div className="font-mono text-sm font-bold text-slate-800 tracking-wider">
-                      {c.join_code}
+                  {/* Bottom Action Area: Student Count & Open Classroom Button */}
+                  <div className="flex items-center justify-between gap-3 text-xs sm:text-sm">
+                    <div className="flex items-center gap-2 font-bold text-[#334155]">
+                      <Users className="w-4 h-4 text-[#1769ff] stroke-[2.2]" />
+                      <span>
+                        {count} {count === 1 ? 'student' : 'students'}
+                      </span>
+                    </div>
+
+                    <div
+                      className="px-5 py-2.5 bg-[#1769ff] hover:bg-[#0052cc] text-white font-bold text-xs sm:text-sm rounded-xl shadow-[0_2px_10px_rgba(23,105,255,0.25)] flex items-center gap-2 transition"
+                    >
+                      <span>Open Classroom</span>
+                      <ArrowRight className="w-4 h-4 stroke-[2.5]" />
                     </div>
                   </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      copyToClipboard(c.join_code);
-                    }}
-                    className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-white rounded transition"
-                    title="Copy Join Code"
-                  >
-                    {copiedCode === c.join_code ? (
-                      <Check className="w-4 h-4 text-emerald-600" />
-                    ) : (
-                      <Copy className="w-4 h-4" />
-                    )}
-                  </button>
                 </div>
               </div>
-
-              {/* Bottom Meta & Action */}
-              <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-1.5 text-slate-600 font-semibold">
-                  <Users className="w-4 h-4 text-slate-400 group-hover:text-blue-500 transition-colors" />
-                  <span>{c.enrolled_count ?? 0} students</span>
-                </div>
-
-                <div className="px-3 py-1.5 bg-slate-100 group-hover:bg-blue-600 group-hover:text-white text-slate-700 rounded-lg font-semibold flex items-center gap-1 transition">
-                  <span>Open Classroom</span>
-                  <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-                </div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
       {/* Create Classroom Modal */}
       {isCreateOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full border border-slate-200 overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full border border-slate-200 overflow-hidden">
             <div className="px-6 py-4 bg-slate-50 border-b border-slate-200">
               <h3 className="text-base font-bold text-slate-900">Create New Classroom</h3>
               <p className="text-xs text-slate-500">
@@ -294,13 +345,13 @@ export default function ClassroomsPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Course Code
+                    Department
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. CS301"
-                    value={course}
-                    onChange={(e) => setCourse(e.target.value)}
+                    placeholder="e.g. Computer Science"
+                    value={department}
+                    onChange={(e) => setDepartment(e.target.value)}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   />
@@ -336,45 +387,31 @@ export default function ClassroomsPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Department
+                    Academic Year
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Computer Science"
-                    value={department}
-                    onChange={(e) => setDepartment(e.target.value)}
+                    placeholder="e.g. 2026-2027"
+                    value={academicYear}
+                    onChange={(e) => setAcademicYear(e.target.value)}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Academic Year
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. 2026-2027"
-                  value={academicYear}
-                  onChange={(e) => setAcademicYear(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
-
               <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setIsCreateOpen(false)}
-                  className="px-3.5 py-2 text-xs font-medium text-slate-600 hover:text-slate-800"
+                  className="px-3.5 py-2 text-xs font-medium text-slate-600 hover:text-slate-800 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={creating}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 disabled:opacity-50"
+                  className="px-4 py-2 bg-[#1769ff] hover:bg-[#0052cc] text-white rounded-lg text-xs font-semibold disabled:opacity-50 cursor-pointer shadow-xs"
                 >
                   {creating ? 'Creating...' : 'Create Classroom'}
                 </button>
@@ -387,7 +424,7 @@ export default function ClassroomsPage() {
       {/* Join Classroom Modal for Students */}
       {isJoinOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-sm w-full border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             <div className="px-6 py-4 bg-slate-50 border-b border-slate-200">
               <h3 className="text-base font-bold text-slate-900">Join Classroom</h3>
               <p className="text-xs text-slate-500">
@@ -420,14 +457,14 @@ export default function ClassroomsPage() {
                 <button
                   type="button"
                   onClick={() => setIsJoinOpen(false)}
-                  className="px-3.5 py-2 text-xs font-medium text-slate-600 hover:text-slate-800"
+                  className="px-3.5 py-2 text-xs font-medium text-slate-600 hover:text-slate-800 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={joining}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 disabled:opacity-50"
+                  className="px-4 py-2 bg-[#1769ff] hover:bg-[#0052cc] text-white rounded-lg text-xs font-semibold disabled:opacity-50 cursor-pointer shadow-xs"
                 >
                   {joining ? 'Joining...' : 'Join Classroom'}
                 </button>

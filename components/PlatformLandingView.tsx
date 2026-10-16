@@ -133,7 +133,7 @@ export function PlatformLandingView({ platform }: Props) {
         {/* Card 1: Contest */}
         <Link
           href={contestUrl}
-          className="group relative w-full sm:w-[350px] min-h-[260px] sm:h-[280px] bg-gradient-to-b from-[#fffefc] via-[#fffdf7] to-[#fff9e6] rounded-[28px] border-[1.5px] border-[#fde68a] p-8 flex flex-col items-center justify-center shadow-[0_8px_28px_rgba(250,204,21,0.07)] hover:shadow-[0_16px_36px_rgba(250,204,21,0.16)] hover:-translate-y-1 transition-all duration-300 overflow-hidden cursor-pointer select-none"
+          className="clickable-card group relative w-full sm:w-[350px] min-h-[260px] sm:h-[280px] bg-gradient-to-b from-[#fffefc] via-[#fffdf7] to-[#fff9e6] rounded-[28px] border-[1.5px] border-[#fde68a] p-8 flex flex-col items-center justify-center shadow-[0_8px_28px_rgba(250,204,21,0.07)] hover:shadow-[0_16px_36px_rgba(250,204,21,0.16)] overflow-hidden cursor-pointer select-none"
         >
           {/* Subtle bottom wavy layers */}
           <svg
@@ -168,7 +168,7 @@ export function PlatformLandingView({ platform }: Props) {
         {/* Card 2: Progress */}
         <Link
           href={progressUrl}
-          className="group relative w-full sm:w-[350px] min-h-[260px] sm:h-[280px] bg-gradient-to-b from-[#fdfcff] via-[#faf7ff] to-[#f3ebff] rounded-[28px] border-[1.5px] border-[#e9d5ff] p-8 flex flex-col items-center justify-center shadow-[0_8px_28px_rgba(168,85,247,0.07)] hover:shadow-[0_16px_36px_rgba(168,85,247,0.16)] hover:-translate-y-1 transition-all duration-300 overflow-hidden cursor-pointer select-none"
+          className="clickable-card group relative w-full sm:w-[350px] min-h-[260px] sm:h-[280px] bg-gradient-to-b from-[#fdfcff] via-[#faf7ff] to-[#f3ebff] rounded-[28px] border-[1.5px] border-[#e9d5ff] p-8 flex flex-col items-center justify-center shadow-[0_8px_28px_rgba(168,85,247,0.07)] hover:shadow-[0_16px_36px_rgba(168,85,247,0.16)] overflow-hidden cursor-pointer select-none"
         >
           {/* Subtle bottom wavy layers */}
           <svg
