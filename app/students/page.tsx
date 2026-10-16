@@ -7,7 +7,6 @@ import { LeetCodeIcon, CodeChefIcon } from '@/components/PlatformIcons';
 import {
   ArrowRight,
   AlertTriangle,
-  CheckCircle2,
 } from 'lucide-react';
 
 export default function StudentsLandingPage() {
@@ -35,134 +34,60 @@ export default function StudentsLandingPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 pb-12 pt-3">
-      {/* Two Large, Attractive, Clickable Cards in Center */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto items-stretch">
+    <div className="max-w-6xl mx-auto space-y-8 pb-12 pt-6 sm:pt-10">
+      {/* Two Platform Cards matching reference image */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-7 sm:gap-8 max-w-4xl mx-auto items-stretch">
         {/* Card 1: LeetCode */}
         <Link
           href="/students/leetcode"
-          className="group relative bg-gradient-to-br from-[#fffdfa] via-white to-[#fffcf5] rounded-3xl border border-amber-200/80 p-8 lg:p-9 flex flex-col justify-between shadow-[0_12px_36px_rgba(245,158,11,0.08)] hover:shadow-[0_18px_48px_rgba(245,158,11,0.16)] hover:border-amber-400 hover:-translate-y-1 transition-all duration-300 overflow-hidden"
+          className="group relative bg-white rounded-[24px] sm:rounded-[28px] border-[1.5px] border-[#fbb024] p-8 sm:p-9 flex flex-col items-center justify-center min-h-[260px] sm:min-h-[280px] shadow-[0_8px_30px_rgba(245,158,11,0.06)] hover:shadow-[0_14px_40px_rgba(245,158,11,0.14)] hover:-translate-y-1 transition-all duration-300 overflow-hidden cursor-pointer"
         >
-          {/* Subtle top brand color accent bar */}
-          <div className="absolute top-0 left-0 right-0 h-2.5 bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500" />
+          {/* Subtle background decoration: Top-left pastel shape */}
+          <div className="absolute -top-10 -left-10 w-40 h-40 sm:w-48 sm:h-48 rounded-full bg-[#fef5e1] pointer-events-none transition-transform duration-500 group-hover:scale-105" />
 
-          {/* Background watermark icon */}
-          <div className="absolute -bottom-10 -right-10 pointer-events-none opacity-20 group-hover:opacity-30 transition-opacity">
-            <LeetCodeIcon className="w-60 h-60 text-amber-400" />
+          {/* Subtle background decoration: Bottom-right soft radial glow */}
+          <div className="absolute -bottom-14 -right-14 w-52 h-52 sm:w-60 sm:h-60 rounded-full bg-gradient-to-tl from-[#fde8b0]/70 via-[#fef5e1]/30 to-transparent blur-xl pointer-events-none" />
+
+          {/* Centered Title */}
+          <h2 className="text-2xl sm:text-[28px] font-bold text-[#1e293b] tracking-tight text-center relative z-10 mb-4 sm:mb-5">
+            LeetCode
+          </h2>
+
+          {/* Centered Logo in Black Squircle */}
+          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[22px] overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.14)] flex items-center justify-center bg-black relative z-10 group-hover:scale-105 transition-transform duration-300">
+            <LeetCodeIcon className="w-full h-full object-cover select-none pointer-events-none" />
           </div>
 
-          <div className="relative z-10 space-y-5">
-            {/* Header: Icon & Title + Badge */}
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-white border border-amber-200/80 flex items-center justify-center p-3 shadow-xs group-hover:scale-105 transition-transform duration-300 shrink-0">
-                <LeetCodeIcon className="w-10 h-10" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-black text-[#0f1b35] tracking-tight group-hover:text-amber-600 transition">
-                  LeetCode
-                </h2>
-                <span className="mt-1 px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-200/80 inline-block">
-                  DSA & ALGORITHMS
-                </span>
-              </div>
-            </div>
-
-            {/* Platform Description */}
-            <p className="text-xs text-[#4b5563] leading-relaxed">
-              Track algorithmic problem-solving metrics, difficulty breakdowns (Easy, Medium, Hard), official contest
-              ratings, and global rankings for all enrolled students.
-            </p>
-
-            {/* Feature Highlights */}
-            <div className="space-y-3 pt-4 border-t border-amber-100/70">
-              <div className="flex items-center gap-2.5 text-xs text-[#334155] font-semibold">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>Easy, Medium & Hard problem categorizations</span>
-              </div>
-              <div className="flex items-center gap-2.5 text-xs text-[#334155] font-semibold">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>Verified LeetCode contest rating & global ranks</span>
-              </div>
-              <div className="flex items-center gap-2.5 text-xs text-[#334155] font-semibold">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>Classroom leaderboards with numeric sorting</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Button CTA */}
-          <div className="relative z-10 pt-8">
-            <div className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#eab308] via-[#f59e0b] to-[#d97706] hover:brightness-105 text-white font-bold text-xs flex items-center justify-center gap-3 shadow-[0_6px_20px_rgba(245,158,11,0.35)] transition-all">
-              <div className="w-6 h-6 rounded-md bg-white flex items-center justify-center p-1 shrink-0 shadow-2xs">
-                <LeetCodeIcon className="w-4 h-4" />
-              </div>
-              <span>Select Classroom for LeetCode</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" />
-            </div>
+          {/* Circular Arrow Button at Bottom-Right */}
+          <div className="absolute bottom-5 right-5 sm:bottom-6 sm:right-6 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#f59e0b] group-hover:bg-[#d97706] text-white flex items-center justify-center shadow-[0_4px_14px_rgba(245,158,11,0.35)] transition-all duration-200 z-10 group-hover:scale-105">
+            <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 text-white stroke-[2.5] group-hover:translate-x-0.5 transition-transform" />
           </div>
         </Link>
 
         {/* Card 2: CodeChef */}
         <Link
           href="/students/codechef"
-          className="group relative bg-gradient-to-br from-[#fffbfa] via-white to-[#fff8f5] rounded-3xl border border-orange-200/80 p-8 lg:p-9 flex flex-col justify-between shadow-[0_12px_36px_rgba(249,115,22,0.08)] hover:shadow-[0_18px_48px_rgba(249,115,22,0.16)] hover:border-orange-400 hover:-translate-y-1 transition-all duration-300 overflow-hidden"
+          className="group relative bg-white rounded-[24px] sm:rounded-[28px] border-[1.5px] border-[#f97316] p-8 sm:p-9 flex flex-col items-center justify-center min-h-[260px] sm:min-h-[280px] shadow-[0_8px_30px_rgba(249,115,22,0.06)] hover:shadow-[0_14px_40px_rgba(249,115,22,0.14)] hover:-translate-y-1 transition-all duration-300 overflow-hidden cursor-pointer"
         >
-          {/* Subtle top brand color accent bar */}
-          <div className="absolute top-0 left-0 right-0 h-2.5 bg-gradient-to-r from-orange-500 via-amber-600 to-yellow-600" />
+          {/* Subtle background decoration: Top-left pastel shape */}
+          <div className="absolute -top-10 -left-10 w-40 h-40 sm:w-48 sm:h-48 rounded-full bg-[#ffede6] pointer-events-none transition-transform duration-500 group-hover:scale-105" />
 
-          {/* Background watermark icon */}
-          <div className="absolute -bottom-10 -right-10 pointer-events-none opacity-20 group-hover:opacity-30 transition-opacity">
-            <CodeChefIcon className="w-60 h-60 text-orange-400" />
+          {/* Subtle background decoration: Bottom-right soft radial glow */}
+          <div className="absolute -bottom-14 -right-14 w-52 h-52 sm:w-60 sm:h-60 rounded-full bg-gradient-to-tl from-[#fed5c7]/70 via-[#ffede6]/30 to-transparent blur-xl pointer-events-none" />
+
+          {/* Centered Title */}
+          <h2 className="text-2xl sm:text-[28px] font-bold text-[#1e293b] tracking-tight text-center relative z-10 mb-4 sm:mb-5">
+            CodeChef
+          </h2>
+
+          {/* Centered Logo */}
+          <div className="w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center relative z-10 group-hover:scale-105 transition-transform duration-300">
+            <CodeChefIcon className="w-full h-full object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.06)] select-none pointer-events-none" />
           </div>
 
-          <div className="relative z-10 space-y-5">
-            {/* Header: Icon & Title + Badge */}
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-white border border-orange-200/80 flex items-center justify-center p-2.5 shadow-xs group-hover:scale-105 transition-transform duration-300 shrink-0">
-                <CodeChefIcon className="w-10 h-10" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-black text-[#0f1b35] tracking-tight group-hover:text-orange-600 transition">
-                  CodeChef
-                </h2>
-                <span className="mt-1 px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-orange-100 text-orange-900 border border-orange-200/80 inline-block">
-                  COMPETITIVE CONTESTS
-                </span>
-              </div>
-            </div>
-
-            {/* Platform Description */}
-            <p className="text-xs text-[#4b5563] leading-relaxed">
-              Monitor competitive programming contest ratings, star tiers (1★ to 7★), global & country ranks, and
-              verified lifetime problem counts for every student.
-            </p>
-
-            {/* Feature Highlights */}
-            <div className="space-y-3 pt-4 border-t border-orange-100/70">
-              <div className="flex items-center gap-2.5 text-xs text-[#334155] font-semibold">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>Star tiers (1★ to 7★) & current contest rating</span>
-              </div>
-              <div className="flex items-center gap-2.5 text-xs text-[#334155] font-semibold">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>Global rank, country rank & peak rating tracking</span>
-              </div>
-              <div className="flex items-center gap-2.5 text-xs text-[#334155] font-semibold">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>Verified lifetime problems solved & attendance</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Button CTA */}
-          <div className="relative z-10 pt-8">
-            <div className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-orange-600 via-orange-500 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-bold text-xs flex items-center justify-center gap-3 shadow-[0_6px_20px_rgba(249,115,22,0.35)] transition-all">
-              <div className="w-6 h-6 rounded-md bg-white flex items-center justify-center p-0.5 shrink-0 shadow-2xs">
-                <CodeChefIcon className="w-4 h-4" />
-              </div>
-              <span>Select Classroom for CodeChef</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" />
-            </div>
+          {/* Circular Arrow Button at Bottom-Right */}
+          <div className="absolute bottom-5 right-5 sm:bottom-6 sm:right-6 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#f97316] group-hover:bg-[#ea580c] text-white flex items-center justify-center shadow-[0_4px_14px_rgba(249,115,22,0.35)] transition-all duration-200 z-10 group-hover:scale-105">
+            <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 text-white stroke-[2.5] group-hover:translate-x-0.5 transition-transform" />
           </div>
         </Link>
       </div>
