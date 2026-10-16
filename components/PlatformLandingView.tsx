@@ -99,37 +99,38 @@ export function PlatformLandingView({ platform }: Props) {
   const progressUrl = isLeetCode ? '/students/leetcode/progress' : '/students/codechef/progress';
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-16">
-      {/* 1. Back Button */}
-      <div className="mb-8 sm:mb-10">
+    <div className="w-full pb-14">
+      {/* 1. Back Button at Top Left Corner */}
+      <div className="flex items-center justify-start mb-2 sm:mb-3">
         <BackButton fallbackHref="/students" />
       </div>
 
-      {/* 2. Platform Logo & Title (Centered) */}
-      <div className="flex items-center justify-center gap-4 sm:gap-5 mb-12 sm:mb-16">
-        {isLeetCode ? (
-          <>
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-[22px] bg-black flex items-center justify-center p-2.5 shadow-[0_6px_20px_rgba(0,0,0,0.18)] shrink-0">
-              <LeetCodeIcon className="w-full h-full object-contain" />
-            </div>
-            <h1 className="text-4xl sm:text-[48px] font-black text-[#0f172a] tracking-tight">
-              LeetCode
-            </h1>
-          </>
-        ) : (
-          <>
-            <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center shrink-0">
-              <CodeChefIcon className="w-full h-full object-contain drop-shadow-xs" />
-            </div>
-            <h1 className="text-4xl sm:text-[48px] font-black text-[#0f172a] tracking-tight">
-              CodeChef
-            </h1>
-          </>
-        )}
-      </div>
+      {/* 2. Platform Logo & Title (Moved slightly up to manage white space) */}
+      <div className="max-w-4xl mx-auto pt-1 sm:pt-2">
+        <div className="flex items-center justify-center gap-4 sm:gap-5 mb-8 sm:mb-10">
+          {isLeetCode ? (
+            <>
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-[22px] bg-black flex items-center justify-center p-2.5 shadow-[0_6px_20px_rgba(0,0,0,0.18)] shrink-0">
+                <LeetCodeIcon className="w-full h-full object-contain" />
+              </div>
+              <h1 className="text-4xl sm:text-[48px] font-black text-[#0f172a] tracking-tight">
+                LeetCode
+              </h1>
+            </>
+          ) : (
+            <>
+              <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center shrink-0">
+                <CodeChefIcon className="w-full h-full object-contain drop-shadow-xs" />
+              </div>
+              <h1 className="text-4xl sm:text-[48px] font-black text-[#0f172a] tracking-tight">
+                CodeChef
+              </h1>
+            </>
+          )}
+        </div>
 
-      {/* 3. Contest and Progress Cards (Side-by-Side) */}
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8 max-w-3xl mx-auto">
+        {/* 3. Contest and Progress Cards (Side-by-Side) */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8 max-w-3xl mx-auto">
         {/* Card 1: Contest */}
         <Link
           href={contestUrl}
@@ -199,6 +200,7 @@ export function PlatformLandingView({ platform }: Props) {
             Progress
           </h2>
         </Link>
+        </div>
       </div>
     </div>
   );
