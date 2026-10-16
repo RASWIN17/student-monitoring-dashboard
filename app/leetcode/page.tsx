@@ -3,18 +3,13 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/components/AuthContext';
 import { ContestCard } from '@/components/ContestCard';
+import { ContestAnalyticsBanner } from '@/components/ContestAnalyticsBanner';
 import { Contest } from '@/lib/types';
 import { dataCache } from '@/components/DataCacheContext';
 import {
-  Code2,
-  RefreshCw,
   Trophy,
-  Calendar,
-  AlertCircle,
-  HelpCircle,
-  Sparkles,
   Search,
-  Filter,
+  HelpCircle,
 } from 'lucide-react';
 
 import { StudentLeetCodeAnalytics } from '@/components/StudentLeetCodeAnalytics';
@@ -86,7 +81,7 @@ export default function LeetCodeContestsPage() {
     return true;
   });
 
-  // Sort Upcoming & Active contests in ascending chronological order (contest starting soonest appears first)
+  // Sort Upcoming & Active contests in ascending chronological order (starting soonest first)
   const upcomingAndLive = filteredContests
     .filter((c) => c.status !== 'completed')
     .sort((a, b) => {
@@ -96,7 +91,7 @@ export default function LeetCodeContestsPage() {
       return a.title.localeCompare(b.title);
     });
 
-  // Keep completed contests sorted descending (most recently completed contest first)
+  // Keep completed contests sorted descending (most recently completed first)
   const completed = filteredContests
     .filter((c) => c.status === 'completed')
     .sort((a, b) => {
@@ -106,128 +101,108 @@ export default function LeetCodeContestsPage() {
       return a.title.localeCompare(b.title);
     });
 
+  const totalCount = contests.length;
+  const upcomingAndLiveTotalCount = contests.filter((c) => c.status !== 'completed').length;
+  const completedTotalCount = contests.filter((c) => c.status === 'completed').length;
+
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold">
-              <Code2 className="w-5 h-5" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-slate-900">LeetCode Contest Analytics</h1>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Dynamic contest schedules and verified student participation records from official LeetCode data.
-              </p>
-            </div>
-          </div>
-        </div>
+      {/* Page Banner matching Reference Image 1 */}
+      <ContestAnalyticsBanner
+        platform="leetcode"
+        title="LeetCode Contest Analytics"
+        refreshing={refreshing}
+        onRefresh={() => fetchContests(true)}
+      />
 
-        {/* Action Controls */}
-        <div className="flex items-center gap-2.5 self-start sm:self-auto">
-          <button
-            onClick={() => fetchContests(true)}
-            disabled={refreshing}
-            className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg shadow-2xs flex items-center gap-2 transition disabled:opacity-50"
-            title="Refresh contest schedules"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin text-blue-600' : 'text-slate-500'}`} />
-            <span>{refreshing ? 'Refreshing...' : 'Sync Schedules'}</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Classroom Context Notice */}
-      {selectedClassroom && (
-        <div className="px-4 py-2.5 bg-blue-50/70 border border-blue-200/60 rounded-xl flex items-center justify-between text-xs text-blue-900">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold">Selected Classroom:</span>
-            <span>{selectedClassroom.name} ({selectedClassroom.course} - Sec {selectedClassroom.section})</span>
-          </div>
-          <span className="text-[11px] text-blue-700 font-medium">Timezone: Asia/Kolkata</span>
-        </div>
-      )}
-
-      {/* Filter Tabs and Search Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="inline-flex p-1 bg-slate-100 rounded-lg text-xs font-semibold text-slate-600">
+      {/* Contest Navigation and Search Container */}
+      <div className="bg-white rounded-2xl border border-[#e1eaf5] p-2 sm:px-4 sm:py-2.5 shadow-[0_2px_12px_rgba(30,64,175,0.03)] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        {/* Filter Tabs */}
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
           <button
             onClick={() => setActiveTab('all')}
-            className={`px-3 py-1.5 rounded-md transition ${
+            className={`px-4 py-2 rounded-xl text-xs sm:text-[13px] font-bold transition-all whitespace-nowrap ${
               activeTab === 'all'
-                ? 'bg-white text-slate-900 shadow-2xs'
-                : 'hover:text-slate-900'
+                ? 'bg-[#1769ff] text-white shadow-xs'
+                : 'text-[#64748b] hover:text-[#0f1b35] hover:bg-slate-50 font-semibold'
             }`}
           >
-            All Contests ({contests.length})
+            All Contests ({totalCount})
           </button>
           <button
             onClick={() => setActiveTab('upcoming')}
-            className={`px-3 py-1.5 rounded-md transition ${
+            className={`px-4 py-2 rounded-xl text-xs sm:text-[13px] font-bold transition-all whitespace-nowrap ${
               activeTab === 'upcoming'
-                ? 'bg-white text-slate-900 shadow-2xs'
-                : 'hover:text-slate-900'
+                ? 'bg-[#1769ff] text-white shadow-xs'
+                : 'text-[#64748b] hover:text-[#0f1b35] hover:bg-slate-50 font-semibold'
             }`}
           >
-            Upcoming & Live ({contests.filter((c) => c.status !== 'completed').length})
+            Upcoming & Live ({upcomingAndLiveTotalCount})
           </button>
           <button
             onClick={() => setActiveTab('completed')}
-            className={`px-3 py-1.5 rounded-md transition ${
+            className={`px-4 py-2 rounded-xl text-xs sm:text-[13px] font-bold transition-all whitespace-nowrap ${
               activeTab === 'completed'
-                ? 'bg-white text-slate-900 shadow-2xs'
-                : 'hover:text-slate-900'
+                ? 'bg-[#1769ff] text-white shadow-xs'
+                : 'text-[#64748b] hover:text-[#0f1b35] hover:bg-slate-50 font-semibold'
             }`}
           >
-            Completed ({contests.filter((c) => c.status === 'completed').length})
+            Completed ({completedTotalCount})
           </button>
         </div>
 
-        {/* Search */}
-        <div className="relative w-full sm:w-64">
-          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+        {/* Search Field */}
+        <div className="relative w-full sm:w-72">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             placeholder="Search contest name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-9 pr-4 py-2 bg-white border border-[#e1eaf5] rounded-xl text-xs sm:text-sm text-slate-800 placeholder-[#94a3b8] focus:outline-none focus:border-[#1769ff] focus:ring-1 focus:ring-[#1769ff] transition-all"
           />
         </div>
       </div>
 
       {/* Content Area */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="bg-white rounded-xl border border-slate-200 p-5 space-y-4 animate-pulse"
+              className="bg-white rounded-2xl border border-[#e1eaf5] border-t-[3.5px] border-t-[#1769ff] p-6 space-y-4 animate-pulse"
             >
               <div className="flex justify-between items-center">
-                <div className="h-4 bg-slate-200 rounded w-28" />
+                <div className="h-5 bg-slate-200 rounded-lg w-32" />
+                <div className="h-5 bg-slate-200 rounded-lg w-20" />
+              </div>
+              <div className="h-6 bg-slate-200 rounded-lg w-3/4" />
+              <div className="space-y-2">
+                <div className="h-4 bg-slate-100 rounded w-1/2" />
+                <div className="h-4 bg-slate-100 rounded w-1/3" />
+              </div>
+              <div className="border-t border-[#edf2f9] my-4" />
+              <div className="h-7 bg-slate-100 rounded-lg w-44" />
+              <div className="flex justify-between items-center pt-2">
+                <div className="h-4 bg-slate-100 rounded w-28" />
                 <div className="h-4 bg-slate-200 rounded w-16" />
               </div>
-              <div className="h-5 bg-slate-200 rounded w-3/4" />
-              <div className="h-3 bg-slate-100 rounded w-1/2" />
-              <div className="h-8 bg-slate-100 rounded mt-4" />
             </div>
           ))}
         </div>
       ) : filteredContests.length === 0 ? (
-        <div className="py-20 text-center bg-white rounded-xl border border-slate-200 p-8 shadow-2xs">
+        <div className="py-20 text-center bg-white rounded-2xl border border-[#e1eaf5] p-8 shadow-xs">
           <HelpCircle className="w-10 h-10 text-slate-300 mx-auto mb-3" />
           <h3 className="text-sm font-bold text-slate-800">No LeetCode Contests Found</h3>
           <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
             {searchQuery
               ? `No contests matching "${searchQuery}". Clear your search query to see all contests.`
-              : 'Click "Sync Schedules" above to fetch the latest official LeetCode Weekly and Biweekly contests.'}
+              : 'Click the sync button above to fetch the latest official LeetCode Weekly and Biweekly contests.'}
           </p>
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="mt-3 px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-semibold rounded-lg hover:bg-blue-100 transition"
+              className="mt-3 px-3.5 py-1.5 bg-[#eef4ff] text-[#1769ff] text-xs font-semibold rounded-xl hover:bg-blue-100 transition"
             >
               Clear Search
             </button>
@@ -235,17 +210,16 @@ export default function LeetCodeContestsPage() {
         </div>
       ) : (
         <div className="space-y-8">
-          {/* Section 1: Upcoming & Live Contests */}
+          {/* Section 1: Upcoming & Active Contests (2-column desktop grid matching Reference Image 1) */}
           {activeTab !== 'completed' && upcomingAndLive.length > 0 && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Trophy className="w-4 h-4 text-amber-500" />
-                <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">
-                  Upcoming & Active Contests
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Trophy className="w-4 h-4 text-[#1769ff]" />
+                <h2 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-[#0f1b35]">
+                  UPCOMING & ACTIVE CONTESTS ({upcomingAndLive.length})
                 </h2>
-                <span className="text-xs text-slate-400 font-medium">({upcomingAndLive.length})</span>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {upcomingAndLive.map((c) => (
                   <ContestCard key={c.id} contest={c} href={`/leetcode/${c.id}`} />
                 ))}
@@ -253,17 +227,16 @@ export default function LeetCodeContestsPage() {
             </div>
           )}
 
-          {/* Section 2: Recently Completed Contests */}
+          {/* Section 2: Completed Contests (2-column desktop grid) */}
           {activeTab !== 'upcoming' && completed.length > 0 && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-slate-500" />
-                <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">
-                  Completed Contests & Past Analytics
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Trophy className="w-4 h-4 text-[#1769ff]" />
+                <h2 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-[#0f1b35]">
+                  COMPLETED CONTESTS ({completed.length})
                 </h2>
-                <span className="text-xs text-slate-400 font-medium">({completed.length})</span>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {completed.map((c) => (
                   <ContestCard key={c.id} contest={c} href={`/leetcode/${c.id}`} />
                 ))}

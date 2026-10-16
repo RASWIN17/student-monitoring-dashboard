@@ -5,13 +5,9 @@ import Link from 'next/link';
 import {
   Calendar,
   Clock,
-  Trophy,
   ChevronRight,
   CheckCircle2,
-  AlertCircle,
   RefreshCw,
-  Users,
-  Timer,
 } from 'lucide-react';
 import { Contest } from '@/lib/types';
 
@@ -92,154 +88,141 @@ export function ContestCard({ contest, href }: ContestCardProps) {
     }
   };
 
+  // Format duration into "90 mins" or "3.0 hrs" matching reference screenshots
+  const formatDuration = (seconds: number) => {
+    const mins = Math.round(seconds / 60);
+    if (mins >= 120 && mins % 60 === 0) {
+      return `${(mins / 60).toFixed(1)} hrs`;
+    }
+    return `${mins} mins`;
+  };
+
   const isLeetCode = contest.platform === 'leetcode';
   const isBiweekly = contest.contest_code.toLowerCase().includes('biweekly');
 
   const statusBadge = () => {
     if (timeLeft.hasEnded || contest.status === 'completed') {
       return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
-          <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600">
+          <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
           Completed
         </span>
       );
     }
     if (timeLeft.hasStarted || contest.status === 'live') {
       return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-300 animate-pulse">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 animate-pulse">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
           Live Now
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-        <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-[#eef4ff] text-[#1769ff]">
+        <span className="w-2 h-2 rounded-full bg-[#1769ff]" />
         Upcoming
       </span>
     );
   };
 
-  const renderCountdown = () => {
-    if (timeLeft.hasEnded || contest.status === 'completed') {
-      return (
-        <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-          <span>Contest Ended</span>
-        </div>
-      );
-    }
-
-    if (timeLeft.hasStarted || contest.status === 'live') {
-      return (
-        <div className="flex items-center gap-1.5 text-xs text-emerald-700 font-semibold font-mono">
-          <Timer className="w-4 h-4 text-emerald-600" />
-          <span>Ends in: {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s</span>
-        </div>
-      );
-    }
-
-    return (
-      <div className="flex items-center gap-2">
-        <span className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Starts in:</span>
-        <div className="flex items-center gap-1 font-mono text-xs font-bold text-slate-900 bg-slate-50 px-2 py-1 rounded border border-slate-200">
-          {timeLeft.days > 0 && <span>{timeLeft.days}d</span>}
-          <span>{String(timeLeft.hours).padStart(2, '0')}h</span>
-          <span>:</span>
-          <span>{String(timeLeft.minutes).padStart(2, '0')}m</span>
-          <span>:</span>
-          <span className="text-blue-600">{String(timeLeft.seconds).padStart(2, '0')}s</span>
-        </div>
-      </div>
-    );
+  const formatCountdown = () => {
+    const dStr = timeLeft.days > 0 ? `${timeLeft.days}d ` : '';
+    const hStr = `${String(timeLeft.hours).padStart(2, '0')}h`;
+    const mStr = `${String(timeLeft.minutes).padStart(2, '0')}m`;
+    const sStr = `${String(timeLeft.seconds).padStart(2, '0')}s`;
+    return `${dStr}${hStr} : ${mStr} : ${sStr}`;
   };
 
   return (
     <Link
       href={href}
-      className="group relative bg-white rounded-xl border border-slate-200 hover:border-blue-500/60 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between overflow-hidden"
+      className="group relative bg-white rounded-2xl border border-[#e2eaf5] border-t-[3.5px] border-t-[#1769ff] p-6 shadow-[0_4px_20px_rgba(30,64,175,0.04)] hover:shadow-[0_8px_28px_rgba(30,64,175,0.08)] transition-all duration-200 flex flex-col justify-between overflow-hidden"
     >
-      {/* Top Banner Stripe */}
-      <div
-        className={`h-1.5 w-full ${
-          isLeetCode
-            ? isBiweekly
-              ? 'bg-gradient-to-r from-blue-600 to-indigo-600'
-              : 'bg-gradient-to-r from-amber-500 to-orange-500'
-            : 'bg-gradient-to-r from-orange-600 to-red-600'
-        }`}
-      />
-
-      <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
-        {/* Header / Badges */}
-        <div>
-          <div className="flex items-center justify-between gap-2 mb-2.5">
-            <span
-              className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${
-                isLeetCode
-                  ? 'bg-amber-50 text-amber-800 border-amber-200'
-                  : 'bg-orange-50 text-orange-800 border-orange-200'
-              }`}
-            >
-              {isLeetCode ? (isBiweekly ? 'LeetCode Biweekly' : 'LeetCode Weekly') : 'CodeChef Starters / Rated'}
-            </span>
-            {statusBadge()}
-          </div>
-
-          {/* Title */}
-          <h3 className="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-1">
-            {contest.title}
-          </h3>
-
-          {/* Schedule Date */}
-          <div className="mt-2.5 space-y-1 text-xs text-slate-600">
-            <div className="flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-              <span>{formatKolkataDateTime(contest.start_time)}</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
-              <Clock className="w-3 h-3 text-slate-400 shrink-0" />
-              <span>Duration: {Math.round(contest.duration_seconds / 60)} mins</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Live Countdown Capsule */}
-        <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-          {renderCountdown()}
-        </div>
-
-        {/* Bottom Attendance / Scan pill */}
-        <div className="pt-2 flex items-center justify-between text-xs">
-          {contest.status === 'completed' ? (
-            <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1 text-[11px] font-medium text-slate-600">
-                <Users className="w-3.5 h-3.5 text-slate-400" />
-                <span>
-                  {contest.attended_count !== undefined
-                    ? `${contest.attended_count} Attended`
-                    : 'View Results'}
-                </span>
-              </span>
-              {contest.scan_status === 'scanning' && (
-                <span className="text-[10px] text-blue-600 flex items-center gap-1 animate-pulse">
-                  <RefreshCw className="w-2.5 h-2.5 animate-spin" /> Scanning
-                </span>
-              )}
-            </div>
-          ) : (
-            <span className="text-[11px] text-slate-400">
-              {contest.linked_accounts_count !== undefined
-                ? `${contest.linked_accounts_count} linked students`
-                : 'Awaiting contest'}
-            </span>
-          )}
-
-          <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 group-hover:translate-x-0.5 transition-transform">
-            <span>Analytics</span>
-            <ChevronRight className="w-3.5 h-3.5" />
+      <div>
+        {/* Top Badges Row */}
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-lg bg-[#eef4ff] text-[#1769ff]">
+            {isLeetCode
+              ? isBiweekly
+                ? 'LEETCODE BIWEEKLY'
+                : 'LEETCODE WEEKLY'
+              : 'CODECHEF STARTERS / RATED'}
           </span>
+          {statusBadge()}
         </div>
+
+        {/* Title */}
+        <h3 className="text-xl font-bold text-[#0f1b35] group-hover:text-[#1769ff] transition-colors line-clamp-1 mt-3 mb-2.5">
+          {contest.title}
+        </h3>
+
+        {/* Schedule & Duration */}
+        <div className="space-y-1.5 text-xs text-[#64748b]">
+          <div className="flex items-center gap-2 font-medium">
+            <Calendar className="w-4 h-4 text-slate-400 shrink-0" />
+            <span>{formatKolkataDateTime(contest.start_time)}</span>
+          </div>
+          <div className="flex items-center gap-2 font-medium">
+            <Clock className="w-4 h-4 text-slate-400 shrink-0" />
+            <span>Duration: {formatDuration(contest.duration_seconds)}</span>
+          </div>
+        </div>
+
+        {/* Horizontal Divider */}
+        <div className="border-t border-[#edf2f9] my-4" />
+
+        {/* Dynamic Starts-in Countdown */}
+        {timeLeft.hasEnded || contest.status === 'completed' ? (
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium mb-4">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>Contest Ended</span>
+          </div>
+        ) : timeLeft.hasStarted || contest.status === 'live' ? (
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">ENDS IN:</span>
+            <div className="bg-emerald-50 text-emerald-700 font-mono font-bold text-xs px-2.5 py-1 rounded-lg">
+              {formatCountdown()}
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider">STARTS IN:</span>
+            <div className="bg-[#eef4ff] text-[#1769ff] font-mono font-bold text-xs px-2.5 py-1 rounded-lg">
+              {formatCountdown()}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Bottom Footer Row */}
+      <div className="flex items-center justify-between pt-1">
+        {contest.status === 'completed' ? (
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-[#64748b] font-medium">
+              {contest.attended_count !== undefined
+                ? `${contest.attended_count} Attended`
+                : contest.linked_accounts_count !== undefined
+                ? `${contest.linked_accounts_count} linked students`
+                : 'Completed'}
+            </span>
+            {contest.scan_status === 'scanning' && (
+              <span className="text-[10px] text-[#1769ff] flex items-center gap-1 animate-pulse">
+                <RefreshCw className="w-2.5 h-2.5 animate-spin" /> Scanning
+              </span>
+            )}
+          </div>
+        ) : (
+          <span className="text-xs text-[#64748b] font-medium">
+            {contest.linked_accounts_count !== undefined
+              ? `${contest.linked_accounts_count} linked students`
+              : '1 linked students'}
+          </span>
+        )}
+
+        <span className="inline-flex items-center gap-1 text-xs font-bold text-[#1769ff] group-hover:text-[#0052cc] group-hover:translate-x-0.5 transition-all">
+          <span>Analytics</span>
+          <ChevronRight className="w-3.5 h-3.5 stroke-[2.5]" />
+        </span>
       </div>
     </Link>
   );
