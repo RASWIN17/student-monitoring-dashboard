@@ -576,7 +576,7 @@ function StudentDetailContent() {
                     key={c.id}
                     className="text-[11px] font-semibold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200"
                   >
-                    {c.name} ({c.course})
+                    {c.name} (Sec {c.section})
                   </span>
                 ))}
               </div>

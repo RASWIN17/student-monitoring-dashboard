@@ -145,7 +145,7 @@ export function ClassroomSelectionView({ platform }: Props) {
         <div className="py-20 text-center space-y-3">
           <RefreshCw className="w-8 h-8 animate-spin mx-auto text-blue-600" />
           <p className="text-sm font-semibold text-slate-700">Loading available classrooms...</p>
-          <p className="text-xs text-slate-400">Fetching existing courses and enrolled roster counts</p>
+          <p className="text-xs text-slate-400">Fetching existing classrooms and enrolled roster counts</p>
         </div>
       )}
 
@@ -248,7 +248,7 @@ export function ClassroomSelectionView({ platform }: Props) {
                       {c.name}
                     </h2>
                     <p className="text-xs font-semibold text-slate-600 mt-0.5">
-                      {c.course} • Section {c.section}
+                      Section {c.section}
                     </p>
 
                     {/* Metadata list */}

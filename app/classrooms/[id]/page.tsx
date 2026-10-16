@@ -207,7 +207,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
               <div>
                 <div className="flex items-center gap-2.5 flex-wrap">
                   <span className="text-[11px] font-bold uppercase tracking-wider px-3 py-0.5 rounded-full bg-[#eef4ff] text-[#1769ff] border border-blue-200/50">
-                    {classroom.course} • SECTION {classroom.section}
+                    SECTION {classroom.section}
                   </span>
                   <span className="text-xs font-semibold text-[#667a9e]">
                     {classroom.academic_year}
@@ -358,7 +358,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
                   <span className="font-mono font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
                     {classroom?.join_code}
                   </span>{' '}
-                  on their Student Dashboard, or by registering with Class &quot;{classroom?.course}&quot; and Section &quot;{classroom?.section}&quot;.
+                  on their Student Dashboard, or by registering with Class &quot;{classroom?.name}&quot; and Section &quot;{classroom?.section}&quot;.
                 </>
               ) : (
                 'No students are currently enrolled in this classroom.'
@@ -510,7 +510,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">Classroom:</span>
-                  <span className="font-semibold text-[#0f1b35]">{classroom?.name} ({classroom?.course})</span>
+                  <span className="font-semibold text-[#0f1b35]">{classroom?.name} (Section {classroom?.section})</span>
                 </div>
               </div>
 

@@ -191,7 +191,7 @@ export default function ClassroomsPage() {
               <div>
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 group-hover:bg-blue-100 group-hover:border-blue-300 transition">
-                    {c.course} • Sec {c.section}
+                    Section {c.section}
                   </span>
                   {isTeacher && (
                     <button
@@ -266,7 +266,7 @@ export default function ClassroomsPage() {
             <div className="px-6 py-4 bg-slate-50 border-b border-slate-200">
               <h3 className="text-base font-bold text-slate-900">Create New Classroom</h3>
               <p className="text-xs text-slate-500">
-                Setup a course section to track student coding progress.
+                Setup a classroom section to track student coding progress.
               </p>
             </div>
 

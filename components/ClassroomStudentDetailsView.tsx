@@ -319,7 +319,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
               <h1 className="text-2xl font-black text-[#0f1b35] tracking-tight mt-1 mb-1">
                 {classroom.name}{' '}
                 <span className="text-[#64748b] font-medium text-lg">
-                  ({classroom.course || 'demo'} — Section {classroom.section})
+                  (Section {classroom.section})
                 </span>
               </h1>
 

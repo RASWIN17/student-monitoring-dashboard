@@ -73,7 +73,7 @@ export function Navbar({ onDataRefreshed }: { onDataRefreshed?: () => void }) {
               >
                 {classrooms.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.name} ({c.course} - Sec {c.section})
+                    {c.name} (Sec {c.section})
                   </option>
                 ))}
               </select>

@@ -147,7 +147,7 @@ export default function TeacherDashboardPage() {
             </h1>
             {selectedClassroom && (
               <span className="text-xs font-semibold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
-                {selectedClassroom.course} • Section {selectedClassroom.section}
+                Section {selectedClassroom.section}
               </span>
             )}
             <span className="text-xs font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">

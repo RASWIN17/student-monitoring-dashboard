@@ -20,14 +20,6 @@ export function ClassroomInfoHeader({
       : `Section ${classroom.section.trim()}`
     : null;
 
-  const line1SubParts: string[] = [];
-  if (classroom.course && classroom.course.trim()) {
-    line1SubParts.push(classroom.course.trim());
-  }
-  if (sectionFormatted) {
-    line1SubParts.push(sectionFormatted);
-  }
-
   const secondaryDetails: { label: string; value: string }[] = [];
   if (classroom.department && classroom.department.trim()) {
     secondaryDetails.push({ label: 'Department', value: classroom.department.trim() });
@@ -41,12 +33,12 @@ export function ClassroomInfoHeader({
 
   return (
     <div className={`mt-1 sm:mt-1.5 space-y-0.5 sm:space-y-1 ${className}`}>
-      {/* First line: Class name, Course name or code (if available), Section */}
+      {/* First line: Class name, Section */}
       <div className="flex flex-wrap items-baseline gap-x-1.5 text-xs sm:text-sm leading-tight">
         <span className="font-bold text-[#0f1b35] tracking-tight">{classroom.name}</span>
-        {line1SubParts.length > 0 && (
+        {sectionFormatted && (
           <span className="text-[#64748b] font-medium text-xs sm:text-[13px]">
-            ({line1SubParts.join(' — ')})
+            ({sectionFormatted})
           </span>
         )}
       </div>
