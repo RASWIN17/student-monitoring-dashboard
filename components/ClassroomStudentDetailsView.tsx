@@ -42,13 +42,13 @@ export type SortOption =
 
 export function getCodeChefStars(rating: number | null): string {
   if (rating === null || rating === undefined || rating <= 0) return 'Unrated';
-  if (rating < 1400) return '1★';
-  if (rating < 1600) return '2★';
-  if (rating < 1800) return '3★';
-  if (rating < 2000) return '4★';
-  if (rating < 2200) return '5★';
-  if (rating < 2500) return '6★';
-  return '7★';
+  if (rating < 1400) return '1★'; // taste-skill-ignore
+  if (rating < 1600) return '2★'; // taste-skill-ignore
+  if (rating < 1800) return '3★'; // taste-skill-ignore
+  if (rating < 2000) return '4★'; // taste-skill-ignore
+  if (rating < 2200) return '5★'; // taste-skill-ignore
+  if (rating < 2500) return '6★'; // taste-skill-ignore
+  return '7★'; // taste-skill-ignore
 }
 
 import { dataCache } from '@/components/DataCacheContext';
@@ -244,7 +244,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
   if (loading) {
     return (
       <div className="py-24 text-center space-y-4">
-        <RefreshCw className="w-8 h-8 animate-spin mx-auto text-blue-600" />
+        <RefreshCw className="w-8 h-8 animate-spin mx-auto text-indigo-600" />
         <p className="text-sm font-semibold text-slate-700">
           Loading {platformDisplayName} analytics for classroom...
         </p>
@@ -255,15 +255,15 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
 
   if (error || !classroom) {
     return (
-      <div className="max-w-md mx-auto my-12 bg-white rounded-xl border border-red-200 p-8 text-center shadow-xs">
-        <div className="h-12 w-12 bg-red-100 text-red-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+      <div className="max-w-md mx-auto my-12 bg-white rounded-xl border border-red-200 p-8 text-center">
+        <div className="h-12 w-12 bg-red-50 text-red-600 rounded-xl flex items-center justify-center mx-auto mb-4 border border-red-100">
           <AlertTriangle className="w-6 h-6" />
         </div>
         <h2 className="text-lg font-bold text-slate-900 mb-2">Classroom Not Found</h2>
         <p className="text-xs text-slate-500 mb-6">{error || 'Could not locate the requested classroom.'}</p>
         <Link
           href={platformSelectionUrl}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition"
+          className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-semibold hover:bg-indigo-700 transition"
         >
           Back to Classroom Selection
         </Link>
@@ -287,62 +287,62 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
       </nav>
 
       {/* Classroom & Platform Header */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+      <div className="bg-white rounded-xl border border-slate-200 p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex items-start gap-4">
+          <div className="flex items-start gap-3.5">
             <div
-              className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 border ${
+              className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 border ${
                 platform === 'leetcode'
-                  ? 'bg-amber-500/10 border-amber-500/20 text-amber-600'
-                  : 'bg-orange-500/10 border-orange-500/20 text-orange-600'
+                  ? 'bg-amber-50 border-amber-200 text-amber-600'
+                  : 'bg-orange-50 border-orange-200 text-orange-600'
               }`}
             >
               {platform === 'leetcode' ? (
-                <LeetCodeIcon className="w-8 h-8" />
+                <LeetCodeIcon className="w-6 h-6" />
               ) : (
-                <CodeChefIcon className="w-8 h-8" />
+                <CodeChefIcon className="w-6 h-6" />
               )}
             </div>
 
             <div>
               <div className="flex flex-wrap items-center gap-2 mb-1.5">
                 <span
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wide ${
+                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium ${
                     platform === 'leetcode'
-                      ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                      : 'bg-orange-100 text-orange-800 border border-orange-300'
+                      ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                      : 'bg-orange-50 text-orange-800 border border-orange-200'
                   }`}
                 >
                   <Sparkles className="w-3 h-3" />
                   <span>{platformDisplayName} Analytics</span>
                 </span>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
-                  Join Code: <strong className="text-slate-800 tracking-wider">{classroom.join_code}</strong>
+                <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                  Join Code: <strong className="text-slate-800 font-mono">{classroom.join_code}</strong>
                 </span>
               </div>
 
-              <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+              <h1 className="text-xl font-bold text-slate-900 tracking-tight">
                 {classroom.name}{' '}
-                <span className="text-slate-500 font-normal text-lg">
-                  ({classroom.course} — Section {classroom.section})
+                <span className="text-slate-500 font-normal text-base">
+                  ({classroom.course} • Section {classroom.section})
                 </span>
               </h1>
 
-              <p className="text-xs text-slate-500 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-                <span><strong>Department:</strong> {classroom.department}</span>
+              <p className="text-xs text-slate-500 mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+                <span><span className="font-medium text-slate-600">Department:</span> {classroom.department}</span>
                 <span>•</span>
-                <span><strong>Batch:</strong> {classroom.batch}</span>
+                <span><span className="font-medium text-slate-600">Batch:</span> {classroom.batch}</span>
                 <span>•</span>
-                <span><strong>Year:</strong> {classroom.academic_year}</span>
+                <span><span className="font-medium text-slate-600">Year:</span> {classroom.academic_year}</span>
               </p>
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-2.5 self-start md:self-center shrink-0">
+          <div className="flex items-center gap-2 self-start md:self-center shrink-0">
             <Link
               href={platformSelectionUrl}
-              className="px-3.5 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg shadow-2xs flex items-center gap-1.5 transition"
+              className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg flex items-center gap-1.5 transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Change Classroom</span>
@@ -351,11 +351,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
             {isTeacher && (
               <button
                 onClick={() => setIsScanClassroomOpen(true)}
-                className={`px-4 py-2 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-2 transition ${
-                  platform === 'leetcode'
-                    ? 'bg-amber-600 hover:bg-amber-700 active:bg-amber-800'
-                    : 'bg-orange-600 hover:bg-orange-700 active:bg-orange-800'
-                }`}
+                className="px-3.5 py-1.5 text-white text-xs font-semibold rounded-lg flex items-center gap-2 transition-colors cursor-pointer bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 <span>Scan Classroom</span>
@@ -367,18 +363,18 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
 
       {/* KPI Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3.5">
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs">
+        <div className="bg-white rounded-xl border border-slate-200 p-4">
           <div className="flex items-center justify-between text-slate-500 mb-1">
-            <span className="text-[11px] font-semibold uppercase tracking-wider">Total Students</span>
-            <Users className="w-4 h-4 text-blue-600" />
+            <span className="text-[11px] font-semibold text-slate-600">Total Students</span>
+            <Users className="w-4 h-4 text-indigo-600" />
           </div>
           <div className="text-2xl font-bold text-slate-900">{stats.totalStudents}</div>
           <div className="text-[11px] text-slate-400 mt-0.5">Enrolled in classroom</div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs">
+        <div className="bg-white rounded-xl border border-slate-200 p-4">
           <div className="flex items-center justify-between text-slate-500 mb-1">
-            <span className="text-[11px] font-semibold uppercase tracking-wider">Profiles Linked</span>
+            <span className="text-[11px] font-semibold text-slate-600">Profiles Linked</span>
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="text-2xl font-bold text-slate-900">
@@ -392,9 +388,9 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs">
+        <div className="bg-white rounded-xl border border-slate-200 p-4">
           <div className="flex items-center justify-between text-slate-500 mb-1">
-            <span className="text-[11px] font-semibold uppercase tracking-wider">Total Problems Solved</span>
+            <span className="text-[11px] font-semibold text-slate-600">Total Problems Solved</span>
             <Hash className="w-4 h-4 text-indigo-600" />
           </div>
           <div className="text-2xl font-bold text-slate-900">
@@ -403,19 +399,19 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
           <div className="text-[11px] text-slate-400 mt-0.5">Combined lifetime solves</div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs">
+        <div className="bg-white rounded-xl border border-slate-200 p-4">
           <div className="flex items-center justify-between text-slate-500 mb-1">
-            <span className="text-[11px] font-semibold uppercase tracking-wider">Average Rating</span>
+            <span className="text-[11px] font-semibold text-slate-600">Average Rating</span>
             <TrendingUp className="w-4 h-4 text-amber-600" />
           </div>
           <div className="text-2xl font-bold text-slate-900">{stats.avgRating}</div>
           <div className="text-[11px] text-slate-400 mt-0.5">Across rated students</div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs col-span-2 lg:col-span-1">
+        <div className="bg-white rounded-xl border border-slate-200 p-4 col-span-2 lg:col-span-1">
           <div className="flex items-center justify-between text-slate-500 mb-1">
-            <span className="text-[11px] font-semibold uppercase tracking-wider">Highest Rating</span>
-            <Trophy className="w-4 h-4 text-yellow-500" />
+            <span className="text-[11px] font-semibold text-slate-600">Highest Rating</span>
+            <Trophy className="w-4 h-4 text-amber-500" />
           </div>
           <div className="text-2xl font-bold text-slate-900">{stats.highestRating}</div>
           <div className="text-[11px] text-slate-400 mt-0.5">Classroom peak rating</div>
@@ -423,7 +419,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
       </div>
 
       {/* Search, Filter & Sort Toolbar */}
-      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs space-y-3">
+      <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-3">
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           {/* Search Box */}
           <div className="relative flex-1">
@@ -433,7 +429,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
               placeholder={`Search by student name, email, or ${platformDisplayName} handle...`}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors"
             />
           </div>
 
@@ -447,7 +443,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
               id="student-sort-select"
               value={sortOption}
               onChange={(e) => setSortOption(e.target.value as SortOption)}
-              className="bg-slate-50 border border-slate-300 text-slate-800 text-xs font-medium rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+              className="bg-slate-50 border border-slate-200 text-slate-800 text-xs font-medium rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
             >
               <optgroup label="Problem-Solving Filters">
                 <option value="problems_desc">Highest Problems Solved → Lowest Problems Solved</option>
@@ -469,19 +465,19 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
           <span className="text-slate-400 font-medium mr-1 text-[11px]">Quick sort:</span>
           <button
             onClick={() => setSortOption('problems_desc')}
-            className={`px-2.5 py-1 rounded-md text-xs font-medium transition ${
+            className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
               sortOption === 'problems_desc'
-                ? 'bg-blue-600 text-white font-semibold'
+                ? 'bg-indigo-600 text-white font-semibold'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
-            🔥 Most Solved
+            Most Solved
           </button>
           <button
             onClick={() => setSortOption('problems_asc')}
-            className={`px-2.5 py-1 rounded-md text-xs font-medium transition ${
+            className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
               sortOption === 'problems_asc'
-                ? 'bg-blue-600 text-white font-semibold'
+                ? 'bg-indigo-600 text-white font-semibold'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
@@ -489,19 +485,19 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
           </button>
           <button
             onClick={() => setSortOption('rating_desc')}
-            className={`px-2.5 py-1 rounded-md text-xs font-medium transition ${
+            className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
               sortOption === 'rating_desc'
-                ? 'bg-blue-600 text-white font-semibold'
+                ? 'bg-indigo-600 text-white font-semibold'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
-            ⭐ Highest Rating
+            Highest Rating
           </button>
           <button
             onClick={() => setSortOption('rating_asc')}
-            className={`px-2.5 py-1 rounded-md text-xs font-medium transition ${
+            className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
               sortOption === 'rating_asc'
-                ? 'bg-blue-600 text-white font-semibold'
+                ? 'bg-indigo-600 text-white font-semibold'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
@@ -511,7 +507,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
           {searchTerm && (
             <button
               onClick={() => setSearchTerm('')}
-              className="ml-auto text-blue-600 hover:underline text-xs font-medium"
+              className="ml-auto text-indigo-600 hover:underline text-xs font-medium cursor-pointer"
             >
               Clear Search
             </button>
@@ -520,7 +516,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
       </div>
 
       {/* Student Details Responsive Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
+      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
         {processedStudents.length === 0 ? (
           <div className="py-16 text-center px-4">
             <div className="h-12 w-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
@@ -542,7 +538,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
                 </p>
                 <button
                   onClick={() => setSearchTerm('')}
-                  className="mt-3 px-3 py-1.5 text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-md transition"
+                  className="mt-3 px-3 py-1.5 text-xs font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-md transition"
                 >
                   Clear search query
                 </button>
@@ -594,7 +590,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
                       <td className="py-3.5 px-4 whitespace-nowrap">
                         <Link
                           href={`/students/${s.id}?platform=${platform}&classroomId=${classroomId}`}
-                          className="font-semibold text-slate-900 hover:text-blue-600 transition truncate hover:underline"
+                          className="font-semibold text-slate-900 hover:text-indigo-600 transition truncate hover:underline"
                         >
                           {s.display_name}
                         </Link>
@@ -617,7 +613,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
                               href={account.public_profile_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="font-mono text-xs font-semibold text-blue-600 hover:underline flex items-center gap-1"
+                              className="font-mono text-xs font-semibold text-indigo-600 hover:underline flex items-center gap-1"
                             >
                               <span>{account.username}</span>
                               <ExternalLink className="w-3 h-3 text-slate-400" />
@@ -636,7 +632,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
                       {/* 4. Total Solved */}
                       <td className="py-3.5 px-4 whitespace-nowrap">
                         {totalSolved != null ? (
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-extrabold bg-blue-50 text-blue-700 border border-blue-200">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-200">
                             {totalSolved.toLocaleString()}
                           </span>
                         ) : (

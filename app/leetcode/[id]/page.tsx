@@ -282,7 +282,7 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
       </div>
 
       {/* Header Banner */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-2xs">
+      <div className="bg-white rounded-xl border border-slate-200 p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
@@ -294,12 +294,12 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
                   Completed
                 </span>
               ) : timeLeft.isLive || contest?.status === 'live' ? (
-                <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-300 animate-pulse flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
                   Live Now
                 </span>
               ) : (
-                <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
                   Upcoming
                 </span>
               )}
@@ -314,7 +314,7 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
                 <Clock className="w-4 h-4 text-slate-400" />
                 <span>Duration: {contest ? Math.round(contest.duration_seconds / 60) : 90} mins</span>
               </div>
-              <div className="flex items-center gap-1.5 text-blue-700 font-medium">
+              <div className="flex items-center gap-1.5 text-indigo-700 font-medium">
                 <span>Classroom: {selectedClassroom ? selectedClassroom.name : 'All Classrooms'}</span>
               </div>
             </div>
@@ -337,7 +337,7 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
               <button
                 onClick={handleScanNow}
                 disabled={scanning}
-                className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold rounded-xl shadow-xs flex items-center justify-center gap-2 transition disabled:opacity-50"
+                className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition disabled:opacity-50 cursor-pointer"
               >
                 <RefreshCw className={`w-4 h-4 ${scanning ? 'animate-spin' : ''}`} />
                 <span>{scanning ? 'Scanning LeetCode...' : 'Scan Now'}</span>
@@ -349,7 +349,7 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
         {/* Scan Status Banner */}
         {scanMessage && (
           <div className="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-lg flex items-start gap-2.5 text-xs text-slate-700">
-            <Info className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+            <Info className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
             <div>
               <div className="font-semibold text-slate-800">Scan Status:</div>
               <div>{scanMessage}</div>
@@ -364,11 +364,11 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
 
         {/* Notice for Ongoing / Upcoming contests */}
         {isContestOngoingOrUpcoming && (
-          <div className="mt-4 p-3.5 bg-blue-50/80 border border-blue-200 rounded-lg flex items-start gap-2.5 text-xs text-blue-900">
-            <Clock className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+          <div className="mt-4 p-3.5 bg-slate-50 border border-slate-200 rounded-lg flex items-start gap-2.5 text-xs text-slate-700">
+            <Clock className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
             <div>
-              <div className="font-semibold">Contest in progress / upcoming:</div>
-              <p className="mt-0.5 text-blue-800 leading-relaxed">
+              <div className="font-semibold text-slate-900">Contest in progress / upcoming:</div>
+              <p className="mt-0.5 text-slate-600 leading-relaxed">
                 Official final attendance and solved counts cannot be displayed before the contest officially concludes.
                 The system will automatically schedule a scan approximately 1 minute after the contest end time.
               </p>
@@ -382,32 +382,29 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
         {/* Card 1: Linked Accounts */}
         <button
           onClick={() => setActiveCard('linked')}
-          className={`text-left p-5 rounded-xl border transition-all duration-200 shadow-2xs relative ${
+          className={`text-left p-5 rounded-xl border transition-colors relative cursor-pointer ${
             activeCard === 'linked'
-              ? 'bg-blue-50/60 border-blue-500 ring-2 ring-blue-500/20'
-              : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/60'
+              ? 'bg-slate-50 border-slate-400'
+              : 'bg-white border-slate-200 hover:border-slate-300'
           }`}
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
               1. Linked Accounts
             </span>
-            <Users className={`w-4 h-4 ${activeCard === 'linked' ? 'text-blue-600' : 'text-slate-400'}`} />
+            <Users className={`w-4 h-4 ${activeCard === 'linked' ? 'text-indigo-600' : 'text-slate-400'}`} />
           </div>
           <div className="text-3xl font-bold text-slate-900 mt-2">{summary.totalLinked}</div>
           <div className="text-xs text-slate-500 mt-1">Verified student accounts linked to LeetCode</div>
-          {activeCard === 'linked' && (
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-600 rounded-b-xl" />
-          )}
         </button>
 
         {/* Card 2: Contest Attended */}
         <button
           onClick={() => setActiveCard('attended')}
-          className={`text-left p-5 rounded-xl border transition-all duration-200 shadow-2xs relative ${
+          className={`text-left p-5 rounded-xl border transition-colors relative cursor-pointer ${
             activeCard === 'attended'
-              ? 'bg-emerald-50/60 border-emerald-500 ring-2 ring-emerald-500/20'
-              : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/60'
+              ? 'bg-emerald-50/50 border-emerald-400'
+              : 'bg-white border-slate-200 hover:border-slate-300'
           }`}
         >
           <div className="flex items-center justify-between">
@@ -424,18 +421,15 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
               ? 'Available after contest completes'
               : 'Verified participants with evidence'}
           </div>
-          {activeCard === 'attended' && (
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-emerald-600 rounded-b-xl" />
-          )}
         </button>
 
         {/* Card 3: Contest Not Attended */}
         <button
           onClick={() => setActiveCard('not_attended')}
-          className={`text-left p-5 rounded-xl border transition-all duration-200 shadow-2xs relative ${
+          className={`text-left p-5 rounded-xl border transition-colors relative cursor-pointer ${
             activeCard === 'not_attended'
-              ? 'bg-rose-50/60 border-rose-500 ring-2 ring-rose-500/20'
-              : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/60'
+              ? 'bg-rose-50/50 border-rose-400'
+              : 'bg-white border-slate-200 hover:border-slate-300'
           }`}
         >
           <div className="flex items-center justify-between">
@@ -452,18 +446,15 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
               ? 'Available after contest completes'
               : `${summary.notAttendedCount} verified absent`}
           </div>
-          {activeCard === 'not_attended' && (
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-rose-600 rounded-b-xl" />
-          )}
         </button>
 
         {/* Card 4: Pending Verification */}
         <button
           onClick={() => setActiveCard('pending')}
-          className={`text-left p-5 rounded-xl border transition-all duration-200 shadow-2xs relative ${
+          className={`text-left p-5 rounded-xl border transition-colors relative cursor-pointer ${
             activeCard === 'pending'
-              ? 'bg-amber-50/60 border-amber-500 ring-2 ring-amber-500/20'
-              : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/60'
+              ? 'bg-amber-50/50 border-amber-400'
+              : 'bg-white border-slate-200 hover:border-slate-300'
           }`}
         >
           <div className="flex items-center justify-between">
@@ -478,14 +469,11 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
           <div className="text-xs text-slate-500 mt-1">
             {summary.pendingCount === 1 ? '1 student awaiting verification' : `${summary.pendingCount} students awaiting verification`}
           </div>
-          {activeCard === 'pending' && (
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-amber-600 rounded-b-xl" />
-          )}
         </button>
       </div>
 
       {/* Filter and Search Controls */}
-      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs space-y-3">
+      <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           {/* Active List Heading */}
           <div className="flex items-center gap-2">
@@ -509,7 +497,7 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
               placeholder="Search student or handle..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
             />
           </div>
         </div>
@@ -525,9 +513,9 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
             <button
               key={num}
               onClick={() => setSolvedFilter(solvedFilter === num ? null : num)}
-              className={`px-2.5 py-1 text-xs rounded-md font-medium transition ${
+              className={`px-2.5 py-1 text-xs rounded-md font-medium transition cursor-pointer ${
                 solvedFilter === num
-                  ? 'bg-blue-600 text-white font-semibold shadow-2xs'
+                  ? 'bg-indigo-600 text-white font-semibold'
                   : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
               }`}
             >
@@ -538,7 +526,7 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
           {solvedFilter !== null && (
             <button
               onClick={() => setSolvedFilter(null)}
-              className="text-[11px] text-red-600 hover:text-red-700 font-semibold ml-2 underline"
+              className="text-[11px] text-indigo-600 hover:text-indigo-800 font-semibold ml-2 underline cursor-pointer"
             >
               Clear Filter
             </button>
@@ -547,15 +535,15 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
       </div>
 
       {/* Main Student Data Table */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-2xs">
+      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
         {solvedFilter !== null && (
-          <div className="px-4 py-2.5 bg-blue-50/80 border-b border-blue-100 flex items-center justify-between text-xs text-blue-900">
+          <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between text-xs text-slate-800">
             <span className="font-semibold">
               Total number of students solved {solvedFilter} {solvedFilter === 1 ? 'problem' : 'problems'} ({totalSolvedCount})
             </span>
             <button
               onClick={() => setSolvedFilter(null)}
-              className="text-[11px] text-blue-700 hover:text-blue-900 font-semibold underline"
+              className="text-[11px] text-indigo-600 hover:text-indigo-800 font-semibold underline cursor-pointer"
             >
               Clear Filter
             </button>
@@ -563,14 +551,14 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
         )}
         {loading ? (
           <div className="py-20 text-center text-slate-400">
-            <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-blue-600" />
-            <span className="text-xs font-semibold">Loading student contest records...</span>
+            <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-indigo-600" />
+            <span className="text-xs font-semibold text-slate-600">Loading student contest records...</span>
           </div>
         ) : filteredList.length === 0 ? (
           <div className="py-20 text-center text-slate-400 p-6">
             <HelpCircle className="w-10 h-10 text-slate-300 mx-auto mb-2" />
             <div className="text-sm font-semibold text-slate-700">No Students Found</div>
-            <p className="text-xs text-slate-400 mt-1 max-w-md mx-auto">
+            <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
               {solvedFilter !== null
                 ? `No students solved exactly ${solvedFilter} problem${solvedFilter === 1 ? '' : 's'} in this contest.`
                 : activeCard === 'attended'
@@ -586,7 +574,7 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
             {solvedFilter !== null && (
               <button
                 onClick={() => setSolvedFilter(null)}
-                className="mt-3 px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-semibold rounded-lg hover:bg-blue-100 transition"
+                className="mt-3 px-3 py-1.5 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded-lg hover:bg-indigo-100 transition cursor-pointer"
               >
                 Reset Solved Filter
               </button>
@@ -596,12 +584,12 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
+                <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
                   <th className="py-3.5 px-4 w-[28%] sm:w-[26%]">Student Name</th>
                   <th className="py-3.5 px-4 w-[20%] sm:w-[18%]">Register Number</th>
                   <th className="py-3.5 px-4 w-[22%] sm:w-[22%]">LeetCode Username</th>
                   <th className="py-3.5 px-4 text-center w-[16%] sm:w-[18%]">Contest Status</th>
-                  <th className="py-3.5 px-4 text-center bg-blue-50/50 text-blue-900 border-l border-blue-100 w-[14%] sm:w-[16%]">
+                  <th className="py-3.5 px-4 text-center text-slate-800 border-l border-slate-100 w-[14%] sm:w-[16%]">
                     Contest Problems Solved
                   </th>
                 </tr>
@@ -613,7 +601,7 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
                     <td className="py-3.5 px-4 font-semibold text-slate-900 whitespace-nowrap">
                       <Link
                         href={`/students/${st.student_id}?platform=leetcode`}
-                        className="hover:text-amber-600 hover:underline transition"
+                        className="hover:text-indigo-600 hover:underline transition"
                       >
                         {st.student_name}
                       </Link>
@@ -633,7 +621,7 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
                             href={st.public_profile_url}
                             target="_blank"
                             rel="noreferrer"
-                            className="text-slate-400 hover:text-blue-600"
+                            className="text-slate-400 hover:text-indigo-600"
                             title="Open LeetCode Profile"
                           >
                             <ExternalLink className="w-3 h-3" />
@@ -649,7 +637,7 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
                           <CheckCircle2 className="w-3 h-3" /> Attended
                         </span>
                       ) : st.participation_status === 'pending_verification' ? (
-                        <span className="inline-flex items-center gap-1 text-blue-700 bg-blue-50 px-2.5 py-1 rounded text-[11px] font-semibold border border-blue-200">
+                        <span className="inline-flex items-center gap-1 text-amber-700 bg-amber-50 px-2.5 py-1 rounded text-[11px] font-semibold border border-amber-200">
                           <Clock className="w-3 h-3" /> Pending Verification
                         </span>
                       ) : (
@@ -660,7 +648,7 @@ export default function LeetCodeContestDetailPage({ params }: PageProps) {
                     </td>
 
                     {/* 5. Contest Problems Solved */}
-                    <td className="py-3.5 px-4 text-center font-bold text-base bg-blue-50/30 text-blue-900 border-l border-blue-100/60 font-mono">
+                    <td className="py-3.5 px-4 text-center font-bold text-base text-slate-900 border-l border-slate-100 font-mono">
                       {st.participation_status === 'attended'
                         ? st.contest_problems_solved !== null
                           ? `${st.contest_problems_solved} / ${st.contest_total_problems || 4}`

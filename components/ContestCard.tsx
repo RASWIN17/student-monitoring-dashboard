@@ -113,8 +113,8 @@ export function ContestCard({ contest, href }: ContestCardProps) {
       );
     }
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-        <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
+        <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
         Upcoming
       </span>
     );
@@ -148,7 +148,7 @@ export function ContestCard({ contest, href }: ContestCardProps) {
           <span>:</span>
           <span>{String(timeLeft.minutes).padStart(2, '0')}m</span>
           <span>:</span>
-          <span className="text-blue-600">{String(timeLeft.seconds).padStart(2, '0')}s</span>
+          <span className="text-indigo-600">{String(timeLeft.seconds).padStart(2, '0')}s</span>
         </div>
       </div>
     );
@@ -157,16 +157,16 @@ export function ContestCard({ contest, href }: ContestCardProps) {
   return (
     <Link
       href={href}
-      className="group relative bg-white rounded-xl border border-slate-200 hover:border-blue-500/60 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between overflow-hidden"
+      className="group relative bg-white rounded-xl border border-slate-200 hover:border-slate-400 transition-colors flex flex-col justify-between overflow-hidden"
     >
-      {/* Top Banner Stripe */}
+      {/* Top Banner Stripe - flat platform accent */}
       <div
-        className={`h-1.5 w-full ${
+        className={`h-1 w-full ${
           isLeetCode
             ? isBiweekly
-              ? 'bg-gradient-to-r from-blue-600 to-indigo-600'
-              : 'bg-gradient-to-r from-amber-500 to-orange-500'
-            : 'bg-gradient-to-r from-orange-600 to-red-600'
+              ? 'bg-indigo-600'
+              : 'bg-amber-500'
+            : 'bg-orange-600'
         }`}
       />
 
@@ -187,7 +187,7 @@ export function ContestCard({ contest, href }: ContestCardProps) {
           </div>
 
           {/* Title */}
-          <h3 className="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-1">
+          <h3 className="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition-colors line-clamp-1">
             {contest.title}
           </h3>
 
@@ -222,7 +222,7 @@ export function ContestCard({ contest, href }: ContestCardProps) {
                 </span>
               </span>
               {contest.scan_status === 'scanning' && (
-                <span className="text-[10px] text-blue-600 flex items-center gap-1 animate-pulse">
+                <span className="text-[10px] text-indigo-600 flex items-center gap-1 font-semibold">
                   <RefreshCw className="w-2.5 h-2.5 animate-spin" /> Scanning
                 </span>
               )}
@@ -235,7 +235,7 @@ export function ContestCard({ contest, href }: ContestCardProps) {
             </span>
           )}
 
-          <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 group-hover:translate-x-0.5 transition-transform">
+          <span className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 group-hover:translate-x-0.5 transition-transform">
             <span>Analytics</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </span>

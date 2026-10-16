@@ -137,7 +137,7 @@ export function StudentCodeChefAnalytics({ user }: StudentCodeChefAnalyticsProps
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-10 text-center shadow-xs">
+        <div className="bg-white rounded-2xl border border-slate-200 p-10 text-center">
           <div className="w-14 h-14 rounded-2xl bg-orange-50 border border-orange-200 text-orange-600 flex items-center justify-center mx-auto mb-4">
             <Link2 className="w-7 h-7" />
           </div>
@@ -148,7 +148,7 @@ export function StudentCodeChefAnalytics({ user }: StudentCodeChefAnalyticsProps
           <div className="mt-6">
             <Link
               href="/settings"
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-semibold shadow-xs transition"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-semibold transition"
             >
               <span>Connect CodeChef Account</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -179,7 +179,7 @@ export function StudentCodeChefAnalytics({ user }: StudentCodeChefAnalyticsProps
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-red-200 p-8 text-center shadow-xs">
+        <div className="bg-white rounded-2xl border border-red-200 p-8 text-center">
           <AlertCircle className="w-10 h-10 text-red-500 mx-auto mb-3" />
           <h2 className="text-base font-bold text-slate-900">Unable to Fetch CodeChef Data</h2>
           <p className="text-xs text-slate-500 mt-1.5 max-w-md mx-auto">
@@ -218,7 +218,7 @@ export function StudentCodeChefAnalytics({ user }: StudentCodeChefAnalyticsProps
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center shadow-xs">
+        <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
           <Clock className="w-10 h-10 text-slate-300 mx-auto mb-3" />
           <h2 className="text-base font-bold text-slate-900">No Verified Statistics Yet</h2>
           <p className="text-xs text-slate-500 mt-1.5 max-w-md mx-auto">
@@ -228,7 +228,7 @@ export function StudentCodeChefAnalytics({ user }: StudentCodeChefAnalyticsProps
             <button
               onClick={handleManualSync}
               disabled={syncing}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-semibold shadow-xs transition disabled:opacity-50 cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-semibold transition disabled:opacity-50 cursor-pointer"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
               <span>{syncing ? 'Fetching...' : 'Sync Now'}</span>
@@ -270,7 +270,7 @@ export function StudentCodeChefAnalytics({ user }: StudentCodeChefAnalyticsProps
               href={account.public_profile_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-semibold shadow-2xs transition"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-semibold transition"
             >
               <span>@{account.username}</span>
               <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
@@ -280,7 +280,7 @@ export function StudentCodeChefAnalytics({ user }: StudentCodeChefAnalyticsProps
           <button
             onClick={handleManualSync}
             disabled={syncing}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-semibold shadow-xs transition disabled:opacity-50 cursor-pointer"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-semibold transition disabled:opacity-50 cursor-pointer"
             title="Refresh verified data from CodeChef"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
@@ -320,7 +320,7 @@ export function StudentCodeChefAnalytics({ user }: StudentCodeChefAnalyticsProps
       {/* 4 Summary Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Current Rating */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
+        <div className="bg-white rounded-xl border border-slate-200 p-5">
           <div className="text-xs text-slate-500 font-medium">Current Rating</div>
           <div className="text-2xl font-bold text-orange-600 mt-1 font-mono">
             {snapshot?.contest_rating != null ? Math.round(snapshot.contest_rating) : 'N/A'}
@@ -334,7 +334,7 @@ export function StudentCodeChefAnalytics({ user }: StudentCodeChefAnalyticsProps
         </div>
 
         {/* Stars / Division */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
+        <div className="bg-white rounded-xl border border-slate-200 p-5">
           <div className="text-xs text-slate-500 font-medium">Division & Stars</div>
           <div className="text-2xl font-bold text-slate-900 mt-1 flex items-center gap-1">
             <span>{stars ? stars : 'N/A'}</span>
@@ -348,7 +348,7 @@ export function StudentCodeChefAnalytics({ user }: StudentCodeChefAnalyticsProps
         </div>
 
         {/* Global Rank */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
+        <div className="bg-white rounded-xl border border-slate-200 p-5">
           <div className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
             <Globe className="w-3.5 h-3.5 text-slate-400" />
             <span>Global Rank</span>
@@ -360,7 +360,7 @@ export function StudentCodeChefAnalytics({ user }: StudentCodeChefAnalyticsProps
         </div>
 
         {/* Country Rank */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
+        <div className="bg-white rounded-xl border border-slate-200 p-5">
           <div className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
             <Flag className="w-3.5 h-3.5 text-slate-400" />
             <span>Country Rank</span>
@@ -375,7 +375,7 @@ export function StudentCodeChefAnalytics({ user }: StudentCodeChefAnalyticsProps
       {/* Problems Solved & Activity Details */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Total Solved */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
+        <div className="bg-white rounded-xl border border-slate-200 p-5">
           <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
             Total Problems Solved
           </h2>
@@ -388,7 +388,7 @@ export function StudentCodeChefAnalytics({ user }: StudentCodeChefAnalyticsProps
         </div>
 
         {/* Contests Attended */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
+        <div className="bg-white rounded-xl border border-slate-200 p-5">
           <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
             Contest Participation
           </h2>
@@ -402,7 +402,7 @@ export function StudentCodeChefAnalytics({ user }: StudentCodeChefAnalyticsProps
       </div>
 
       {/* Verified Contest History */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-2xs">
+      <div className="bg-white rounded-xl border border-slate-200 p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">

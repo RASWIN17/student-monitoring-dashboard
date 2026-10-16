@@ -110,12 +110,12 @@ export function ScanModal({
     : 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-xl w-full border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
+      <div className="bg-white rounded-xl border border-slate-200 max-w-xl w-full overflow-hidden flex flex-col max-h-[90vh]">
         {/* Modal Header */}
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-blue-100 text-blue-700 rounded-lg">
+            <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg border border-indigo-100">
               <RefreshCw className={`w-5 h-5 ${activeJob?.status === 'running' ? 'animate-spin' : ''}`} />
             </div>
             <div>
@@ -132,7 +132,7 @@ export function ScanModal({
           <button
             onClick={onClose}
             disabled={activeJob?.status === 'running'}
-            className="text-slate-400 hover:text-slate-600 disabled:opacity-40 p-1 rounded-md"
+            className="text-slate-400 hover:text-slate-600 disabled:opacity-40 p-1 rounded-md cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -158,9 +158,9 @@ export function ScanModal({
                   <button
                     type="button"
                     onClick={() => setPlatform('all')}
-                    className={`py-2.5 px-3 rounded-lg text-xs font-medium border text-center transition ${
+                    className={`py-2 px-3 rounded-lg text-xs font-medium border text-center transition cursor-pointer ${
                       platform === 'all'
-                        ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                        ? 'bg-indigo-600 text-white border-indigo-600'
                         : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                     }`}
                   >
@@ -169,9 +169,9 @@ export function ScanModal({
                   <button
                     type="button"
                     onClick={() => setPlatform('leetcode')}
-                    className={`py-2.5 px-3 rounded-lg text-xs font-medium border text-center transition ${
+                    className={`py-2 px-3 rounded-lg text-xs font-medium border text-center transition cursor-pointer ${
                       platform === 'leetcode'
-                        ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                        ? 'bg-indigo-600 text-white border-indigo-600'
                         : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                     }`}
                   >
@@ -180,9 +180,9 @@ export function ScanModal({
                   <button
                     type="button"
                     onClick={() => setPlatform('codechef')}
-                    className={`py-2.5 px-3 rounded-lg text-xs font-medium border text-center transition ${
+                    className={`py-2 px-3 rounded-lg text-xs font-medium border text-center transition cursor-pointer ${
                       platform === 'codechef'
-                        ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                        ? 'bg-indigo-600 text-white border-indigo-600'
                         : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                     }`}
                   >
@@ -207,7 +207,7 @@ export function ScanModal({
               {/* Status Header */}
               <div className="flex items-center justify-between text-xs text-slate-500">
                 <span>Job ID: <code className="text-slate-800 font-mono">{activeJob.id.substring(0, 8)}</code></span>
-                <span className="font-semibold capitalize px-2 py-0.5 rounded text-[11px] bg-blue-100 text-blue-700">
+                <span className="font-semibold capitalize px-2 py-0.5 rounded-full text-[11px] bg-indigo-50 text-indigo-700 border border-indigo-200">
                   {activeJob.status}
                 </span>
               </div>
@@ -218,9 +218,9 @@ export function ScanModal({
                   <span>Progress ({activeJob.processed_accounts} / {activeJob.total_accounts} accounts)</span>
                   <span>{progressPercent}%</span>
                 </div>
-                <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
                   <div
-                    className="bg-blue-600 h-full rounded-full transition-all duration-300"
+                    className="bg-indigo-600 h-full rounded-full transition-all duration-300"
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
@@ -228,17 +228,17 @@ export function ScanModal({
 
               {/* Stat Counters */}
               <div className="grid grid-cols-3 gap-2">
-                <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-lg text-center">
+                <div className="p-3 bg-emerald-50/60 border border-emerald-200/80 rounded-lg text-center">
                   <div className="text-lg font-bold text-emerald-700">{activeJob.successful_accounts}</div>
-                  <div className="text-[11px] text-emerald-600 font-medium">Succeeded</div>
+                  <div className="text-[11px] text-emerald-700 font-medium">Succeeded</div>
                 </div>
-                <div className="p-3 bg-amber-50 border border-amber-100 rounded-lg text-center">
+                <div className="p-3 bg-amber-50/60 border border-amber-200/80 rounded-lg text-center">
                   <div className="text-lg font-bold text-amber-700">{activeJob.partial_accounts}</div>
-                  <div className="text-[11px] text-amber-600 font-medium">Partial</div>
+                  <div className="text-[11px] text-amber-700 font-medium">Partial</div>
                 </div>
-                <div className="p-3 bg-red-50 border border-red-100 rounded-lg text-center">
+                <div className="p-3 bg-red-50/60 border border-red-200/80 rounded-lg text-center">
                   <div className="text-lg font-bold text-red-700">{activeJob.failed_accounts}</div>
-                  <div className="text-[11px] text-red-600 font-medium">Failed</div>
+                  <div className="text-[11px] text-red-700 font-medium">Failed</div>
                 </div>
               </div>
 
@@ -251,10 +251,10 @@ export function ScanModal({
                   {jobItems.map((item) => (
                     <div
                       key={item.id}
-                      className="flex items-center justify-between text-xs p-2 bg-white rounded border border-slate-100 shadow-2xs"
+                      className="flex items-center justify-between text-xs p-2 bg-white rounded border border-slate-200/80"
                     >
                       <div className="flex items-center gap-2 overflow-hidden">
-                        <span className="font-semibold text-slate-700 uppercase text-[10px] w-14 shrink-0">
+                        <span className="font-semibold text-slate-700 uppercase text-[10px] w-14 shrink-0 font-mono">
                           {item.platform}
                         </span>
                         <span className="text-slate-900 font-medium truncate">{item.username}</span>
@@ -262,22 +262,22 @@ export function ScanModal({
                       </div>
                       <div className="shrink-0 flex items-center gap-1.5">
                         {item.status === 'succeeded' && (
-                          <span className="text-emerald-600 flex items-center gap-1 text-[11px] font-medium">
+                          <span className="text-emerald-700 flex items-center gap-1 text-[11px] font-medium">
                             <CheckCircle2 className="w-3.5 h-3.5" /> Done
                           </span>
                         )}
                         {item.status === 'failed' && (
-                          <span className="text-red-600 flex items-center gap-1 text-[11px] font-medium" title={item.error_message || ''}>
+                          <span className="text-red-700 flex items-center gap-1 text-[11px] font-medium" title={item.error_message || ''}>
                             <XCircle className="w-3.5 h-3.5" /> Error
                           </span>
                         )}
                         {item.status === 'running' && (
-                          <span className="text-blue-600 flex items-center gap-1 text-[11px] font-medium">
+                          <span className="text-indigo-700 flex items-center gap-1 text-[11px] font-medium">
                             <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Scraping
                           </span>
                         )}
                         {item.status === 'queued' && (
-                          <span className="text-slate-400 flex items-center gap-1 text-[11px]">
+                          <span className="text-slate-500 flex items-center gap-1 text-[11px]">
                             <Clock className="w-3.5 h-3.5" /> Queued
                           </span>
                         )}
@@ -297,7 +297,7 @@ export function ScanModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-xs font-medium text-slate-600 hover:text-slate-800 transition"
+                className="px-4 py-2 text-xs font-medium text-slate-600 hover:text-slate-800 transition cursor-pointer"
               >
                 Cancel
               </button>
@@ -305,7 +305,7 @@ export function ScanModal({
                 type="button"
                 disabled={isStarting}
                 onClick={handleStartScan}
-                className="px-5 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition flex items-center gap-2 shadow-sm disabled:opacity-50"
+                className="px-5 py-2 bg-indigo-600 text-white rounded-lg text-xs font-semibold hover:bg-indigo-700 transition flex items-center gap-2 disabled:opacity-50 cursor-pointer"
               >
                 <Play className="w-3.5 h-3.5 fill-current" />
                 {isStarting ? 'Queuing...' : 'Start Scan Now'}
@@ -317,7 +317,7 @@ export function ScanModal({
                 type="button"
                 onClick={onClose}
                 disabled={activeJob.status === 'running'}
-                className="px-5 py-2 bg-slate-800 text-white rounded-lg text-xs font-semibold hover:bg-slate-900 transition disabled:opacity-50"
+                className="px-5 py-2 bg-slate-900 text-white rounded-lg text-xs font-semibold hover:bg-slate-800 transition disabled:opacity-50 cursor-pointer"
               >
                 {activeJob.status === 'running' ? 'Scanning...' : 'Done'}
               </button>

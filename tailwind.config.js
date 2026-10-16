@@ -10,20 +10,26 @@ module.exports = {
     extend: {
       colors: {
         brand: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          900: '#1e3a8a',
+          50: '#eef2ff',
+          100: '#e0e7ff',
+          500: '#6366f1',
+          600: '#4f46e5',
+          700: '#4338ca',
+          900: '#312e81',
         },
         sidebar: {
-          bg: '#0f172a',
-          card: '#1e293b',
-          border: '#334155',
-          text: '#94a3b8',
-          active: '#ffffff',
-          hover: '#1e293b',
+          bg: '#ffffff',
+          card: '#f8fafc',
+          border: '#e2e8f0',
+          text: '#64748b',
+          active: '#0f172a',
+          hover: '#f1f5f9',
+        },
+        surface: {
+          main: '#ffffff',
+          subtle: '#f8fafc',
+          section: '#f1f5f9',
+          border: '#e2e8f0',
         },
         status: {
           active: '#16a34a',

@@ -25,8 +25,8 @@ export default function TestConnectorsPage() {
 
   if (user && !isTeacher) {
     return (
-      <div className="max-w-md mx-auto my-12 bg-white rounded-xl border border-red-200 p-8 text-center shadow-xs">
-        <div className="h-12 w-12 bg-red-100 text-red-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+      <div className="max-w-md mx-auto my-12 bg-white rounded-xl border border-red-200 p-8 text-center">
+        <div className="h-12 w-12 bg-red-50 text-red-600 rounded-xl flex items-center justify-center mx-auto mb-4 border border-red-100">
           <AlertTriangle className="w-6 h-6" />
         </div>
         <h2 className="text-lg font-bold text-slate-900 mb-2">Access Restricted</h2>
@@ -35,7 +35,7 @@ export default function TestConnectorsPage() {
         </p>
         <Link
           href="/classrooms"
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition"
+          className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-semibold hover:bg-indigo-700 transition"
         >
           Go to Classrooms
         </Link>
@@ -74,7 +74,7 @@ export default function TestConnectorsPage() {
       {/* Header */}
       <div>
         <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-          <Terminal className="w-5 h-5 text-blue-600" />
+          <Terminal className="w-5 h-5 text-indigo-600" />
           <span>Connector Live Verification Console (Phase 1)</span>
         </h1>
         <p className="text-xs text-slate-500 mt-0.5">
@@ -83,7 +83,7 @@ export default function TestConnectorsPage() {
       </div>
 
       {/* Input Card */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-2xs">
+      <div className="bg-white rounded-xl border border-slate-200 p-6">
         <form onSubmit={handleTest} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
@@ -97,9 +97,9 @@ export default function TestConnectorsPage() {
                     setPlatform('leetcode');
                     if (username === 'tourist') setUsername('neal_wu');
                   }}
-                  className={`py-2 px-3 text-xs font-semibold rounded-lg border text-center transition flex items-center justify-center gap-1.5 ${
+                  className={`py-2 px-3 text-xs font-semibold rounded-lg border text-center transition flex items-center justify-center gap-1.5 cursor-pointer ${
                     platform === 'leetcode'
-                      ? 'bg-amber-600 text-white border-amber-600 shadow-sm'
+                      ? 'bg-amber-600 text-white border-amber-600'
                       : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                   }`}
                 >
@@ -112,9 +112,9 @@ export default function TestConnectorsPage() {
                     setPlatform('codechef');
                     if (username === 'neal_wu') setUsername('tourist');
                   }}
-                  className={`py-2 px-3 text-xs font-semibold rounded-lg border text-center transition flex items-center justify-center gap-1.5 ${
+                  className={`py-2 px-3 text-xs font-semibold rounded-lg border text-center transition flex items-center justify-center gap-1.5 cursor-pointer ${
                     platform === 'codechef'
-                      ? 'bg-orange-600 text-white border-orange-600 shadow-sm'
+                      ? 'bg-orange-600 text-white border-orange-600'
                       : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                   }`}
                 >
@@ -134,13 +134,13 @@ export default function TestConnectorsPage() {
                   placeholder="e.g. tourist, neal_wu, lee215"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="flex-1 px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition"
+                  className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono text-slate-900 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 focus:bg-white transition"
                   required
                 />
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shadow-xs disabled:opacity-50 shrink-0"
+                  className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition disabled:opacity-50 shrink-0 cursor-pointer"
                 >
                   <Play className="w-3.5 h-3.5 fill-current" />
                   <span>{loading ? 'Testing...' : 'Test Connector'}</span>
@@ -153,7 +153,7 @@ export default function TestConnectorsPage() {
 
       {/* Output Results */}
       {result && (
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-2xs space-y-4 p-6">
+        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden space-y-4 p-6">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
               {result.extraction?.success ? (
@@ -164,7 +164,7 @@ export default function TestConnectorsPage() {
               <span>Live Test Outcome for @{result.username}</span>
             </h3>
 
-            <span className="text-[11px] font-mono bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded">
+            <span className="text-[11px] font-mono bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full border border-slate-200">
               Status: {result.extraction?.success ? 'HTTP 200 OK' : result.extraction?.errorCode || 'FAILED'}
             </span>
           </div>

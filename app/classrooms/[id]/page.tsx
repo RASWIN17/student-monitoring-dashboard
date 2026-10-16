@@ -152,8 +152,8 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
   if (authLoading || (loading && !classroom)) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-slate-400 gap-3">
-        <RefreshCw className="w-6 h-6 animate-spin text-blue-600" />
-        <span className="text-sm font-medium">Loading classroom details...</span>
+        <RefreshCw className="w-6 h-6 animate-spin text-indigo-600" />
+        <span className="text-sm font-medium text-slate-600">Loading classroom details...</span>
       </div>
     );
   }
@@ -163,7 +163,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
       <div className="space-y-6 max-w-4xl mx-auto">
         <Link
           href="/classrooms"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-blue-600 transition"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-indigo-600 transition"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Classrooms</span>
@@ -174,7 +174,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
           <p className="text-xs text-red-700 mt-1">{error}</p>
           <button
             onClick={fetchClassroomData}
-            className="mt-4 px-4 py-2 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700 transition"
+            className="mt-4 px-4 py-2 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700 transition cursor-pointer"
           >
             Retry
           </button>
@@ -189,28 +189,28 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
       <div>
         <Link
           href="/classrooms"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-blue-600 mb-3 transition"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-indigo-600 mb-3 transition"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Classrooms</span>
         </Link>
 
         {classroom && (
-          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div className="bg-white rounded-xl border border-slate-200 p-6 flex flex-col md:flex-row md:items-center justify-between gap-5">
             <div className="flex items-start gap-4">
-              <div className="p-3 bg-blue-50 text-blue-600 rounded-xl shrink-0 mt-0.5">
+              <div className="p-3 bg-indigo-50 border border-indigo-100 text-indigo-600 rounded-xl shrink-0 mt-0.5">
                 <GraduationCap className="w-7 h-7" />
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap mb-1">
-                  <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
                     {classroom.course} • Section {classroom.section}
                   </span>
                   <span className="text-[11px] font-medium text-slate-500">
                     {classroom.academic_year}
                   </span>
                   {!isTeacher && (
-                    <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                    <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded inline-flex items-center gap-1">
                       <Eye className="w-3 h-3 text-emerald-600" />
                       <span>View-Only</span>
                     </span>
@@ -226,7 +226,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
             <div className="flex flex-wrap items-center gap-3">
               {/* Enrolled Students Pill */}
               <div className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg flex items-center gap-2">
-                <Users className="w-4 h-4 text-blue-600" />
+                <Users className="w-4 h-4 text-indigo-600" />
                 <div className="text-xs">
                   <span className="text-slate-500 font-medium">Total Students: </span>
                   <span className="font-bold text-slate-900">{enrolledStudentCount}</span>
@@ -243,7 +243,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
                 </div>
                 <button
                   onClick={() => copyJoinCode(classroom.join_code)}
-                  className="p-1 text-slate-500 hover:text-blue-600 hover:bg-white rounded transition cursor-pointer"
+                  className="p-1 text-slate-500 hover:text-indigo-600 hover:bg-white rounded transition cursor-pointer"
                   title="Copy Join Code"
                 >
                   {copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
@@ -286,12 +286,12 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
       )}
 
       {/* Roster Table Card */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
+      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
         {/* Table Header Bar */}
         <div className="p-4 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50">
           <div>
             <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <Users className="w-4 h-4 text-blue-600" />
+              <Users className="w-4 h-4 text-indigo-600" />
               <span>Enrolled Students</span>
               <span className="text-xs text-slate-500 font-normal">
                 ({filteredStudents.length} of {enrolledStudentCount})
@@ -310,7 +310,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
               placeholder="Search by name, reg no, email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
             />
           </div>
         </div>
@@ -318,7 +318,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
         {/* Loading State */}
         {studentsLoading ? (
           <div className="p-12 text-center text-slate-400 flex flex-col items-center justify-center gap-2">
-            <RefreshCw className="w-5 h-5 animate-spin text-blue-600" />
+            <RefreshCw className="w-5 h-5 animate-spin text-indigo-600" />
             <span className="text-xs font-medium">Fetching enrolled students...</span>
           </div>
         ) : studentsError ? (
@@ -390,7 +390,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
                       {/* Column 1: Student Name */}
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 font-bold flex items-center justify-center shrink-0 text-xs">
+                          <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-700 font-bold flex items-center justify-center shrink-0 text-xs">
                             {s.display_name?.charAt(0)?.toUpperCase() || 'S'}
                           </div>
                           <div>
@@ -420,7 +420,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
                       <td className="py-3.5 px-4 text-slate-600 font-mono">
                         <a
                           href={`mailto:${s.email}`}
-                          className="hover:text-blue-600 hover:underline inline-flex items-center gap-1.5"
+                          className="hover:text-indigo-600 hover:underline inline-flex items-center gap-1.5"
                         >
                           <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                           <span>{s.email}</span>
@@ -460,8 +460,8 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
 
       {/* Delete Student Confirmation Modal (Teachers Only) */}
       {isTeacher && studentToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-xl max-w-md w-full border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             <div className="p-5 border-b border-slate-100 flex items-start gap-3">
               <div className="p-2.5 bg-red-50 text-red-600 rounded-lg shrink-0">
                 <AlertTriangle className="w-5 h-5" />
@@ -520,7 +520,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
                 type="button"
                 onClick={handleDeleteConfirm}
                 disabled={deleting}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition disabled:opacity-50 shadow-xs cursor-pointer"
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition disabled:opacity-50 cursor-pointer"
               >
                 {deleting ? (
                   <>

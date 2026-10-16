@@ -55,8 +55,8 @@ export default function ScansPage() {
 
   if (user && !isTeacher) {
     return (
-      <div className="max-w-md mx-auto my-12 bg-white rounded-xl border border-red-200 p-8 text-center shadow-xs">
-        <div className="h-12 w-12 bg-red-100 text-red-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+      <div className="max-w-md mx-auto my-12 bg-white rounded-xl border border-red-200 p-8 text-center">
+        <div className="h-12 w-12 bg-red-50 text-red-600 rounded-xl flex items-center justify-center mx-auto mb-4 border border-red-100">
           <AlertTriangle className="w-6 h-6" />
         </div>
         <h2 className="text-lg font-bold text-slate-900 mb-2">Access Restricted</h2>
@@ -65,7 +65,7 @@ export default function ScansPage() {
         </p>
         <a
           href="/classrooms"
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition"
+          className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-semibold hover:bg-indigo-700 transition"
         >
           Go to Classrooms
         </a>
@@ -79,7 +79,7 @@ export default function ScansPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <History className="w-5 h-5 text-blue-600" />
+            <History className="w-5 h-5 text-indigo-600" />
             <span>Scan Jobs History</span>
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -89,17 +89,17 @@ export default function ScansPage() {
 
         <button
           onClick={() => fetchScanHistory(true)}
-          className="p-2 text-slate-600 hover:text-blue-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition self-start sm:self-auto"
+          className="p-2 text-slate-600 hover:text-indigo-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition self-start sm:self-auto cursor-pointer"
         >
           <RefreshCw className="w-4 h-4" />
         </button>
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-2xs">
+      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
         {loading ? (
           <div className="py-16 text-center text-slate-400">
-            <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-blue-600" />
+            <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-indigo-600" />
             <span className="text-xs font-semibold">Loading scan history...</span>
           </div>
         ) : jobs.length === 0 ? (
@@ -114,7 +114,7 @@ export default function ScansPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
+                <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-[10px]">
                   <th className="py-3 px-4">Job ID</th>
                   <th className="py-3 px-4">Status</th>
                   <th className="py-3 px-4 text-center">Accounts Total</th>
@@ -133,34 +133,34 @@ export default function ScansPage() {
                     </td>
                     <td className="py-3 px-4">
                       {job.status === 'succeeded' && (
-                        <span className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded text-[11px] font-semibold border border-emerald-200">
+                        <span className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-[11px] font-semibold border border-emerald-200">
                           <CheckCircle2 className="w-3 h-3" /> Succeeded
                         </span>
                       )}
                       {job.status === 'partial' && (
-                        <span className="inline-flex items-center gap-1 text-amber-700 bg-amber-50 px-2 py-0.5 rounded text-[11px] font-semibold border border-amber-200">
+                        <span className="inline-flex items-center gap-1 text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full text-[11px] font-semibold border border-amber-200">
                           <AlertTriangle className="w-3 h-3" /> Partial
                         </span>
                       )}
                       {job.status === 'failed' && (
-                        <span className="inline-flex items-center gap-1 text-red-700 bg-red-50 px-2 py-0.5 rounded text-[11px] font-semibold border border-red-200">
+                        <span className="inline-flex items-center gap-1 text-red-700 bg-red-50 px-2 py-0.5 rounded-full text-[11px] font-semibold border border-red-200">
                           <XCircle className="w-3 h-3" /> Failed
                         </span>
                       )}
                       {job.status === 'running' && (
-                        <span className="inline-flex items-center gap-1 text-blue-700 bg-blue-50 px-2 py-0.5 rounded text-[11px] font-semibold border border-blue-200">
+                        <span className="inline-flex items-center gap-1 text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full text-[11px] font-semibold border border-indigo-200">
                           <RefreshCw className="w-3 h-3 animate-spin" /> Running
                         </span>
                       )}
                       {job.status === 'queued' && (
-                        <span className="inline-flex items-center gap-1 text-slate-600 bg-slate-100 px-2 py-0.5 rounded text-[11px]">
+                        <span className="inline-flex items-center gap-1 text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full text-[11px]">
                           <Clock className="w-3 h-3" /> Queued
                         </span>
                       )}
                     </td>
-                    <td className="py-3 px-4 text-center font-bold">{job.total_accounts}</td>
-                    <td className="py-3 px-4 text-center text-emerald-600 font-semibold">{job.successful_accounts}</td>
-                    <td className="py-3 px-4 text-center text-red-600 font-semibold">{job.failed_accounts}</td>
+                    <td className="py-3 px-4 text-center font-bold font-mono">{job.total_accounts}</td>
+                    <td className="py-3 px-4 text-center text-emerald-600 font-semibold font-mono">{job.successful_accounts}</td>
+                    <td className="py-3 px-4 text-center text-red-600 font-semibold font-mono">{job.failed_accounts}</td>
                     <td className="py-3 px-4 capitalize">{job.selected_platforms}</td>
                     <td className="py-3 px-4 capitalize">{job.requested_scope}</td>
                     <td className="py-3 px-4 text-right text-slate-500">

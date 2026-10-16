@@ -130,7 +130,7 @@ export default function ClassroomsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <GraduationCap className="w-5 h-5 text-blue-600" />
+            <GraduationCap className="w-5 h-5 text-indigo-600" />
             <span>Classroom Management</span>
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -141,7 +141,7 @@ export default function ClassroomsPage() {
         {isTeacher ? (
           <button
             onClick={() => setIsCreateOpen(true)}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold flex items-center gap-2 shadow-xs transition cursor-pointer"
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-lg text-xs font-semibold flex items-center gap-2 transition cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>New Classroom</span>
@@ -149,7 +149,7 @@ export default function ClassroomsPage() {
         ) : (
           <button
             onClick={() => setIsJoinOpen(true)}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold flex items-center gap-2 shadow-xs transition cursor-pointer"
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-lg text-xs font-semibold flex items-center gap-2 transition cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Join Classroom</span>
@@ -159,7 +159,7 @@ export default function ClassroomsPage() {
 
       {/* Classrooms Grid */}
       {classrooms.length === 0 ? (
-        <div className="bg-white rounded-xl border border-slate-200 p-12 text-center shadow-2xs">
+        <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
           <Layers className="w-10 h-10 text-slate-300 mx-auto mb-3" />
           <h3 className="text-sm font-bold text-slate-800">No classrooms created yet</h3>
           <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
@@ -170,7 +170,7 @@ export default function ClassroomsPage() {
           {!isTeacher && (
             <button
               onClick={() => setIsJoinOpen(true)}
-              className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold inline-flex items-center gap-2 shadow-xs transition cursor-pointer"
+              className="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold inline-flex items-center gap-2 transition cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>Join a Classroom</span>
@@ -186,11 +186,11 @@ export default function ClassroomsPage() {
                 setSelectedClassroom(c);
                 router.push(`/classrooms/${c.id}`);
               }}
-              className="bg-white rounded-xl border border-slate-200 hover:border-blue-500 hover:shadow-md p-5 transition-all flex flex-col justify-between cursor-pointer group"
+              className="bg-white rounded-xl border border-slate-200 hover:border-slate-400 p-5 transition-colors flex flex-col justify-between cursor-pointer group"
             >
               <div>
                 <div className="flex items-start justify-between gap-2 mb-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 group-hover:bg-blue-100 group-hover:border-blue-300 transition">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200 group-hover:border-slate-300 transition">
                     {c.course} • Sec {c.section}
                   </span>
                   {isTeacher && (
@@ -207,7 +207,7 @@ export default function ClassroomsPage() {
                   )}
                 </div>
 
-                <h3 className="text-base font-bold text-slate-900 group-hover:text-blue-600 leading-snug transition-colors">
+                <h3 className="text-base font-bold text-slate-900 group-hover:text-indigo-600 leading-snug transition-colors">
                   {c.name}
                 </h3>
                 <p className="text-xs text-slate-500 mt-1">
@@ -216,7 +216,7 @@ export default function ClassroomsPage() {
 
                 {/* Join Code Box */}
                 <div
-                  className="mt-4 p-2.5 bg-slate-50 group-hover:bg-blue-50/40 border border-slate-200 group-hover:border-blue-200/80 rounded-lg flex items-center justify-between transition-colors"
+                  className="mt-4 p-2.5 bg-slate-50 border border-slate-200 group-hover:border-slate-300 rounded-lg flex items-center justify-between transition-colors"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div>
@@ -230,7 +230,7 @@ export default function ClassroomsPage() {
                       e.stopPropagation();
                       copyToClipboard(c.join_code);
                     }}
-                    className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-white rounded transition"
+                    className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-white rounded transition"
                     title="Copy Join Code"
                   >
                     {copiedCode === c.join_code ? (
@@ -245,11 +245,11 @@ export default function ClassroomsPage() {
               {/* Bottom Meta & Action */}
               <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-1.5 text-slate-600 font-semibold">
-                  <Users className="w-4 h-4 text-slate-400 group-hover:text-blue-500 transition-colors" />
+                  <Users className="w-4 h-4 text-slate-400 group-hover:text-indigo-500 transition-colors" />
                   <span>{c.enrolled_count ?? 0} students</span>
                 </div>
 
-                <div className="px-3 py-1.5 bg-slate-100 group-hover:bg-blue-600 group-hover:text-white text-slate-700 rounded-lg font-semibold flex items-center gap-1 transition">
+                <div className="px-3 py-1.5 bg-slate-100 group-hover:bg-indigo-600 group-hover:text-white text-slate-700 rounded-lg font-semibold flex items-center gap-1 transition">
                   <span>Open Classroom</span>
                   <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                 </div>
@@ -261,8 +261,8 @@ export default function ClassroomsPage() {
 
       {/* Create Classroom Modal */}
       {isCreateOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full border border-slate-200 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-xl max-w-lg w-full border border-slate-200 overflow-hidden">
             <div className="px-6 py-4 bg-slate-50 border-b border-slate-200">
               <h3 className="text-base font-bold text-slate-900">Create New Classroom</h3>
               <p className="text-xs text-slate-500">
@@ -286,7 +286,7 @@ export default function ClassroomsPage() {
                   placeholder="e.g. Data Structures & Algorithms Lab"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                   required
                 />
               </div>
@@ -301,7 +301,7 @@ export default function ClassroomsPage() {
                     placeholder="e.g. CS301"
                     value={course}
                     onChange={(e) => setCourse(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                     required
                   />
                 </div>
@@ -314,7 +314,7 @@ export default function ClassroomsPage() {
                     placeholder="e.g. A"
                     value={section}
                     onChange={(e) => setSection(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                     required
                   />
                 </div>
@@ -330,7 +330,7 @@ export default function ClassroomsPage() {
                     placeholder="e.g. 2024-2028"
                     value={batch}
                     onChange={(e) => setBatch(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                     required
                   />
                 </div>
@@ -343,7 +343,7 @@ export default function ClassroomsPage() {
                     placeholder="e.g. Computer Science"
                     value={department}
                     onChange={(e) => setDepartment(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                     required
                   />
                 </div>
@@ -358,7 +358,7 @@ export default function ClassroomsPage() {
                   placeholder="e.g. 2026-2027"
                   value={academicYear}
                   onChange={(e) => setAcademicYear(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                   required
                 />
               </div>
@@ -367,14 +367,14 @@ export default function ClassroomsPage() {
                 <button
                   type="button"
                   onClick={() => setIsCreateOpen(false)}
-                  className="px-3.5 py-2 text-xs font-medium text-slate-600 hover:text-slate-800"
+                  className="px-3.5 py-2 text-xs font-medium text-slate-600 hover:text-slate-800 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={creating}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 disabled:opacity-50"
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-lg text-xs font-semibold disabled:opacity-50 cursor-pointer transition"
                 >
                   {creating ? 'Creating...' : 'Create Classroom'}
                 </button>
@@ -386,8 +386,8 @@ export default function ClassroomsPage() {
 
       {/* Join Classroom Modal for Students */}
       {isJoinOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-sm w-full border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-xl max-w-sm w-full border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             <div className="px-6 py-4 bg-slate-50 border-b border-slate-200">
               <h3 className="text-base font-bold text-slate-900">Join Classroom</h3>
               <p className="text-xs text-slate-500">
@@ -411,7 +411,7 @@ export default function ClassroomsPage() {
                   placeholder="e.g. CT-ABC123"
                   value={joinCode}
                   onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-mono uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-mono uppercase tracking-wider text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                   required
                 />
               </div>
@@ -420,14 +420,14 @@ export default function ClassroomsPage() {
                 <button
                   type="button"
                   onClick={() => setIsJoinOpen(false)}
-                  className="px-3.5 py-2 text-xs font-medium text-slate-600 hover:text-slate-800"
+                  className="px-3.5 py-2 text-xs font-medium text-slate-600 hover:text-slate-800 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={joining}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 disabled:opacity-50"
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-lg text-xs font-semibold disabled:opacity-50 cursor-pointer transition"
                 >
                   {joining ? 'Joining...' : 'Join Classroom'}
                 </button>

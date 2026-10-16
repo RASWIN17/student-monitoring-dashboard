@@ -125,7 +125,7 @@ export default function CreateStudentProfilePage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+          <Loader2 className="w-6 h-6 text-indigo-600 animate-spin" />
           <span className="text-sm font-medium text-slate-500">Loading your account...</span>
         </div>
       </div>
@@ -133,15 +133,15 @@ export default function CreateStudentProfilePage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-slate-100">
-      <div className="max-w-xl w-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
-        {/* Header Banner */}
-        <div className="bg-sidebar-bg p-6 sm:p-8 text-center text-white">
-          <div className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-blue-600 font-bold text-xl mb-3 shadow-md">
-            <GraduationCap className="w-6 h-6 text-white" />
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-slate-50">
+      <div className="max-w-xl w-full bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        {/* Header Banner - Pure Light Mode */}
+        <div className="bg-slate-50/80 p-6 sm:p-8 text-center border-b border-slate-200/80">
+          <div className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-600 mb-3">
+            <GraduationCap className="w-6 h-6" />
           </div>
-          <h1 className="text-xl font-bold tracking-tight">Complete Your Student Profile</h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <h1 className="text-xl font-bold tracking-tight text-slate-900">Complete Your Student Profile</h1>
+          <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
             Please provide your academic registration details to access your Student Dashboard.
           </p>
         </div>
@@ -169,7 +169,7 @@ export default function CreateStudentProfilePage() {
                 <label htmlFor="student-name" className="block text-xs font-semibold text-slate-700">
                   Student Name <span className="text-red-500">*</span>
                 </label>
-                <span className="inline-flex items-center text-[10px] font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+                <span className="inline-flex items-center text-[10px] font-medium text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200">
                   Auto-filled &bull; Editable
                 </span>
               </div>
@@ -183,7 +183,7 @@ export default function CreateStudentProfilePage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   disabled={submitting}
-                  className="w-full pl-9 pr-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 transition"
                   required
                 />
               </div>
@@ -206,7 +206,7 @@ export default function CreateStudentProfilePage() {
                   value={registerNumber}
                   onChange={(e) => setRegisterNumber(e.target.value)}
                   disabled={submitting}
-                  className="w-full pl-9 pr-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition font-mono uppercase"
+                  className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 transition font-mono uppercase"
                   required
                 />
               </div>
@@ -231,7 +231,7 @@ export default function CreateStudentProfilePage() {
                     value={className}
                     onChange={(e) => setClassName(e.target.value)}
                     disabled={submitting}
-                    className="w-full pl-9 pr-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                    className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 transition"
                     required
                   />
                 </div>
@@ -251,7 +251,7 @@ export default function CreateStudentProfilePage() {
                     value={section}
                     onChange={(e) => setSection(e.target.value)}
                     disabled={submitting}
-                    className="w-full pl-9 pr-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition uppercase"
+                    className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 transition uppercase"
                   />
                 </div>
               </div>
@@ -270,7 +270,7 @@ export default function CreateStudentProfilePage() {
                   value={user?.email || ''}
                   readOnly
                   disabled
-                  className="w-full pl-9 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-600 font-mono select-all cursor-not-allowed"
+                  className="w-full pl-9 pr-10 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-600 font-mono select-all cursor-not-allowed"
                 />
                 <Lock className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2" />
               </div>
@@ -285,7 +285,7 @@ export default function CreateStudentProfilePage() {
                 type="submit"
                 id="create-profile-button"
                 disabled={submitting}
-                className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-lg shadow-sm hover:shadow flex items-center justify-center gap-2 transition disabled:opacity-50 cursor-pointer"
+                className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-lg flex items-center justify-center gap-2 transition disabled:opacity-50 cursor-pointer"
               >
                 {submitting ? (
                   <>
