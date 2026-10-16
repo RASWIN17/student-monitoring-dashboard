@@ -20,6 +20,7 @@ import {
   AlertCircle,
   X,
   Eye,
+  Code2,
 } from 'lucide-react';
 
 export default function ClassroomDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -152,7 +153,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
   if (authLoading || (loading && !classroom)) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-slate-400 gap-3">
-        <RefreshCw className="w-6 h-6 animate-spin text-blue-600" />
+        <RefreshCw className="w-6 h-6 animate-spin text-[#1769ff]" />
         <span className="text-sm font-medium">Loading classroom details...</span>
       </div>
     );
@@ -163,18 +164,18 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
       <div className="space-y-6 max-w-4xl mx-auto">
         <Link
           href="/classrooms"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-blue-600 transition"
+          className="inline-flex items-center gap-2 text-sm font-bold text-[#0f1b35] hover:text-[#1769ff] transition"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Classrooms</span>
         </Link>
-        <div className="p-6 bg-red-50 border border-red-200 rounded-xl text-center">
+        <div className="p-8 bg-red-50 border border-red-200 rounded-2xl text-center">
           <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
           <h3 className="text-sm font-bold text-red-900">Error Loading Classroom</h3>
           <p className="text-xs text-red-700 mt-1">{error}</p>
           <button
             onClick={fetchClassroomData}
-            className="mt-4 px-4 py-2 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700 transition"
+            className="mt-4 px-4 py-2 bg-red-600 text-white text-xs font-semibold rounded-xl hover:bg-red-700 transition cursor-pointer"
           >
             Retry
           </button>
@@ -185,68 +186,80 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      {/* Navigation & Header */}
+      {/* Back Navigation */}
       <div>
         <Link
           href="/classrooms"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-blue-600 mb-3 transition"
+          className="inline-flex items-center gap-2 text-sm font-bold text-[#0f1b35] hover:text-[#1769ff] mb-4 transition"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4 text-[#0f1b35]" />
           <span>Back to Classrooms</span>
         </Link>
 
+        {/* Large Classroom Summary Card */}
         {classroom && (
-          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-5">
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-blue-50 text-blue-600 rounded-xl shrink-0 mt-0.5">
-                <GraduationCap className="w-7 h-7" />
+          <div className="bg-white rounded-2xl border border-[#e1eaf5] p-6 lg:p-7 shadow-[0_8px_30px_rgba(30,64,175,0.06)] flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+            {/* Left & Center Information */}
+            <div className="flex items-center gap-5">
+              <div className="w-[76px] h-[76px] rounded-2xl bg-[#eef4ff] text-[#1769ff] flex items-center justify-center shrink-0 shadow-2xs">
+                <GraduationCap className="w-9 h-9 text-[#1769ff]" />
               </div>
               <div>
-                <div className="flex items-center gap-2 flex-wrap mb-1">
-                  <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                    {classroom.course} • Section {classroom.section}
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <span className="text-[11px] font-bold uppercase tracking-wider px-3 py-0.5 rounded-full bg-[#eef4ff] text-[#1769ff] border border-blue-200/50">
+                    {classroom.course} • SECTION {classroom.section}
                   </span>
-                  <span className="text-[11px] font-medium text-slate-500">
+                  <span className="text-xs font-semibold text-[#667a9e]">
                     {classroom.academic_year}
                   </span>
                   {!isTeacher && (
-                    <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                    <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
                       <Eye className="w-3 h-3 text-emerald-600" />
                       <span>View-Only</span>
                     </span>
                   )}
                 </div>
-                <h1 className="text-xl font-bold text-slate-900">{classroom.name}</h1>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <h1 className="text-2xl lg:text-3xl font-extrabold text-[#0f1b35] tracking-tight mt-1.5 mb-1">
+                  {classroom.name}
+                </h1>
+                <p className="text-xs text-[#667a9e] font-normal">
                   Department of {classroom.department} • Batch {classroom.batch}
                 </p>
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3">
-              {/* Enrolled Students Pill */}
-              <div className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg flex items-center gap-2">
-                <Users className="w-4 h-4 text-blue-600" />
-                <div className="text-xs">
-                  <span className="text-slate-500 font-medium">Total Students: </span>
-                  <span className="font-bold text-slate-900">{enrolledStudentCount}</span>
+            {/* Right Mini-Cards: Total Students & Join Code */}
+            <div className="flex flex-wrap items-center gap-4">
+              {/* Elevated Mini-Card 1: Total Students */}
+              <div className="bg-white border border-[#e8f0fe] rounded-2xl p-4 px-5 shadow-[0_4px_16px_rgba(30,64,175,0.04)] flex items-center gap-4 min-w-[170px]">
+                <div className="w-11 h-11 rounded-full bg-[#eef4ff] text-[#1769ff] flex items-center justify-center shrink-0">
+                  <Users className="w-5 h-5 text-[#1769ff]" />
+                </div>
+                <div>
+                  <div className="text-xs text-[#667a9e] font-medium leading-none">Total Students</div>
+                  <div className="text-2xl font-bold text-[#0f1b35] leading-tight mt-1">
+                    {enrolledStudentCount}
+                  </div>
                 </div>
               </div>
 
-              {/* Join Code Capsule */}
-              <div className="px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-lg flex items-center gap-2.5">
+              {/* Elevated Mini-Card 2: Join Code */}
+              <div className="bg-white border border-[#e8f0fe] rounded-2xl p-4 px-5 shadow-[0_4px_16px_rgba(30,64,175,0.04)] flex items-center gap-4 min-w-[195px]">
+                <div className="w-11 h-11 rounded-full bg-[#eef4ff] text-[#1769ff] flex items-center justify-center shrink-0">
+                  <Code2 className="w-5 h-5 text-[#1769ff]" />
+                </div>
                 <div>
-                  <div className="text-[10px] text-slate-400 uppercase font-semibold leading-none">Join Code</div>
-                  <div className="font-mono text-xs font-bold text-slate-800 tracking-wider mt-0.5">
+                  <div className="text-[11px] text-[#667a9e] font-medium leading-none">Join Code</div>
+                  <div className="font-mono text-sm font-extrabold text-[#0f1b35] tracking-wider mt-1">
                     {classroom.join_code}
                   </div>
                 </div>
                 <button
                   onClick={() => copyJoinCode(classroom.join_code)}
-                  className="p-1 text-slate-500 hover:text-blue-600 hover:bg-white rounded transition cursor-pointer"
+                  className="p-1.5 text-[#8297b8] hover:text-[#1769ff] hover:bg-[#eef4ff] rounded-lg transition-colors cursor-pointer ml-1"
                   title="Copy Join Code"
                 >
-                  {copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copiedCode ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
                 </button>
               </div>
             </div>
@@ -256,61 +269,60 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
 
       {/* Notifications */}
       {deleteSuccess && (
-        <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 flex items-center justify-between gap-2">
+        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs text-emerald-800 flex items-center justify-between gap-2 shadow-2xs">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
             <span>{deleteSuccess}</span>
           </div>
           <button
             onClick={() => setDeleteSuccess(null)}
-            className="text-emerald-600 hover:text-emerald-800 p-1"
+            className="text-emerald-600 hover:text-emerald-800 p-1 cursor-pointer"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
       {deleteError && (
-        <div className="p-3.5 bg-red-50 border border-red-200 rounded-xl text-xs text-red-800 flex items-center justify-between gap-2">
+        <div className="p-4 bg-red-50 border border-red-200 rounded-2xl text-xs text-red-800 flex items-center justify-between gap-2 shadow-2xs">
           <div className="flex items-center gap-2">
             <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
             <span>{deleteError}</span>
           </div>
           <button
             onClick={() => setDeleteError(null)}
-            className="text-red-600 hover:text-red-800 p-1"
+            className="text-red-600 hover:text-red-800 p-1 cursor-pointer"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
-      {/* Roster Table Card */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
-        {/* Table Header Bar */}
-        <div className="p-4 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50">
-          <div>
-            <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <Users className="w-4 h-4 text-blue-600" />
-              <span>Enrolled Students</span>
-              <span className="text-xs text-slate-500 font-normal">
-                ({filteredStudents.length} of {enrolledStudentCount})
-              </span>
+      {/* Enrolled Students Card */}
+      <div className="bg-white rounded-2xl border border-[#e1eaf5] shadow-[0_8px_30px_rgba(30,64,175,0.06)] overflow-hidden">
+        {/* Section Header */}
+        <div className="p-6 pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="text-[#1769ff]">
+              <Users className="w-5 h-5" />
+            </div>
+            <h2 className="text-base font-bold text-[#0f1b35]">
+              Enrolled Students
             </h2>
-            <p className="text-[11px] text-slate-500 mt-0.5">
-              Verified student profiles matched to {classroom?.name} ({classroom?.course} - Sec {classroom?.section}).
-            </p>
+            <span className="px-2.5 py-0.5 rounded-full bg-[#eef4ff] text-[#1769ff] text-xs font-semibold">
+              {filteredStudents.length} of {enrolledStudentCount}
+            </span>
           </div>
 
           {/* Search bar */}
-          <div className="relative w-full sm:w-64">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <div className="relative w-full sm:w-72 lg:w-80">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               placeholder="Search by name, reg no, email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-10 pr-4 py-2.5 bg-white border border-[#dce6f5] rounded-xl text-xs text-[#0f1b35] placeholder-[#94a3b8] shadow-[0_2px_8px_rgba(30,64,175,0.04)] focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#1769ff] transition"
             />
           </div>
         </div>
@@ -318,7 +330,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
         {/* Loading State */}
         {studentsLoading ? (
           <div className="p-12 text-center text-slate-400 flex flex-col items-center justify-center gap-2">
-            <RefreshCw className="w-5 h-5 animate-spin text-blue-600" />
+            <RefreshCw className="w-5 h-5 animate-spin text-[#1769ff]" />
             <span className="text-xs font-medium">Fetching enrolled students...</span>
           </div>
         ) : studentsError ? (
@@ -329,7 +341,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
             <p className="text-[11px] text-red-600 mt-1">Please try fetching the roster again.</p>
             <button
               onClick={fetchStudentsData}
-              className="mt-3 px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-semibold hover:bg-red-700 transition cursor-pointer"
+              className="mt-3 px-4 py-2 bg-red-600 text-white rounded-xl text-xs font-semibold hover:bg-red-700 transition cursor-pointer"
             >
               Retry
             </button>
@@ -343,7 +355,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
               {isTeacher ? (
                 <>
                   Students can join this classroom by entering join code{' '}
-                  <span className="font-mono font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">
+                  <span className="font-mono font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
                     {classroom?.join_code}
                   </span>{' '}
                   on their Student Dashboard, or by registering with Class &quot;{classroom?.course}&quot; and Section &quot;{classroom?.section}&quot;.
@@ -358,7 +370,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
             <p>No students matching &quot;{searchQuery}&quot;.</p>
             <button
               onClick={() => setSearchQuery('')}
-              className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-medium transition cursor-pointer"
+              className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition cursor-pointer"
             >
               Clear Search
             </button>
@@ -368,15 +380,15 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-600 font-semibold uppercase text-[10px] tracking-wider">
-                  <th className="py-3 px-4">Student Name</th>
-                  <th className="py-3 px-4">Register Number</th>
-                  <th className="py-3 px-4">Section</th>
-                  <th className="py-3 px-4">Gmail ID</th>
-                  {isTeacher && <th className="py-3 px-4 text-right">Action</th>}
+                <tr className="bg-[#f8faff] border-y border-[#edf2f9] text-[#667a9e] font-bold uppercase text-[11px] tracking-wider">
+                  <th className="py-3.5 px-6">STUDENT NAME</th>
+                  <th className="py-3.5 px-6">REGISTER NUMBER</th>
+                  <th className="py-3.5 px-6">SECTION</th>
+                  <th className="py-3.5 px-6">GMAIL ID</th>
+                  {isTeacher && <th className="py-3.5 px-6 text-right">ACTION</th>}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-[#f1f5f9]">
                 {filteredStudents.map((row) => {
                   const s = row.student;
                   const studentSection = s.section || classroom?.section || '—';
@@ -385,18 +397,18 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
                   return (
                     <tr
                       key={s.id}
-                      className="hover:bg-slate-50/70 transition-colors group"
+                      className="hover:bg-[#fbfdff] transition-colors group"
                     >
                       {/* Column 1: Student Name */}
-                      <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 font-bold flex items-center justify-center shrink-0 text-xs">
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-3.5">
+                          <div className="w-10 h-10 rounded-full bg-[#eef4ff] text-[#1769ff] font-bold flex items-center justify-center shrink-0 text-sm shadow-2xs">
                             {s.display_name?.charAt(0)?.toUpperCase() || 'S'}
                           </div>
                           <div>
-                            <div className="font-semibold text-slate-900">{s.display_name}</div>
+                            <div className="font-bold text-sm text-[#0f1b35]">{s.display_name}</div>
                             {s.class_name && (
-                              <div className="text-[10px] text-slate-400">
+                              <div className="text-xs text-[#8c9eb9] mt-0.5">
                                 Class: {s.class_name}
                               </div>
                             )}
@@ -405,31 +417,31 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
                       </td>
 
                       {/* Column 2: Register Number */}
-                      <td className="py-3.5 px-4 font-mono font-semibold text-slate-800">
+                      <td className="py-4 px-6 font-bold text-sm text-[#0f1b35]">
                         {regNo}
                       </td>
 
                       {/* Column 3: Section */}
-                      <td className="py-3.5 px-4">
-                        <span className="px-2 py-0.5 bg-slate-100 text-slate-700 font-semibold rounded text-[11px] uppercase">
+                      <td className="py-4 px-6">
+                        <span className="px-3 py-1 bg-[#eef4ff] text-[#1769ff] font-bold rounded-md text-xs uppercase inline-block">
                           {studentSection}
                         </span>
                       </td>
 
                       {/* Column 4: Gmail ID */}
-                      <td className="py-3.5 px-4 text-slate-600 font-mono">
+                      <td className="py-4 px-6 text-[#4b5563] text-xs">
                         <a
                           href={`mailto:${s.email}`}
-                          className="hover:text-blue-600 hover:underline inline-flex items-center gap-1.5"
+                          className="hover:text-[#1769ff] hover:underline inline-flex items-center gap-2"
                         >
-                          <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          <Mail className="w-4 h-4 text-slate-400 shrink-0" />
                           <span>{s.email}</span>
                         </a>
                       </td>
 
                       {/* Column 5: Action (Teachers Only) */}
                       {isTeacher && (
-                        <td className="py-3.5 px-4 text-right">
+                        <td className="py-4 px-6 text-right">
                           <button
                             type="button"
                             onClick={() => {
@@ -441,10 +453,10 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
                                 email: s.email,
                               });
                             }}
-                            className="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 rounded-lg text-[11px] font-semibold inline-flex items-center gap-1.5 transition cursor-pointer"
+                            className="px-3.5 py-2 bg-[#feecee] hover:bg-[#fedddf] text-[#ef4444] rounded-xl text-xs font-semibold inline-flex items-center gap-2 transition cursor-pointer"
                             title="Delete Student from Classroom"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-3.5 h-3.5 text-[#ef4444]" />
                             <span>Delete Student</span>
                           </button>
                         </td>
@@ -461,13 +473,13 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
       {/* Delete Student Confirmation Modal (Teachers Only) */}
       {isTeacher && studentToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <div className="p-5 border-b border-slate-100 flex items-start gap-3">
-              <div className="p-2.5 bg-red-50 text-red-600 rounded-lg shrink-0">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="p-6 border-b border-slate-100 flex items-start gap-3.5">
+              <div className="p-3 bg-red-50 text-red-600 rounded-xl shrink-0">
                 <AlertTriangle className="w-5 h-5" />
               </div>
               <div className="flex-1">
-                <h3 className="text-base font-bold text-slate-900">
+                <h3 className="text-base font-bold text-[#0f1b35]">
                   Confirm Student Removal
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
@@ -482,15 +494,15 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
               </button>
             </div>
 
-            <div className="p-5 space-y-3 text-xs">
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-1.5">
+            <div className="p-6 space-y-3.5 text-xs">
+              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
                 <div className="flex justify-between">
                   <span className="text-slate-500">Student Name:</span>
-                  <span className="font-bold text-slate-900">{studentToDelete.name}</span>
+                  <span className="font-bold text-[#0f1b35]">{studentToDelete.name}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">Register Number:</span>
-                  <span className="font-mono font-semibold text-slate-800">{studentToDelete.registerNumber}</span>
+                  <span className="font-bold text-[#0f1b35]">{studentToDelete.registerNumber}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">Gmail ID:</span>
@@ -498,7 +510,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">Classroom:</span>
-                  <span className="font-semibold text-slate-900">{classroom?.name} ({classroom?.course})</span>
+                  <span className="font-semibold text-[#0f1b35]">{classroom?.name} ({classroom?.course})</span>
                 </div>
               </div>
 
@@ -507,12 +519,12 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
               </p>
             </div>
 
-            <div className="px-5 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2.5">
+            <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3">
               <button
                 type="button"
                 onClick={() => setStudentToDelete(null)}
                 disabled={deleting}
-                className="px-4 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-semibold transition disabled:opacity-50 cursor-pointer"
+                className="px-4 py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-semibold transition disabled:opacity-50 cursor-pointer"
               >
                 Cancel
               </button>
@@ -520,7 +532,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
                 type="button"
                 onClick={handleDeleteConfirm}
                 disabled={deleting}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition disabled:opacity-50 shadow-xs cursor-pointer"
+                className="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition disabled:opacity-50 shadow-xs cursor-pointer"
               >
                 {deleting ? (
                   <>
