@@ -436,82 +436,15 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
             />
           </div>
 
-          {/* Platform Specific Sort Header / Controls */}
-          {platform === 'leetcode' ? (
-            /* LeetCode: Single Row Sort By Pills */
-            <div className="flex items-center gap-1.5 shrink-0 overflow-x-auto no-scrollbar">
-              <span className="text-xs font-bold text-[#64748b] mr-1">Sort By:</span>
-              <button
-                onClick={() => setSortOption('problems_desc')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-                  sortOption === 'problems_desc'
-                    ? 'bg-[#1769ff] text-white shadow-xs'
-                    : 'bg-white border border-[#e1eaf5] text-[#475569] hover:bg-slate-50'
-                }`}
-              >
-                🔥 Most Solved
-              </button>
-              <button
-                onClick={() => setSortOption('problems_asc')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-                  sortOption === 'problems_asc'
-                    ? 'bg-[#1769ff] text-white shadow-xs'
-                    : 'bg-white border border-[#e1eaf5] text-[#475569] hover:bg-slate-50'
-                }`}
-              >
-                Least Solved
-              </button>
-              <button
-                onClick={() => setSortOption('rating_desc')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-                  sortOption === 'rating_desc'
-                    ? 'bg-[#1769ff] text-white shadow-xs'
-                    : 'bg-white border border-[#e1eaf5] text-[#475569] hover:bg-slate-50'
-                }`}
-              >
-                ⭐ Highest Rating
-              </button>
-              <button
-                onClick={() => setSortOption('rating_asc')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-                  sortOption === 'rating_asc'
-                    ? 'bg-[#1769ff] text-white shadow-xs'
-                    : 'bg-white border border-[#e1eaf5] text-[#475569] hover:bg-slate-50'
-                }`}
-              >
-                Lowest Rating
-              </button>
-            </div>
-          ) : (
-            /* CodeChef: Dropdown selector matching Reference Image 2 */
-            <div className="flex items-center gap-2 shrink-0">
-              <label htmlFor="codechef-sort-select" className="text-xs font-bold text-[#64748b] flex items-center gap-1.5 shrink-0">
-                <ArrowUpDown className="w-3.5 h-3.5 text-slate-500" />
-                <span>Sort By:</span>
-              </label>
-              <select
-                id="codechef-sort-select"
-                value={sortOption}
-                onChange={(e) => setSortOption(e.target.value as SortOption)}
-                className="bg-white border border-[#e1eaf5] text-slate-800 text-xs font-semibold rounded-xl px-3.5 py-2 focus:outline-none focus:border-[#1769ff] cursor-pointer"
-              >
-                <option value="problems_desc">Highest Problems Solved → Lowest Problems Solved</option>
-                <option value="problems_asc">Lowest Problems Solved → Highest Problems Solved</option>
-                <option value="rating_desc">Highest Rating → Lowest Rating</option>
-                <option value="rating_asc">Lowest Rating → Highest Rating</option>
-                <option value="name_asc">Student Name (A → Z)</option>
-              </select>
-            </div>
-          )}
-        </div>
-
-        {/* CodeChef Quick Filter Buttons Row (matching Reference Image 2) */}
-        {platform === 'codechef' && (
-          <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-[#edf2f9] text-xs">
-            <span className="text-[#64748b] font-semibold text-xs mr-1">Quick sort:</span>
+          {/* Sort By Buttons */}
+          <div className="flex items-center gap-1.5 shrink-0 overflow-x-auto no-scrollbar">
+            <span className="text-xs font-bold text-[#64748b] mr-1 flex items-center gap-1">
+              <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
+              <span>Sort By:</span>
+            </span>
             <button
               onClick={() => setSortOption('problems_desc')}
-              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                 sortOption === 'problems_desc'
                   ? 'bg-[#1769ff] text-white shadow-xs'
                   : 'bg-white border border-[#e1eaf5] text-[#475569] hover:bg-slate-50'
@@ -521,7 +454,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
             </button>
             <button
               onClick={() => setSortOption('problems_asc')}
-              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                 sortOption === 'problems_asc'
                   ? 'bg-[#1769ff] text-white shadow-xs'
                   : 'bg-white border border-[#e1eaf5] text-[#475569] hover:bg-slate-50'
@@ -531,7 +464,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
             </button>
             <button
               onClick={() => setSortOption('rating_desc')}
-              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                 sortOption === 'rating_desc'
                   ? 'bg-[#1769ff] text-white shadow-xs'
                   : 'bg-white border border-[#e1eaf5] text-[#475569] hover:bg-slate-50'
@@ -541,7 +474,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
             </button>
             <button
               onClick={() => setSortOption('rating_asc')}
-              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                 sortOption === 'rating_asc'
                   ? 'bg-[#1769ff] text-white shadow-xs'
                   : 'bg-white border border-[#e1eaf5] text-[#475569] hover:bg-slate-50'
@@ -549,20 +482,11 @@ export function ClassroomStudentDetailsView({ platform, classroomId }: Props) {
             >
               Lowest Rating
             </button>
-
-            {searchTerm && (
-              <button
-                onClick={() => setSearchTerm('')}
-                className="ml-auto text-[#1769ff] hover:underline text-xs font-bold"
-              >
-                Clear Search
-              </button>
-            )}
           </div>
-        )}
+        </div>
 
-        {/* LeetCode Clear Search (if typed) */}
-        {platform === 'leetcode' && searchTerm && (
+        {/* Clear Search (if typed) */}
+        {searchTerm && (
           <div className="flex justify-end pt-1">
             <button
               onClick={() => setSearchTerm('')}
