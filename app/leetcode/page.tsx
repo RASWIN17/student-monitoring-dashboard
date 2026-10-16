@@ -111,6 +111,7 @@ export default function LeetCodeContestsPage() {
       <ContestAnalyticsBanner
         platform="leetcode"
         title="LeetCode Contest Analytics"
+        classroom={selectedClassroom}
       />
 
       {/* 2. Contest Navigation and Search Container */}

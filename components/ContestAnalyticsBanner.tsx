@@ -2,10 +2,14 @@
 
 import React from 'react';
 import { LeetCodeIcon, CodeChefIcon } from '@/components/PlatformIcons';
+import { useAuth } from '@/components/AuthContext';
+import { Classroom } from '@/lib/types';
+import { ClassroomInfoHeader } from '@/components/ClassroomInfoHeader';
 
 interface ContestAnalyticsBannerProps {
   platform: 'leetcode' | 'codechef';
   title: string;
+  classroom?: Classroom | null;
 }
 
 export function ContestBannerIllustration({ platform }: { platform: 'leetcode' | 'codechef' }) {
@@ -139,11 +143,15 @@ export function ContestBannerIllustration({ platform }: { platform: 'leetcode' |
 export function ContestAnalyticsBanner({
   platform,
   title,
+  classroom: propClassroom,
 }: ContestAnalyticsBannerProps) {
+  const { selectedClassroom: authClassroom } = useAuth();
+  const classroom = propClassroom !== undefined ? propClassroom : authClassroom;
+
   return (
     <div className="rounded-2xl border border-[#dce8f6] bg-gradient-to-r from-[#edf4fc] via-[#f2f7fd] to-[#e4eefb] shadow-xs py-3.5 px-5 sm:py-4 sm:px-7 flex items-center justify-between relative overflow-hidden">
-      {/* Left side: Logo Box + Heading (No refresh/loading icon) */}
-      <div className="flex items-center gap-3.5 sm:gap-4 z-10">
+      {/* Left side: Logo Box + Heading + Dynamic Classroom Information Header */}
+      <div className="flex items-center gap-3.5 sm:gap-4 z-10 min-w-0">
         <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white border border-slate-100/90 shadow-[0_4px_16px_rgba(30,64,175,0.06)] flex items-center justify-center p-2.5 sm:p-3 shrink-0">
           {platform === 'leetcode' ? (
             <LeetCodeIcon className="w-8 h-8 sm:w-9 sm:h-9" />
@@ -151,9 +159,12 @@ export function ContestAnalyticsBanner({
             <CodeChefIcon className="w-8 h-8 sm:w-9 sm:h-9" />
           )}
         </div>
-        <h1 className="text-lg sm:text-xl lg:text-[22px] font-extrabold text-[#0f1b35] tracking-tight">
-          {title}
-        </h1>
+        <div className="min-w-0">
+          <h1 className="text-lg sm:text-xl lg:text-[22px] font-extrabold text-[#0f1b35] tracking-tight leading-tight">
+            {title}
+          </h1>
+          <ClassroomInfoHeader classroom={classroom} />
+        </div>
       </div>
 
       {/* Right side: Coding Illustration */}

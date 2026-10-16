@@ -111,6 +111,7 @@ export default function CodeChefContestsPage() {
       <ContestAnalyticsBanner
         platform="codechef"
         title="CodeChef Contest Analytics"
+        classroom={selectedClassroom}
       />
 
       {/* 2. Contest Navigation and Search Container */}
