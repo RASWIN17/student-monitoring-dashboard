@@ -76,4 +76,35 @@ describe('Responsive Slide-In Sidebar Verification Suite', () => {
     assert.match(globalsCssContent, /scroll-behavior:\s*smooth/, 'globals.css must have smooth scrolling');
     assert.match(appShellContent, /scroll-smooth/, 'AppShell main container must support smooth scrolling');
   });
+
+  test('7. Responsive Dashboard Width & Side Gutters Verification', () => {
+    const classroomDetailsPath = path.join(process.cwd(), 'components', 'ClassroomStudentDetailsView.tsx');
+    const classroomDetailsContent = fs.readFileSync(classroomDetailsPath, 'utf8');
+
+    // Main classroom analytics view container must use w-full and not restrict with max-w-7xl mx-auto
+    assert.match(
+      classroomDetailsContent,
+      /<div className="space-y-6 w-full pb-12">/,
+      'ClassroomStudentDetailsView main container must use w-full'
+    );
+    assert.doesNotMatch(
+      classroomDetailsContent,
+      /<div className="space-y-6 max-w-7xl mx-auto pb-12">/,
+      'ClassroomStudentDetailsView main container must not be restricted by max-w-7xl mx-auto'
+    );
+
+    // AppShell main container must provide consistent 16-24px gutters (p-4 sm:p-5 lg:p-6)
+    assert.match(
+      appShellContent,
+      /<main className="flex-1 p-4 sm:p-5 lg:p-6 overflow-y-auto bg-\[#F5F8FD\] scroll-smooth">/,
+      'AppShell main element must feature responsive 16-24px gutters (p-4 sm:p-5 lg:p-6)'
+    );
+
+    // Navbar header must match the horizontal gutters of the main element
+    assert.match(
+      navbarContent,
+      /px-4 sm:px-5 lg:px-6/,
+      'Navbar header must match AppShell horizontal gutters (px-4 sm:px-5 lg:px-6)'
+    );
+  });
 });

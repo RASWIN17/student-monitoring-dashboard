@@ -64,7 +64,7 @@ export function Navbar({
 
   return (
     <>
-      <header className="min-h-[64px] sm:min-h-[72px] lg:h-[88px] bg-white border-b border-[#e1eaf5] px-3.5 sm:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-30 shadow-[0_2px_12px_rgba(30,64,175,0.03)] shrink-0 gap-2">
+      <header className="min-h-[64px] sm:min-h-[72px] lg:h-[88px] bg-white border-b border-[#e1eaf5] px-4 sm:px-5 lg:px-6 flex items-center justify-between sticky top-0 z-30 shadow-[0_2px_12px_rgba(30,64,175,0.03)] shrink-0 gap-2">
         {/* Left Section: Menu Toggle, Classroom Selector & Timezone */}
         <div className="flex items-center gap-2 sm:gap-4 min-w-0">
           {handleToggle && (

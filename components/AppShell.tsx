@@ -62,7 +62,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
           onToggleMobileNav={() => setSidebarOpen((prev) => !prev)}
         />
-        <main className="flex-1 p-3.5 sm:p-5 md:p-6 lg:p-8 overflow-y-auto bg-[#F5F8FD] scroll-smooth">
+        <main className="flex-1 p-4 sm:p-5 lg:p-6 overflow-y-auto bg-[#F5F8FD] scroll-smooth">
           {children}
         </main>
       </div>

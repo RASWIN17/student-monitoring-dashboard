@@ -329,7 +329,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId: propClassro
       : '0% linked';
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+    <div className="space-y-6 w-full pb-12">
       {/* Top Back Button */}
       <div>
         <BackButton fallbackHref={platformSelectionUrl} />
