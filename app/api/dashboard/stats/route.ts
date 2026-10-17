@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { getClassroomKPIs } from '@/lib/db';
+import { getClassroomKPIs, getClassroomById } from '@/lib/db';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 export async function GET(req: Request) {
@@ -9,10 +9,29 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  // Restrict dashboard statistics to teachers and admins
+  if (user.role !== 'teacher' && user.role !== 'admin') {
+    return NextResponse.json({ error: 'Forbidden: Access restricted to authorized staff' }, { status: 403 });
+  }
+
   const { searchParams } = new URL(req.url);
   const classroomId = searchParams.get('classroomId');
 
-  const kpis = await getClassroomKPIs(classroomId || null);
+  try {
+    if (classroomId) {
+      const classroom = await getClassroomById(classroomId);
+      if (!classroom) {
+        return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });
+      }
+      if (classroom.owner_teacher_id !== user.id && user.role !== 'admin') {
+        return NextResponse.json(
+          { error: 'Forbidden: You do not have permission to view stats for this classroom' },
+          { status: 403 }
+        );
+      }
+    }
+
+    const kpis = await getClassroomKPIs(classroomId || null);
 
   const supabase = createAdminClient();
 
@@ -106,4 +125,8 @@ export async function GET(req: Request) {
       codechefCount: ccAccountsCount,
     },
   });
+  } catch (err: any) {
+    console.error('[DASHBOARD_STATS_ERROR]:', err?.message || err);
+    return NextResponse.json({ error: 'Failed to retrieve dashboard statistics' }, { status: 500 });
+  }
 }

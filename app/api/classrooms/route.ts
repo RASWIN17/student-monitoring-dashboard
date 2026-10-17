@@ -1,6 +1,17 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import { getCurrentUser } from '@/lib/auth';
 import { getClassroomsForTeacher, getClassroomsForStudent, createClassroom, logAuditAction } from '@/lib/db';
+
+const ClassroomCreateSchema = z.object({
+  name: z.string().trim().min(1, 'Classroom name is required').max(100),
+  course: z.string().trim().min(1, 'Course is required').max(100),
+  batch: z.string().trim().min(1, 'Batch is required').max(50),
+  department: z.string().trim().min(1, 'Department is required').max(100),
+  academic_year: z.string().trim().min(1, 'Academic year is required').max(50).optional(),
+  academicYear: z.string().trim().min(1, 'Academic year is required').max(50).optional(),
+  section: z.string().trim().min(1, 'Section is required').max(50),
+}).strict();
 
 export async function GET() {
   const user = await getCurrentUser();
@@ -25,26 +36,33 @@ export async function POST(req: Request) {
   }
 
   try {
-    const body = await req.json();
-    const name = body.name;
-    const course = body.course;
-    const batch = body.batch;
-    const department = body.department;
-    const academic_year = body.academic_year || body.academicYear;
-    const section = body.section;
+    const rawBody = await req.json().catch(() => null);
+    if (!rawBody || typeof rawBody !== 'object') {
+      return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 });
+    }
 
-    if (!name || !course || !batch || !department || !academic_year || !section) {
-      return NextResponse.json({ error: 'All classroom fields are required' }, { status: 400 });
+    const parseResult = ClassroomCreateSchema.safeParse(rawBody);
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: parseResult.error.issues[0]?.message || 'Invalid classroom data' },
+        { status: 400 }
+      );
+    }
+
+    const data = parseResult.data;
+    const academicYear = data.academic_year || data.academicYear;
+    if (!academicYear) {
+      return NextResponse.json({ error: 'Academic year is required' }, { status: 400 });
     }
 
     const classroom = await createClassroom({
       owner_teacher_id: user.id,
-      name: name.trim(),
-      course: course.trim(),
-      batch: batch.trim(),
-      department: department.trim(),
-      academic_year: academic_year.trim(),
-      section: section.trim(),
+      name: data.name,
+      course: data.course,
+      batch: data.batch,
+      department: data.department,
+      academic_year: academicYear,
+      section: data.section,
     });
 
     await logAuditAction({
@@ -57,6 +75,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ classroom }, { status: 201 });
   } catch (error: any) {
-    return NextResponse.json({ error: error?.message || 'Failed to create classroom' }, { status: 500 });
+    console.error('[CLASSROOM_POST_ERROR]:', error?.message || error);
+    return NextResponse.json({ error: 'Failed to create classroom' }, { status: 500 });
   }
 }

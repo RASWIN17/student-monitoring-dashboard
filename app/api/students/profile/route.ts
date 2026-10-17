@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import { getCurrentUser } from '@/lib/auth';
 import {
   getUserById,
@@ -6,6 +7,16 @@ import {
   updateStudentProfile,
   logAuditAction,
 } from '@/lib/db';
+
+const StudentProfileInputSchema = z.object({
+  name: z.string().trim().max(100).optional(),
+  display_name: z.string().trim().max(100).optional(),
+  register_number: z.string().trim().max(50).optional(),
+  registerNumber: z.string().trim().max(50).optional(),
+  class_name: z.string().trim().max(50).optional(),
+  class: z.string().trim().max(50).optional(),
+  section: z.string().trim().max(50).optional().nullable(),
+}).strict();
 
 export async function GET() {
   const user = await getCurrentUser();
@@ -32,7 +43,20 @@ export async function POST(req: Request) {
   }
 
   try {
-    const body = await req.json();
+    const rawBody = await req.json().catch(() => null);
+    if (!rawBody || typeof rawBody !== 'object') {
+      return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 });
+    }
+
+    const parseResult = StudentProfileInputSchema.safeParse(rawBody);
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: parseResult.error.issues[0]?.message || 'Invalid profile data' },
+        { status: 400 }
+      );
+    }
+
+    const body = parseResult.data;
     const name = (body.name || body.display_name || '').trim();
     const registerNumber = (body.register_number || body.registerNumber || '').trim();
     const className = (body.class_name || body.class || '').trim();
@@ -111,7 +135,20 @@ export async function PATCH(req: Request) {
   }
 
   try {
-    const body = await req.json();
+    const rawBody = await req.json().catch(() => null);
+    if (!rawBody || typeof rawBody !== 'object') {
+      return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 });
+    }
+
+    const parseResult = StudentProfileInputSchema.safeParse(rawBody);
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: parseResult.error.issues[0]?.message || 'Invalid profile update fields' },
+        { status: 400 }
+      );
+    }
+
+    const body = parseResult.data;
     const name = (body.name || body.display_name || '').trim();
     const registerNumber = (body.register_number || body.registerNumber || '').trim();
     const className = (body.class_name || body.class || '').trim();
@@ -168,6 +205,7 @@ export async function PATCH(req: Request) {
       profile: updated,
     });
   } catch (err: any) {
-    return NextResponse.json({ error: err?.message || 'Server error updating profile' }, { status: 500 });
+    console.error('[STUDENT_PROFILE_PATCH_ERROR]:', err?.message || err);
+    return NextResponse.json({ error: 'Server error updating profile' }, { status: 500 });
   }
 }

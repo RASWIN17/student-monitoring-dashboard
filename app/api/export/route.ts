@@ -34,10 +34,19 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });
   }
 
-  const students = await getClassroomOverview(classroomId);
+  // Enforce role-based classroom authorization: prevent cross-teacher IDOR
+  if (user.role !== 'admin' && classroom.owner_teacher_id !== user.id) {
+    return NextResponse.json(
+      { error: 'Forbidden: You do not have permission to export records for this classroom' },
+      { status: 403 }
+    );
+  }
 
-  let csvContent = '';
-  let filename = `codetrack_${classroom.name.toLowerCase().replace(/\s+/g, '_')}_${type}_export.csv`;
+  try {
+    const students = await getClassroomOverview(classroomId);
+
+    let csvContent = '';
+    let filename = `codetrack_${classroom.name.toLowerCase().replace(/\s+/g, '_')}_${type}_export.csv`;
 
   if (type === 'leetcode') {
     const headers = [
@@ -187,4 +196,8 @@ export async function GET(req: Request) {
       'Content-Disposition': `attachment; filename="${filename}"`,
     },
   });
+  } catch (err: any) {
+    console.error('[EXPORT_ERROR] Failed to export classroom data:', err?.message || err);
+    return NextResponse.json({ error: 'Failed to generate export file' }, { status: 500 });
+  }
 }

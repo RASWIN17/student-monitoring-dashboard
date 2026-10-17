@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { ContestService } from '@/lib/connectors/contests';
-import { getContests, getContestAnalyticsForClassroom } from '@/lib/db';
+import { getContests, getContestAnalyticsForClassroom, getClassroomById, isStudentInClassroom } from '@/lib/db';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser();
@@ -14,6 +14,30 @@ export async function GET(req: Request) {
   const status = searchParams.get('status') || 'all';
   const classroomId = searchParams.get('classroomId');
   const sync = searchParams.get('sync') === 'true';
+
+  // If classroomId is provided, enforce access control
+  if (classroomId) {
+    if (user.role === 'student') {
+      const isEnrolled = await isStudentInClassroom(classroomId, user.id);
+      if (!isEnrolled) {
+        return NextResponse.json(
+          { error: 'Access denied: You are not enrolled in this classroom' },
+          { status: 403 }
+        );
+      }
+    } else if (user.role === 'teacher') {
+      const classroom = await getClassroomById(classroomId);
+      if (!classroom) {
+        return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });
+      }
+      if (classroom.owner_teacher_id !== user.id) {
+        return NextResponse.json(
+          { error: 'Forbidden: You do not have permission to view contest data for this classroom' },
+          { status: 403 }
+        );
+      }
+    }
+  }
 
   try {
     // 1. Sync live contest schedule from platforms dynamically
@@ -32,9 +56,13 @@ export async function GET(req: Request) {
     // 2. Fetch up-to-date contests
     const contests = await getContests({ platform, status, limit: 100 });
 
-    // 3. If classroomId is provided, enrich with attendance summary
+    // 3. If classroomId is provided (and authorized), enrich with attendance summary
+    const shouldEnrichAttendance = Boolean(classroomId || user.role === 'admin');
     const enriched = await Promise.all(
       contests.map(async (c) => {
+        if (!shouldEnrichAttendance) {
+          return c;
+        }
         try {
           const analytics = await getContestAnalyticsForClassroom(c.id, classroomId || null);
           return {

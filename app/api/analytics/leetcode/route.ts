@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { getClassroomById, isStudentInClassroom, getClassroomsForTeacher } from '@/lib/db';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser();
@@ -13,31 +14,114 @@ export async function GET(req: Request) {
 
   const supabase = createAdminClient();
 
-  // Find enrolled students if classroomId is provided
-  let studentIds: string[] | null = null;
-  if (classroomId) {
-    const { data: memberships } = await supabase
-      .from('classroom_memberships')
-      .select('student_id')
-      .eq('classroom_id', classroomId)
-      .eq('membership_status', 'enrolled');
+  try {
+    let studentIds: string[] | null = null;
 
-    studentIds = (memberships || []).map((m) => m.student_id);
-    if (studentIds.length === 0) {
-      return NextResponse.json({
-        students: [],
-        aggregates: {
-          totalAccounts: 0,
-          totalSolvedSum: 0,
-          totalEasy: 0,
-          totalMedium: 0,
-          totalHard: 0,
-          averageRating: null,
-          ratedUsersCount: 0,
-        },
-      });
+    // 1. Role-based scoping and authorization
+    if (user.role === 'student') {
+      // Students cannot query institution-wide analytics
+      if (!classroomId) {
+        return NextResponse.json(
+          { error: 'Forbidden: Students cannot access institution-wide analytics' },
+          { status: 403 }
+        );
+      }
+      // Must be actively enrolled in the requested classroom
+      const isEnrolled = await isStudentInClassroom(classroomId, user.id);
+      if (!isEnrolled) {
+        return NextResponse.json(
+          { error: 'Access denied: You are not enrolled in this classroom' },
+          { status: 403 }
+        );
+      }
+    } else if (user.role === 'teacher') {
+      if (classroomId) {
+        const classroom = await getClassroomById(classroomId);
+        if (!classroom) {
+          return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });
+        }
+        if (classroom.owner_teacher_id !== user.id) {
+          return NextResponse.json(
+            { error: 'Forbidden: You do not have permission to view analytics for this classroom' },
+            { status: 403 }
+          );
+        }
+      } else {
+        // Teacher without classroomId: strictly scope to students enrolled in teacher's classrooms
+        const myClassrooms = await getClassroomsForTeacher(user.id);
+        const myClassroomIds = myClassrooms.map((c) => c.id);
+        if (myClassroomIds.length === 0) {
+          return NextResponse.json({
+            students: [],
+            aggregates: {
+              totalAccounts: 0,
+              totalSolvedSum: 0,
+              totalEasy: 0,
+              totalMedium: 0,
+              totalHard: 0,
+              averageRating: null,
+              ratedUsersCount: 0,
+            },
+          });
+        }
+
+        const { data: teacherMemberships } = await supabase
+          .from('classroom_memberships')
+          .select('student_id')
+          .in('classroom_id', myClassroomIds)
+          .eq('membership_status', 'enrolled');
+
+        studentIds = Array.from(new Set((teacherMemberships || []).map((m) => m.student_id)));
+        if (studentIds.length === 0) {
+          return NextResponse.json({
+            students: [],
+            aggregates: {
+              totalAccounts: 0,
+              totalSolvedSum: 0,
+              totalEasy: 0,
+              totalMedium: 0,
+              totalHard: 0,
+              averageRating: null,
+              ratedUsersCount: 0,
+            },
+          });
+        }
+      }
+    } else if (user.role === 'admin') {
+      if (classroomId) {
+        const classroom = await getClassroomById(classroomId);
+        if (!classroom) {
+          return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });
+        }
+      }
+    } else {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
-  }
+
+    // Find enrolled students if classroomId is provided
+    if (classroomId) {
+      const { data: memberships } = await supabase
+        .from('classroom_memberships')
+        .select('student_id')
+        .eq('classroom_id', classroomId)
+        .eq('membership_status', 'enrolled');
+
+      studentIds = (memberships || []).map((m) => m.student_id);
+      if (studentIds.length === 0) {
+        return NextResponse.json({
+          students: [],
+          aggregates: {
+            totalAccounts: 0,
+            totalSolvedSum: 0,
+            totalEasy: 0,
+            totalMedium: 0,
+            totalHard: 0,
+            averageRating: null,
+            ratedUsersCount: 0,
+          },
+        });
+      }
+    }
 
   let accQuery = supabase
     .from('platform_accounts')
@@ -150,4 +234,8 @@ export async function GET(req: Request) {
       ratedUsersCount,
     },
   });
+  } catch (err: any) {
+    console.error('[ANALYTICS_LEETCODE_ERROR]:', err?.message || err);
+    return NextResponse.json({ error: 'Failed to retrieve LeetCode analytics' }, { status: 500 });
+  }
 }

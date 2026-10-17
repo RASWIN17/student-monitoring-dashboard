@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { getScanJobById, getScanJobItems } from '@/lib/db';
+import { getScanJobById, getScanJobItems, getClassroomById, getClassroomsForStudent } from '@/lib/db';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -10,12 +10,35 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const job = await getScanJobById(id);
-  if (!job) {
-    return NextResponse.json({ error: 'Scan job not found' }, { status: 404 });
-  }
+  try {
+    const job = await getScanJobById(id);
+    if (!job) {
+      return NextResponse.json({ error: 'Scan job not found' }, { status: 404 });
+    }
 
-  const items = await getScanJobItems(id);
+    // Role-based authorization: prevent cross-user scan job leakage
+    if (user.role === 'student') {
+      if (job.target_student_id !== user.id) {
+        return NextResponse.json({ error: 'Forbidden: You do not have access to this scan job' }, { status: 403 });
+      }
+    } else if (user.role === 'teacher') {
+      if (job.classroom_id) {
+        const classroom = await getClassroomById(job.classroom_id);
+        if (!classroom || classroom.owner_teacher_id !== user.id) {
+          return NextResponse.json({ error: 'Forbidden: You do not have access to this classroom scan' }, { status: 403 });
+        }
+      } else if (job.target_student_id) {
+        const studentClassrooms = await getClassroomsForStudent(job.target_student_id);
+        const teachesStudent = studentClassrooms.some((c) => c.owner_teacher_id === user.id);
+        if (!teachesStudent) {
+          return NextResponse.json({ error: 'Forbidden: You do not have access to this student scan' }, { status: 403 });
+        }
+      }
+    } else if (user.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const items = await getScanJobItems(id);
 
   // Enhance items with student name and username for progress visualization
   const supabase = createAdminClient();
@@ -63,4 +86,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   });
 
   return NextResponse.json({ job, items: enhancedItems });
+  } catch (err: any) {
+    console.error('[SCAN_ID_GET_ERROR]:', err?.message || err);
+    return NextResponse.json({ error: 'Failed to retrieve scan job details' }, { status: 500 });
+  }
 }

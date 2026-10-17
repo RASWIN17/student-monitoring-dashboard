@@ -9,6 +9,7 @@ import {
   getScanJobsForClassroom,
   logAuditAction,
   getClassroomsForStudent,
+  getClassroomsForTeacher,
 } from '@/lib/db';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { ScanEngine } from '@/lib/connectors/scanner';
@@ -19,11 +20,60 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  // Reject students from accessing scan logs
+  if (user.role !== 'teacher' && user.role !== 'admin') {
+    return NextResponse.json({ error: 'Forbidden: Access restricted to authorized staff' }, { status: 403 });
+  }
+
   const { searchParams } = new URL(req.url);
   const classroomId = searchParams.get('classroomId');
 
-  const jobs = await getScanJobsForClassroom(classroomId || null, 25);
-  return NextResponse.json({ jobs });
+  try {
+    if (classroomId) {
+      const classroom = await getClassroomById(classroomId);
+      if (!classroom) {
+        return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });
+      }
+      if (classroom.owner_teacher_id !== user.id && user.role !== 'admin') {
+        return NextResponse.json(
+          { error: 'Forbidden: You do not have permission to view scan jobs for this classroom' },
+          { status: 403 }
+        );
+      }
+      const jobs = await getScanJobsForClassroom(classroomId, 25);
+      return NextResponse.json({ jobs });
+    }
+
+    if (user.role === 'admin') {
+      const jobs = await getScanJobsForClassroom(null, 25);
+      return NextResponse.json({ jobs });
+    }
+
+    // Teacher without classroomId: only return jobs belonging to teacher's classrooms
+    const teacherClassrooms = await getClassroomsForTeacher(user.id);
+    const teacherClassroomIds = teacherClassrooms.map((c) => c.id);
+    if (teacherClassroomIds.length === 0) {
+      return NextResponse.json({ jobs: [] });
+    }
+
+    const supabase = createAdminClient();
+    const { data: jobs, error } = await supabase
+      .from('scan_jobs')
+      .select('*')
+      .in('classroom_id', teacherClassroomIds)
+      .order('created_at', { ascending: false })
+      .limit(25);
+
+    if (error) {
+      console.error('[SCAN_GET_ERROR] Error fetching teacher scan jobs:', error);
+      return NextResponse.json({ error: 'Failed to retrieve scan jobs' }, { status: 500 });
+    }
+
+    return NextResponse.json({ jobs: jobs || [] });
+  } catch (err: any) {
+    console.error('[SCAN_GET_ERROR]:', err?.message || err);
+    return NextResponse.json({ error: 'Failed to retrieve scan jobs' }, { status: 500 });
+  }
 }
 
 export async function POST(req: Request) {
@@ -154,6 +204,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ job }, { status: 202 });
   } catch (err: any) {
-    return NextResponse.json({ error: err?.message || 'Failed to start scan' }, { status: 500 });
+    console.error('[SCAN_POST_ERROR] Failed to start scan:', err?.message || err);
+    return NextResponse.json({ error: 'Failed to start scan job' }, { status: 500 });
   }
 }

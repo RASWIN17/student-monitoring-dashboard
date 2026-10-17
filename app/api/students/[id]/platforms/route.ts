@@ -4,6 +4,7 @@ import {
   getPlatformAccountsForStudent,
   linkPlatformAccount,
   unlinkPlatformAccount,
+  getClassroomsForStudent,
   logAuditAction,
 } from '@/lib/db';
 import { LeetCodeConnector } from '@/lib/connectors/leetcode';
@@ -14,6 +15,23 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // If user is a student, ensure they can only view their own accounts
+  if (user.role === 'student' && user.id !== id) {
+    return NextResponse.json({ error: 'Access forbidden' }, { status: 403 });
+  }
+
+  // If user is a teacher, verify they teach this student (unless admin)
+  if (user.role === 'teacher') {
+    const classrooms = await getClassroomsForStudent(id);
+    const teachesStudent = classrooms.some((c) => c.owner_teacher_id === user.id);
+    if (!teachesStudent) {
+      return NextResponse.json(
+        { error: 'Access forbidden: You do not teach this student' },
+        { status: 403 }
+      );
+    }
   }
 
   const accounts = await getPlatformAccountsForStudent(id);
@@ -27,9 +45,20 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // Authorization check: students can only link their own account, teachers can assist if needed
+  // Authorization check: students can only link their own account, teachers can assist if they teach the student
   if (user.role === 'student' && user.id !== id) {
     return NextResponse.json({ error: 'Cannot modify another student\'s accounts' }, { status: 403 });
+  }
+
+  if (user.role === 'teacher') {
+    const classrooms = await getClassroomsForStudent(id);
+    const teachesStudent = classrooms.some((c) => c.owner_teacher_id === user.id);
+    if (!teachesStudent) {
+      return NextResponse.json(
+        { error: 'Access forbidden: You do not teach this student' },
+        { status: 403 }
+      );
+    }
   }
 
   try {
@@ -99,6 +128,17 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
 
   if (user.role === 'student' && user.id !== id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+  }
+
+  if (user.role === 'teacher') {
+    const classrooms = await getClassroomsForStudent(id);
+    const teachesStudent = classrooms.some((c) => c.owner_teacher_id === user.id);
+    if (!teachesStudent) {
+      return NextResponse.json(
+        { error: 'Access forbidden: You do not teach this student' },
+        { status: 403 }
+      );
+    }
   }
 
   try {

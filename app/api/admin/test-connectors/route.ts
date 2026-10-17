@@ -57,6 +57,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unsupported platform' }, { status: 400 });
     }
   } catch (err: any) {
-    return NextResponse.json({ error: err?.message || 'Connector test failed' }, { status: 500 });
+    console.error('[Admin Test-Connectors Error]:', err);
+    return NextResponse.json({ error: 'Connector test failed. Please verify the platform username.' }, { status: 500 });
   }
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { getContestAnalyticsForClassroom, getContestById } from '@/lib/db';
+import { getContestAnalyticsForClassroom, getContestById, getClassroomById, isStudentInClassroom } from '@/lib/db';
 import { ContestService } from '@/lib/connectors/contests';
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -12,6 +12,40 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const { id } = await params;
   const { searchParams } = new URL(req.url);
   const classroomId = searchParams.get('classroomId');
+
+  // Enforce role-based access control and classroom scoping
+  if (user.role === 'student') {
+    if (!classroomId) {
+      return NextResponse.json(
+        { error: 'Forbidden: Students cannot access institution-wide contest analytics' },
+        { status: 403 }
+      );
+    }
+    const isEnrolled = await isStudentInClassroom(classroomId, user.id);
+    if (!isEnrolled) {
+      return NextResponse.json(
+        { error: 'Access denied: You are not enrolled in this classroom' },
+        { status: 403 }
+      );
+    }
+  } else if (user.role === 'teacher') {
+    if (!classroomId) {
+      return NextResponse.json(
+        { error: 'Classroom ID is required for contest analytics' },
+        { status: 400 }
+      );
+    }
+    const classroom = await getClassroomById(classroomId);
+    if (!classroom) {
+      return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });
+    }
+    if (classroom.owner_teacher_id !== user.id) {
+      return NextResponse.json(
+        { error: 'Forbidden: You do not have permission to view contest analytics for this classroom' },
+        { status: 403 }
+      );
+    }
+  }
 
   try {
     let contest = await getContestById(id);
@@ -31,7 +65,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
     return NextResponse.json(analytics);
   } catch (err: any) {
-    console.error(`Error in /api/contests/${id}:`, err);
-    return NextResponse.json({ error: err?.message || 'Failed to fetch contest analytics' }, { status: 500 });
+    console.error(`[Contest Analytics Error in /api/contests/${id}]:`, err);
+    return NextResponse.json({ error: 'Failed to fetch contest analytics. Please try again later.' }, { status: 500 });
   }
 }

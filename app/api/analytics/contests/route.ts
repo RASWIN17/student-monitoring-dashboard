@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { getClassroomById, isStudentInClassroom, getClassroomsForTeacher } from '@/lib/db';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser();
@@ -13,19 +14,77 @@ export async function GET(req: Request) {
 
   const supabase = createAdminClient();
 
-  let studentIds: string[] | null = null;
-  if (classroomId) {
-    const { data: memberships } = await supabase
-      .from('classroom_memberships')
-      .select('student_id')
-      .eq('classroom_id', classroomId)
-      .eq('membership_status', 'enrolled');
+  try {
+    let studentIds: string[] | null = null;
 
-    studentIds = (memberships || []).map((m) => m.student_id);
-    if (studentIds.length === 0) {
-      return NextResponse.json({ contests: [] });
+    // Role-based scoping and authorization
+    if (user.role === 'student') {
+      if (!classroomId) {
+        return NextResponse.json(
+          { error: 'Forbidden: Students cannot access institution-wide analytics' },
+          { status: 403 }
+        );
+      }
+      const isEnrolled = await isStudentInClassroom(classroomId, user.id);
+      if (!isEnrolled) {
+        return NextResponse.json(
+          { error: 'Access denied: You are not enrolled in this classroom' },
+          { status: 403 }
+        );
+      }
+    } else if (user.role === 'teacher') {
+      if (classroomId) {
+        const classroom = await getClassroomById(classroomId);
+        if (!classroom) {
+          return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });
+        }
+        if (classroom.owner_teacher_id !== user.id) {
+          return NextResponse.json(
+            { error: 'Forbidden: You do not have permission to view analytics for this classroom' },
+            { status: 403 }
+          );
+        }
+      } else {
+        const myClassrooms = await getClassroomsForTeacher(user.id);
+        const myClassroomIds = myClassrooms.map((c) => c.id);
+        if (myClassroomIds.length === 0) {
+          return NextResponse.json({ contests: [] });
+        }
+
+        const { data: teacherMemberships } = await supabase
+          .from('classroom_memberships')
+          .select('student_id')
+          .in('classroom_id', myClassroomIds)
+          .eq('membership_status', 'enrolled');
+
+        studentIds = Array.from(new Set((teacherMemberships || []).map((m) => m.student_id)));
+        if (studentIds.length === 0) {
+          return NextResponse.json({ contests: [] });
+        }
+      }
+    } else if (user.role === 'admin') {
+      if (classroomId) {
+        const classroom = await getClassroomById(classroomId);
+        if (!classroom) {
+          return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });
+        }
+      }
+    } else {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
-  }
+
+    if (classroomId) {
+      const { data: memberships } = await supabase
+        .from('classroom_memberships')
+        .select('student_id')
+        .eq('classroom_id', classroomId)
+        .eq('membership_status', 'enrolled');
+
+      studentIds = (memberships || []).map((m) => m.student_id);
+      if (studentIds.length === 0) {
+        return NextResponse.json({ contests: [] });
+      }
+    }
 
   let accQuery = supabase
     .from('platform_accounts')
@@ -89,4 +148,8 @@ export async function GET(req: Request) {
   });
 
   return NextResponse.json({ contests: rows });
+  } catch (err: any) {
+    console.error('[ANALYTICS_CONTESTS_ERROR]:', err?.message || err);
+    return NextResponse.json({ error: 'Failed to retrieve contest analytics' }, { status: 500 });
+  }
 }
