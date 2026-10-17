@@ -28,6 +28,17 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
   const classrooms = await getClassroomsForStudent(id);
 
+  // If user is a teacher, verify they teach at least one classroom this student belongs to
+  if (user.role === 'teacher') {
+    const teachesStudent = classrooms.some((c) => c.owner_teacher_id === user.id);
+    if (!teachesStudent) {
+      return NextResponse.json(
+        { error: 'Access forbidden: You do not teach this student' },
+        { status: 403 }
+      );
+    }
+  }
+
   // LeetCode data
   const lcAccount = await getPlatformAccount(id, 'leetcode');
   const lcSnapshot = lcAccount ? await getLatestSnapshotForAccount(lcAccount.id) : null;

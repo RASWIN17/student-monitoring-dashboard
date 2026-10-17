@@ -74,8 +74,15 @@ export function Sidebar() {
       <nav className="flex-1 px-5 py-4 space-y-2 overflow-y-auto">
         {visibleItems.map((item) => {
           const Icon = item.icon;
-          const isActive =
-            pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+          const isStudentItem = item.href === '/students';
+          const isStudentRoute =
+            pathname.startsWith('/students') ||
+            pathname.startsWith('/leetcode') ||
+            pathname.startsWith('/codechef');
+
+          const isActive = isStudentItem
+            ? isStudentRoute
+            : pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
 
           return (
             <Link

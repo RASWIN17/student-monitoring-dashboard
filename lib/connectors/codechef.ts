@@ -186,8 +186,9 @@ export class CodeChefConnector {
         return acc;
       }, null);
 
-      // Daily activity from var userDailySubmissionsStats
+      // Daily activity from var userDailySubmissionsStats or SVG heatmap
       let dailySubmissions: { date: string; value: number }[] = [];
+      let heatmapValid = false;
       const dailyMatch = html.match(/var\s+userDailySubmissionsStats\s*=\s*([\s\S]*?);/);
       if (dailyMatch) {
         try {
@@ -197,17 +198,35 @@ export class CodeChefConnector {
               date: d.date,
               value: Number(d.value || 0),
             }));
+            heatmapValid = true;
           } else if (typeof rawDaily === 'object' && rawDaily !== null) {
             dailySubmissions = Object.entries(rawDaily).map(([k, v]) => ({
               date: k,
               value: Number(v || 0),
             }));
+            heatmapValid = true;
           }
         } catch {}
       }
 
+      // Fallback: check rendered SVG tooltips in HTML if script tag was missing
+      if (!heatmapValid) {
+        const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
+        const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        const [y, m, d] = today.split('-');
+        const monthName = months[parseInt(m, 10) - 1];
+        const dayNum = parseInt(d, 10);
+        const datePattern = new RegExp(`(?:(\\d+)\\s+submissions?|No\\s+submission|Zero\\s+submissions?)\\s+on\\s+${monthName}\\s+${dayNum},\\s+${y}`, 'i');
+        const tooltipMatch = html.match(datePattern);
+        if (tooltipMatch) {
+          const count = tooltipMatch[1] ? parseInt(tooltipMatch[1], 10) : 0;
+          dailySubmissions.push({ date: today, value: count });
+          heatmapValid = true;
+        }
+      }
+
       // Asia/Kolkata today and yesterday calculation
-      const dailyKolkata = this.calculateAsiaKolkataSubmissions(dailySubmissions);
+      const dailyKolkata = this.calculateAsiaKolkataSubmissions(dailySubmissions, heatmapValid);
 
       const availableFields = ['username'];
       if (currentRating !== null) availableFields.push('currentRating');
@@ -263,7 +282,7 @@ export class CodeChefConnector {
     }
   }
 
-  private static calculateAsiaKolkataSubmissions(daily: { date: string; value: number }[]) {
+  private static calculateAsiaKolkataSubmissions(daily: { date: string; value: number }[], isAvailable = true) {
     const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
     const yesterdayDateObj = new Date();
     yesterdayDateObj.setDate(yesterdayDateObj.getDate() - 1);
@@ -298,6 +317,7 @@ export class CodeChefConnector {
       todaySubmissions,
       yesterdayDate: yesterday,
       yesterdaySubmissions,
+      isAvailable,
     };
   }
 }

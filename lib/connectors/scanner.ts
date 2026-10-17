@@ -120,21 +120,26 @@ export class ScanEngine {
             // Save daily activity
             const todayKolkata = data.dailyActivityAsiaKolkata.todayDate;
             const yesterdayKolkata = data.dailyActivityAsiaKolkata.yesterdayDate;
+            const isActivityAvailable = data.dailyActivityAsiaKolkata.isAvailable !== false;
 
             await saveDailyActivity({
               platform_account_id: account.id,
               activity_date: todayKolkata,
               submission_count: data.dailyActivityAsiaKolkata.todaySubmissions,
-              activity_status: data.dailyActivityAsiaKolkata.todaySubmissions > 0 ? 'active' : 'no_activity',
-              source_coverage: 'leetcode_submission_calendar',
+              activity_status: isActivityAvailable
+                ? (data.dailyActivityAsiaKolkata.todaySubmissions > 0 ? 'active' : 'no_activity')
+                : 'unknown',
+              source_coverage: isActivityAvailable ? 'leetcode_submission_calendar' : 'data_unavailable',
             });
 
             await saveDailyActivity({
               platform_account_id: account.id,
               activity_date: yesterdayKolkata,
               submission_count: data.dailyActivityAsiaKolkata.yesterdaySubmissions,
-              activity_status: data.dailyActivityAsiaKolkata.yesterdaySubmissions > 0 ? 'active' : 'no_activity',
-              source_coverage: 'leetcode_submission_calendar',
+              activity_status: isActivityAvailable
+                ? (data.dailyActivityAsiaKolkata.yesterdaySubmissions > 0 ? 'active' : 'no_activity')
+                : 'unknown',
+              source_coverage: isActivityAvailable ? 'leetcode_submission_calendar' : 'data_unavailable',
             });
 
             // Save contest records
@@ -217,21 +222,26 @@ export class ScanEngine {
             // Save daily activity
             const todayKolkata = data.dailyActivityAsiaKolkata.todayDate;
             const yesterdayKolkata = data.dailyActivityAsiaKolkata.yesterdayDate;
+            const isActivityAvailable = data.dailyActivityAsiaKolkata.isAvailable !== false;
 
             await saveDailyActivity({
               platform_account_id: account.id,
               activity_date: todayKolkata,
               submission_count: data.dailyActivityAsiaKolkata.todaySubmissions,
-              activity_status: data.dailyActivityAsiaKolkata.todaySubmissions > 0 ? 'active' : 'no_activity',
-              source_coverage: 'codechef_daily_submissions',
+              activity_status: isActivityAvailable
+                ? (data.dailyActivityAsiaKolkata.todaySubmissions > 0 ? 'active' : 'no_activity')
+                : 'unknown',
+              source_coverage: isActivityAvailable ? 'codechef_daily_submissions' : 'data_unavailable',
             });
 
             await saveDailyActivity({
               platform_account_id: account.id,
               activity_date: yesterdayKolkata,
               submission_count: data.dailyActivityAsiaKolkata.yesterdaySubmissions,
-              activity_status: data.dailyActivityAsiaKolkata.yesterdaySubmissions > 0 ? 'active' : 'no_activity',
-              source_coverage: 'codechef_daily_submissions',
+              activity_status: isActivityAvailable
+                ? (data.dailyActivityAsiaKolkata.yesterdaySubmissions > 0 ? 'active' : 'no_activity')
+                : 'unknown',
+              source_coverage: isActivityAvailable ? 'codechef_daily_submissions' : 'data_unavailable',
             });
 
             // Save contest records

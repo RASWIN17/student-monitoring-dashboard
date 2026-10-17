@@ -182,16 +182,17 @@ function StudentDetailContent() {
   const ccSnap = codechef?.snapshot;
 
   // Determine back navigation link based on context
+  const filterParam = searchParams.get('filter');
   const backHref =
     classroomId && platformParam
-      ? `/students/${platformParam}/${classroomId}`
+      ? `/students/${platformParam}/progress?classroomId=${classroomId}${filterParam ? `&filter=${filterParam}` : ''}`
       : platformParam
-      ? `/students/${platformParam}`
+      ? `/students/${platformParam}/progress${filterParam ? `&filter=${filterParam}` : ''}`
       : '/students';
 
   const backLabel =
     classroomId && platformParam
-      ? `Back to ${platformParam === 'leetcode' ? 'LeetCode' : 'CodeChef'} Classroom`
+      ? `Back to ${platformParam === 'leetcode' ? 'LeetCode' : 'CodeChef'} Progress`
       : platformParam
       ? `Back to ${platformParam === 'leetcode' ? 'LeetCode' : 'CodeChef'} Classrooms`
       : 'Back to Students Roster';

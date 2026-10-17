@@ -1,8 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { ClassroomStudentDetailsView } from '@/components/ClassroomStudentDetailsView';
 
 export default function CodeChefStudentProgressPage() {
-  return <ClassroomStudentDetailsView platform="codechef" />;
+  return (
+    <Suspense fallback={null}>
+      <ClassroomStudentDetailsView platform="codechef" />
+    </Suspense>
+  );
 }
+

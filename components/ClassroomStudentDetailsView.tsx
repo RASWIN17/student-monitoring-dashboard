@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/components/AuthContext';
 import { Classroom, StudentPerformanceOverview } from '@/lib/types';
 import { ScanModal } from '@/components/ScanModal';
@@ -22,12 +22,16 @@ import {
   ChevronRight,
   TrendingUp,
   Star,
+  UserX,
+  Zap,
 } from 'lucide-react';
 
 interface Props {
   platform: 'leetcode' | 'codechef';
   classroomId?: string;
 }
+
+export type ActiveCardFilter = 'all' | 'linked' | 'not_linked' | 'active' | 'non_active';
 
 export type SortOption =
   | 'problems_desc'
@@ -56,6 +60,7 @@ interface ClassroomDataCache {
 
 export function ClassroomStudentDetailsView({ platform, classroomId: propClassroomId }: Props) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, selectedClassroom, classrooms, setSelectedClassroom, loading: authLoading } = useAuth();
   const isTeacher = user?.role === 'teacher' || user?.role === 'admin';
 
@@ -69,6 +74,34 @@ export function ClassroomStudentDetailsView({ platform, classroomId: propClassro
   const [students, setStudents] = useState<StudentPerformanceOverview[]>(() => cachedData?.students || []);
   const [loading, setLoading] = useState(() => !cachedData);
   const [error, setError] = useState<string | null>(null);
+
+  const filterParam = (searchParams?.get('filter') as ActiveCardFilter) || 'all';
+  const [activeFilter, setActiveFilter] = useState<ActiveCardFilter>(() =>
+    ['all', 'linked', 'not_linked', 'active', 'non_active'].includes(filterParam)
+      ? filterParam
+      : 'all'
+  );
+
+  useEffect(() => {
+    const param = searchParams?.get('filter') as ActiveCardFilter;
+    if (param && ['all', 'linked', 'not_linked', 'active', 'non_active'].includes(param)) {
+      setActiveFilter(param);
+    }
+  }, [searchParams]);
+
+  const handleCardClick = (target: ActiveCardFilter) => {
+    const nextFilter = activeFilter === target && target !== 'all' ? 'all' : target;
+    setActiveFilter(nextFilter);
+    const currentParams = new URLSearchParams(window.location.search);
+    if (nextFilter === 'all') {
+      currentParams.delete('filter');
+    } else {
+      currentParams.set('filter', nextFilter);
+    }
+    const queryStr = currentParams.toString();
+    const nextUrl = `${window.location.pathname}${queryStr ? `?${queryStr}` : ''}`;
+    window.history.replaceState(null, '', nextUrl);
+  };
 
   const savedUI = effectiveClassroomId ? dataCache.getUI<{ searchTerm: string; sortOption: SortOption }>(uiKey) : null;
   // Search & Sorting state
@@ -139,13 +172,27 @@ export function ClassroomStudentDetailsView({ platform, classroomId: propClassro
 
   // Derived filtered & sorted list
   const processedStudents = useMemo(() => {
-    // 1. Filter
-    const filtered = students.filter((item) => {
-      const s = item.student;
+    // 1. Filter by Active Card Metric
+    const cardFiltered = students.filter((item) => {
       const account = platform === 'leetcode' ? item.leetcodeAccount : item.codechefAccount;
+      const todayAct = platform === 'leetcode' ? item.leetcodeTodayActivity : item.codechefTodayActivity;
+      const isLinked = !!account && account.account_status !== 'error' && account.account_status !== 'not_found';
+      const isActive = isLinked && todayAct?.activity_status === 'active' && (todayAct?.submission_count ?? 0) > 0;
+      const isNonActive = isLinked && todayAct?.activity_status === 'no_activity' && (todayAct?.submission_count ?? 0) === 0;
 
+      if (activeFilter === 'linked') return isLinked;
+      if (activeFilter === 'not_linked') return !isLinked;
+      if (activeFilter === 'active') return isActive;
+      if (activeFilter === 'non_active') return isNonActive;
+      return true; // 'all'
+    });
+
+    // 2. Search filter
+    const searchFiltered = cardFiltered.filter((item) => {
       if (!searchTerm.trim()) return true;
       const term = searchTerm.toLowerCase();
+      const s = item.student;
+      const account = platform === 'leetcode' ? item.leetcodeAccount : item.codechefAccount;
 
       const matchName = s.display_name?.toLowerCase().includes(term);
       const matchEmail = s.email?.toLowerCase().includes(term);
@@ -155,8 +202,8 @@ export function ClassroomStudentDetailsView({ platform, classroomId: propClassro
       return matchName || matchEmail || matchUsername || matchReg;
     });
 
-    // 2. Sort numerically
-    return filtered.sort((a, b) => {
+    // 3. Sort numerically
+    return searchFiltered.sort((a, b) => {
       const aSnap = platform === 'leetcode' ? a.leetcodeSnapshot : a.codechefSnapshot;
       const bSnap = platform === 'leetcode' ? b.leetcodeSnapshot : b.codechefSnapshot;
 
@@ -203,47 +250,44 @@ export function ClassroomStudentDetailsView({ platform, classroomId: propClassro
       }
       return 0;
     });
-  }, [students, searchTerm, sortOption, platform]);
+  }, [students, activeFilter, searchTerm, sortOption, platform]);
 
-  // Aggregate statistics for summary row
+  // Aggregate statistics for summary row (Exact 5 cards)
   const stats = useMemo(() => {
-    let totalProblemsSolved = 0;
-    let linkedAccountsCount = 0;
-    let ratedStudentsCount = 0;
-    let sumRating = 0;
-    let highestRating = 0;
+    let linkedCount = 0;
+    let notLinkedCount = 0;
+    let activeTodayCount = 0;
+    let nonActiveTodayCount = 0;
+    let unknownTodayCount = 0;
 
     for (const item of students) {
       const account = platform === 'leetcode' ? item.leetcodeAccount : item.codechefAccount;
-      const snap = platform === 'leetcode' ? item.leetcodeSnapshot : item.codechefSnapshot;
+      const todayAct = platform === 'leetcode' ? item.leetcodeTodayActivity : item.codechefTodayActivity;
 
-      if (account) linkedAccountsCount++;
+      // Valid linked profile: account exists and is not in error/not_found
+      const isLinked = !!account && account.account_status !== 'error' && account.account_status !== 'not_found';
 
-      if (snap?.total_solved != null) {
-        totalProblemsSolved += Number(snap.total_solved);
-      }
-
-      const rating =
-        platform === 'leetcode'
-          ? snap?.contest_rating
-          : snap?.contest_rating ?? snap?.highest_rating;
-
-      if (rating != null && Number(rating) > 0) {
-        ratedStudentsCount++;
-        const numRating = Number(rating);
-        sumRating += numRating;
-        if (numRating > highestRating) highestRating = numRating;
+      if (isLinked) {
+        linkedCount++;
+        if (todayAct?.activity_status === 'active' && (todayAct?.submission_count ?? 0) > 0) {
+          activeTodayCount++;
+        } else if (todayAct?.activity_status === 'no_activity' && (todayAct?.submission_count ?? 0) === 0) {
+          nonActiveTodayCount++;
+        } else {
+          unknownTodayCount++;
+        }
+      } else {
+        notLinkedCount++;
       }
     }
 
-    const avgRating = ratedStudentsCount > 0 ? (sumRating / ratedStudentsCount).toFixed(1) : '—';
-
     return {
       totalStudents: students.length,
-      linkedAccountsCount,
-      totalProblemsSolved,
-      avgRating,
-      highestRating: highestRating > 0 ? highestRating.toFixed(1) : '—',
+      linkedCount,
+      notLinkedCount,
+      activeTodayCount,
+      nonActiveTodayCount,
+      unknownTodayCount,
     };
   }, [students, platform]);
 
@@ -279,7 +323,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId: propClassro
 
   const percentLinked =
     stats.totalStudents > 0
-      ? `${Math.round((stats.linkedAccountsCount / stats.totalStudents) * 100)}% linked`
+      ? `${Math.round((stats.linkedCount / stats.totalStudents) * 100)}% linked`
       : '0% linked';
 
   return (
@@ -360,10 +404,20 @@ export function ClassroomStudentDetailsView({ platform, classroomId: propClassro
         </div>
       </div>
 
-      {/* 3. KPI Summary Cards Row */}
+      {/* 3. KPI Summary Cards Row (Exactly 5 cards in required order, fully clickable) */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        {/* Total Students */}
-        <div className="bg-white rounded-2xl border border-[#e1eaf5] p-5 shadow-[0_2px_10px_rgba(30,64,175,0.03)] flex flex-col justify-between">
+        {/* Card 1: Total Students */}
+        <button
+          type="button"
+          onClick={() => handleCardClick('all')}
+          aria-pressed={activeFilter === 'all'}
+          aria-label={`Total Students: ${stats.totalStudents}. Click to show all students.`}
+          className={`text-left rounded-2xl border p-5 transition-all flex flex-col justify-between cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1769ff] ${
+            activeFilter === 'all'
+              ? 'bg-[#f4f8ff] border-[#1769ff] ring-2 ring-[#1769ff]/40 shadow-[0_4px_16px_rgba(23,105,255,0.12)]'
+              : 'bg-white border-[#e1eaf5] hover:border-[#cbd5e1] hover:shadow-[0_4px_14px_rgba(30,64,175,0.06)]'
+          }`}
+        >
           <div className="flex items-center justify-between text-[#64748b] mb-1">
             <span className="text-[11px] font-bold uppercase tracking-wider text-[#64748b]">Total Students</span>
             <Users className="w-4 h-4 text-[#1769ff]" />
@@ -371,58 +425,146 @@ export function ClassroomStudentDetailsView({ platform, classroomId: propClassro
           <div className="text-2xl lg:text-[28px] font-black text-[#0f1b35] mt-2 mb-0.5 tracking-tight">
             {stats.totalStudents}
           </div>
-          <div className="text-xs text-[#64748b] font-medium">Enrolled in classroom</div>
-        </div>
+          <div className="text-xs text-[#64748b] font-medium flex items-center justify-between">
+            <span>Enrolled in classroom</span>
+            {activeFilter === 'all' && (
+              <span className="text-[10px] font-bold text-[#1769ff] bg-blue-100/70 px-1.5 py-0.5 rounded">All</span>
+            )}
+          </div>
+        </button>
 
-        {/* Profiles Linked */}
-        <div className="bg-white rounded-2xl border border-[#e1eaf5] p-5 shadow-[0_2px_10px_rgba(30,64,175,0.03)] flex flex-col justify-between">
+        {/* Card 2: Profile Linked */}
+        <button
+          type="button"
+          onClick={() => handleCardClick('linked')}
+          aria-pressed={activeFilter === 'linked'}
+          aria-label={`Profile Linked: ${stats.linkedCount}. Click to show students with a linked profile.`}
+          className={`text-left rounded-2xl border p-5 transition-all flex flex-col justify-between cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1769ff] ${
+            activeFilter === 'linked'
+              ? 'bg-[#ecfdf5] border-emerald-500 ring-2 ring-emerald-500/40 shadow-[0_4px_16px_rgba(16,185,129,0.12)]'
+              : 'bg-white border-[#e1eaf5] hover:border-[#cbd5e1] hover:shadow-[0_4px_14px_rgba(30,64,175,0.06)]'
+          }`}
+        >
           <div className="flex items-center justify-between text-[#64748b] mb-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#64748b]">Profiles Linked</span>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#64748b]">Profile Linked</span>
             <CheckCircle2 className="w-4 h-4 text-emerald-500" />
           </div>
           <div className="text-2xl lg:text-[28px] font-black text-[#0f1b35] mt-2 mb-0.5 tracking-tight flex items-baseline">
-            <span>{stats.linkedAccountsCount}</span>
+            <span>{stats.linkedCount}</span>
             <span className="text-sm font-normal text-slate-400 ml-1.5">/ {stats.totalStudents}</span>
           </div>
-          <div className="text-xs text-[#64748b] font-medium">{percentLinked}</div>
-        </div>
+          <div className="text-xs text-[#64748b] font-medium flex items-center justify-between">
+            <span>{percentLinked}</span>
+            {activeFilter === 'linked' && (
+              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">Filtered</span>
+            )}
+          </div>
+        </button>
 
-        {/* Total Problems Solved */}
-        <div className="bg-white rounded-2xl border border-[#e1eaf5] p-5 shadow-[0_2px_10px_rgba(30,64,175,0.03)] flex flex-col justify-between">
+        {/* Card 3: Profile Not Linked */}
+        <button
+          type="button"
+          onClick={() => handleCardClick('not_linked')}
+          aria-pressed={activeFilter === 'not_linked'}
+          aria-label={`Profile Not Linked: ${stats.notLinkedCount}. Click to show students without a linked profile.`}
+          className={`text-left rounded-2xl border p-5 transition-all flex flex-col justify-between cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1769ff] ${
+            activeFilter === 'not_linked'
+              ? 'bg-[#fffbeb] border-amber-500 ring-2 ring-amber-500/40 shadow-[0_4px_16px_rgba(245,158,11,0.12)]'
+              : 'bg-white border-[#e1eaf5] hover:border-[#cbd5e1] hover:shadow-[0_4px_14px_rgba(30,64,175,0.06)]'
+          }`}
+        >
           <div className="flex items-center justify-between text-[#64748b] mb-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#64748b]">Total Problems Solved</span>
-            <Hash className="w-4 h-4 text-[#1769ff]" />
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#64748b]">Profile Not Linked</span>
+            <AlertTriangle className="w-4 h-4 text-amber-500" />
           </div>
           <div className="text-2xl lg:text-[28px] font-black text-[#0f1b35] mt-2 mb-0.5 tracking-tight">
-            {stats.totalProblemsSolved.toLocaleString()}
+            {stats.notLinkedCount}
           </div>
-          <div className="text-xs text-[#64748b] font-medium">Combined lifetime solves</div>
-        </div>
+          <div className="text-xs text-[#64748b] font-medium flex items-center justify-between">
+            <span>Unlinked or failed</span>
+            {activeFilter === 'not_linked' && (
+              <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded">Filtered</span>
+            )}
+          </div>
+        </button>
 
-        {/* Average Rating */}
-        <div className="bg-white rounded-2xl border border-[#e1eaf5] p-5 shadow-[0_2px_10px_rgba(30,64,175,0.03)] flex flex-col justify-between">
+        {/* Card 4: Active Students */}
+        <button
+          type="button"
+          onClick={() => handleCardClick('active')}
+          aria-pressed={activeFilter === 'active'}
+          aria-label={`Active Students: ${stats.activeTodayCount}. Click to show students active today.`}
+          className={`text-left rounded-2xl border p-5 transition-all flex flex-col justify-between cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1769ff] ${
+            activeFilter === 'active'
+              ? 'bg-[#ecfdf5] border-emerald-500 ring-2 ring-emerald-500/40 shadow-[0_4px_16px_rgba(16,185,129,0.12)]'
+              : 'bg-white border-[#e1eaf5] hover:border-[#cbd5e1] hover:shadow-[0_4px_14px_rgba(30,64,175,0.06)]'
+          }`}
+        >
           <div className="flex items-center justify-between text-[#64748b] mb-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#64748b]">Average Rating</span>
-            <TrendingUp className="w-4 h-4 text-[#1769ff]" />
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#64748b]">Active Students</span>
+            <TrendingUp className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="text-2xl lg:text-[28px] font-black text-[#0f1b35] mt-2 mb-0.5 tracking-tight">
-            {stats.avgRating}
+            {stats.activeTodayCount}
           </div>
-          <div className="text-xs text-[#64748b] font-medium">Across rated students</div>
-        </div>
+          <div className="text-xs text-[#64748b] font-medium flex items-center justify-between">
+            <span>&gt; 0 submissions today</span>
+            {activeFilter === 'active' && (
+              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">Filtered</span>
+            )}
+          </div>
+        </button>
 
-        {/* Highest Rating */}
-        <div className="bg-white rounded-2xl border border-[#e1eaf5] p-5 shadow-[0_2px_10px_rgba(30,64,175,0.03)] flex flex-col justify-between col-span-2 md:col-span-1">
+        {/* Card 5: Non-Active Students */}
+        <button
+          type="button"
+          onClick={() => handleCardClick('non_active')}
+          aria-pressed={activeFilter === 'non_active'}
+          aria-label={`Non-Active Students: ${stats.nonActiveTodayCount}. Click to show verified non-active students today.`}
+          className={`text-left rounded-2xl border p-5 transition-all flex flex-col justify-between col-span-2 md:col-span-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1769ff] ${
+            activeFilter === 'non_active'
+              ? 'bg-[#f8fafc] border-slate-500 ring-2 ring-slate-400/40 shadow-[0_4px_16px_rgba(100,116,139,0.12)]'
+              : 'bg-white border-[#e1eaf5] hover:border-[#cbd5e1] hover:shadow-[0_4px_14px_rgba(30,64,175,0.06)]'
+          }`}
+        >
           <div className="flex items-center justify-between text-[#64748b] mb-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#64748b]">Highest Rating</span>
-            <Trophy className="w-4 h-4 text-[#1769ff]" />
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#64748b]">Non-Active Students</span>
+            <Users className="w-4 h-4 text-slate-400" />
           </div>
           <div className="text-2xl lg:text-[28px] font-black text-[#0f1b35] mt-2 mb-0.5 tracking-tight">
-            {stats.highestRating}
+            {stats.nonActiveTodayCount}
           </div>
-          <div className="text-xs text-[#64748b] font-medium">Classroom peak rating</div>
-        </div>
+          <div className="text-xs text-[#64748b] font-medium flex items-center justify-between">
+            <span>0 submissions today</span>
+            {activeFilter === 'non_active' && (
+              <span className="text-[10px] font-bold text-slate-700 bg-slate-200 px-1.5 py-0.5 rounded">Filtered</span>
+            )}
+          </div>
+        </button>
       </div>
+
+      {/* Active Filter Indicator Banner */}
+      {activeFilter !== 'all' && (
+        <div className="bg-[#f0f6ff] border border-[#bfdbfe] rounded-2xl px-5 py-3 flex items-center justify-between shadow-2xs">
+          <div className="flex items-center gap-2 text-xs text-[#0f1b35]">
+            <span className="font-bold text-[#1769ff]">Filtered View:</span>
+            <span className="font-semibold">
+              {activeFilter === 'linked' && `Profile Linked (${stats.linkedCount})`}
+              {activeFilter === 'not_linked' && `Profile Not Linked (${stats.notLinkedCount})`}
+              {activeFilter === 'active' && `Active Students Today (${stats.activeTodayCount})`}
+              {activeFilter === 'non_active' && `Non-Active Students Today (${stats.nonActiveTodayCount})`}
+            </span>
+            <span className="text-[#64748b]">• Showing {processedStudents.length} of {stats.totalStudents} student{stats.totalStudents === 1 ? '' : 's'}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => handleCardClick('all')}
+            className="text-xs font-bold text-[#1769ff] hover:text-[#0052cc] hover:underline"
+          >
+            Clear Filter (Show All)
+          </button>
+        </div>
+      )}
 
       {/* 4. Search, Filter & Sort Controls */}
       <div className="bg-white rounded-2xl border border-[#e1eaf5] p-4 shadow-[0_2px_10px_rgba(30,64,175,0.03)] space-y-3">
@@ -516,17 +658,53 @@ export function ClassroomStudentDetailsView({ platform, classroomId: propClassro
                   <strong className="text-slate-900 font-mono">{classroom.join_code}</strong> to join this classroom.
                 </p>
               </>
-            ) : (
+            ) : searchTerm ? (
               <>
                 <h3 className="text-sm font-bold text-slate-800">No Matching Students Found</h3>
                 <p className="text-xs text-slate-500 mt-1">
-                  No students in this classroom match your search query &ldquo;{searchTerm}&rdquo;.
+                  No students in this classroom match your search query &ldquo;{searchTerm}&rdquo;
+                  {activeFilter !== 'all' ? ` under the current filter` : ''}.
+                </p>
+                <div className="flex items-center justify-center gap-2 mt-3">
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    className="px-3.5 py-1.5 text-xs font-bold bg-[#eef4ff] text-[#1769ff] hover:bg-blue-100 rounded-xl transition"
+                  >
+                    Clear search query
+                  </button>
+                  {activeFilter !== 'all' && (
+                    <button
+                      onClick={() => handleCardClick('all')}
+                      className="px-3.5 py-1.5 text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl transition"
+                    >
+                      Show all students
+                    </button>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <h3 className="text-sm font-bold text-slate-800">
+                  {activeFilter === 'linked' && 'No Students with Linked Profiles'}
+                  {activeFilter === 'not_linked' && 'All Students Have Linked Profiles'}
+                  {activeFilter === 'active' && 'No Active Students Today'}
+                  {activeFilter === 'non_active' && 'No Verified Inactive Students Today'}
+                </h3>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
+                  {activeFilter === 'active' &&
+                    'No students have logged verified submissions today yet. Run a classroom scan to refresh the latest heatmap.'}
+                  {activeFilter === 'non_active' &&
+                    'No students have a verified count of 0 submissions today.'}
+                  {activeFilter === 'linked' &&
+                    'No students have successfully linked their account for this platform yet.'}
+                  {activeFilter === 'not_linked' &&
+                    'All enrolled students have a valid linked profile.'}
                 </p>
                 <button
-                  onClick={() => setSearchTerm('')}
+                  onClick={() => handleCardClick('all')}
                   className="mt-3 px-3.5 py-1.5 text-xs font-bold bg-[#eef4ff] text-[#1769ff] hover:bg-blue-100 rounded-xl transition"
                 >
-                  Clear search query
+                  Show All Students
                 </button>
               </>
             )}
@@ -539,6 +717,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId: propClassro
                   <th className="py-4 px-5 whitespace-nowrap">STUDENT NAME</th>
                   <th className="py-4 px-5 whitespace-nowrap">REGISTRATION NUMBER</th>
                   <th className="py-4 px-5 whitespace-nowrap">{platform === 'leetcode' ? 'LEETCODE HANDLE' : 'CODECHEF HANDLE'}</th>
+                  <th className="py-4 px-5 whitespace-nowrap">TODAY&apos;S ACTIVITY</th>
                   <th className="py-4 px-5 whitespace-nowrap">TOTAL SOLVED</th>
                   {platform === 'leetcode' ? (
                     <>
@@ -563,8 +742,9 @@ export function ClassroomStudentDetailsView({ platform, classroomId: propClassro
                   const s = item.student;
                   const account = platform === 'leetcode' ? item.leetcodeAccount : item.codechefAccount;
                   const snap = platform === 'leetcode' ? item.leetcodeSnapshot : item.codechefSnapshot;
+                  const todayAct = platform === 'leetcode' ? item.leetcodeTodayActivity : item.codechefTodayActivity;
 
-                  const isLinked = !!account;
+                  const isLinked = !!account && account.account_status !== 'error' && account.account_status !== 'not_found';
                   const totalSolved = snap?.total_solved != null ? snap.total_solved : null;
 
                   return (
@@ -575,7 +755,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId: propClassro
                       {/* 1. Student Name */}
                       <td className="py-4 px-5 whitespace-nowrap">
                         <Link
-                          href={`/students/${s.id}?platform=${platform}&classroomId=${effectiveClassroomId}`}
+                          href={`/students/${s.id}?platform=${platform}&classroomId=${effectiveClassroomId}&filter=${activeFilter}`}
                           className="font-bold text-sm text-[#0f1b35] hover:text-[#1769ff] transition truncate hover:underline"
                         >
                           {s.display_name}
@@ -615,7 +795,32 @@ export function ClassroomStudentDetailsView({ platform, classroomId: propClassro
                         )}
                       </td>
 
-                      {/* 4. Total Solved */}
+                      {/* 4. Today's Activity */}
+                      <td className="py-4 px-5 whitespace-nowrap">
+                        {!isLinked ? (
+                          <span className="text-slate-400 font-mono text-xs">—</span>
+                        ) : todayAct?.activity_status === 'active' && (todayAct?.submission_count ?? 0) > 0 ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-[#ecfdf5] text-[#059669] border border-[#a7f3d0]">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse" />
+                            <span>Active ({todayAct.submission_count} {todayAct.submission_count === 1 ? 'submission' : 'submissions'})</span>
+                          </span>
+                        ) : todayAct?.activity_status === 'no_activity' && (todayAct?.submission_count ?? 0) === 0 ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+                            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                            <span>Inactive (0 submissions)</span>
+                          </span>
+                        ) : (
+                          <span
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-200"
+                            title="Daily activity data not yet scanned or unavailable"
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                            <span>Pending Scan</span>
+                          </span>
+                        )}
+                      </td>
+
+                      {/* 5. Total Solved */}
                       <td className="py-4 px-5 whitespace-nowrap">
                         {totalSolved != null ? (
                           <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-black bg-[#eef4ff] text-[#1769ff]">

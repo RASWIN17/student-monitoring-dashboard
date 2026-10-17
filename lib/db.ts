@@ -1556,3 +1556,142 @@ export function getYesterdayAsiaKolkata(): string {
   d.setDate(d.getDate() - 1);
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(d);
 }
+
+// ----------------------------------------------------
+// COMPLETE ACCOUNT DELETION (STUDENT & TEACHER SAFEGUARDS)
+// ----------------------------------------------------
+
+export async function deleteUserAccount(userId: string): Promise<{ success: boolean; authUserId?: string | null; message: string }> {
+  const supabase = getSupabase();
+
+  // 1. Fetch user profile
+  const user = await getUserById(userId);
+  if (!user) {
+    throw new Error('User account not found');
+  }
+
+  // 2. Teacher-specific safeguards:
+  // Inspect whether this teacher owns active classrooms with enrolled students
+  if (user.role === 'teacher' || user.role === 'admin') {
+    const { data: ownedClassrooms } = await supabase
+      .from('classrooms')
+      .select('id, name')
+      .eq('owner_teacher_id', userId);
+
+    if (ownedClassrooms && ownedClassrooms.length > 0) {
+      const classroomIds = ownedClassrooms.map((c) => c.id);
+      const { data: activeMemberships } = await supabase
+        .from('classroom_memberships')
+        .select('id, classroom_id')
+        .in('classroom_id', classroomIds)
+        .eq('membership_status', 'enrolled');
+
+      if (activeMemberships && activeMemberships.length > 0) {
+        throw new Error(
+          'Cannot delete account: You are the owner of classrooms with active enrolled students. ' +
+          'To protect institutional records and enrolled students, please transfer classroom ownership or contact an administrator before deleting your account.'
+        );
+      }
+
+      // If teacher owns classrooms with 0 active students, safely delete the empty classrooms
+      for (const c of ownedClassrooms) {
+        await supabase.from('classroom_memberships').delete().eq('classroom_id', c.id);
+        await supabase.from('scan_jobs').update({ classroom_id: null }).eq('classroom_id', c.id);
+        await supabase.from('classrooms').delete().eq('id', c.id);
+      }
+    }
+  }
+
+  // 3. Student-specific records:
+  // Remove classroom memberships for student
+  await supabase
+    .from('classroom_memberships')
+    .delete()
+    .eq('student_id', userId);
+
+  // 4. Platform Accounts & Dependent Snapshots/Activities/Contests:
+  const { data: accounts } = await supabase
+    .from('platform_accounts')
+    .select('id')
+    .eq('student_id', userId);
+
+  if (accounts && accounts.length > 0) {
+    const accountIds = accounts.map((a) => a.id);
+
+    // Delete daily activity snapshots
+    await supabase
+      .from('daily_activity_snapshots')
+      .delete()
+      .in('platform_account_id', accountIds);
+
+    // Delete platform profile snapshots
+    await supabase
+      .from('platform_profile_snapshots')
+      .delete()
+      .in('platform_account_id', accountIds);
+
+    // Delete contest records
+    await supabase
+      .from('contest_records')
+      .delete()
+      .in('platform_account_id', accountIds);
+
+    // Delete scan job items
+    await supabase
+      .from('scan_job_items')
+      .delete()
+      .in('platform_account_id', accountIds);
+
+    // Delete platform accounts
+    await supabase
+      .from('platform_accounts')
+      .delete()
+      .eq('student_id', userId);
+  }
+
+  // 5. Scan jobs disassociation
+  await supabase
+    .from('scan_jobs')
+    .update({ target_student_id: null })
+    .eq('target_student_id', userId);
+
+  await supabase
+    .from('scan_jobs')
+    .update({ requested_by: null })
+    .eq('requested_by', userId);
+
+  // 6. Audit logs anonymization (preserve security log but remove user ID link)
+  await supabase
+    .from('audit_logs')
+    .update({ user_id: null })
+    .eq('user_id', userId);
+
+  // Log final deletion audit entry
+  await logAuditAction({
+    user_id: null,
+    action: 'USER_ACCOUNT_DELETED',
+    resource_type: 'user_profiles',
+    resource_id: userId,
+    details: {
+      deletedEmail: user.email,
+      role: user.role,
+      deletedAt: new Date().toISOString(),
+    },
+  });
+
+  // 7. Delete user profile record
+  const { error: profileDeleteError } = await supabase
+    .from('user_profiles')
+    .delete()
+    .eq('id', userId);
+
+  if (profileDeleteError) {
+    throw new Error(`Failed to delete user profile: ${profileDeleteError.message}`);
+  }
+
+  return {
+    success: true,
+    authUserId: user.auth_user_id || null,
+    message: 'User account and all associated personal data successfully deleted.',
+  };
+}

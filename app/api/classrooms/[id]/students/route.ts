@@ -31,6 +31,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         { status: 403 }
       );
     }
+  } else if (user.role === 'teacher' && classroom.owner_teacher_id !== user.id) {
+    return NextResponse.json(
+      { error: 'Access denied: You are not authorized to view this classroom' },
+      { status: 403 }
+    );
   }
 
   const overview = await getClassroomOverview(id);

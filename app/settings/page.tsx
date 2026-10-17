@@ -25,6 +25,7 @@ import {
   Save,
   X,
   GraduationCap,
+  Trash2,
 } from 'lucide-react';
 
 export default function SettingsPage() {
@@ -59,6 +60,12 @@ export default function SettingsPage() {
   const [errorLc, setErrorLc] = useState<string | null>(null);
   const [errorCc, setErrorCc] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  // Delete Account State
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteConfirmInput, setDeleteConfirmInput] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const fetchAccounts = async (force = false) => {
     if (!user || user.role !== 'student') return;
@@ -206,6 +213,44 @@ export default function SettingsPage() {
       setProfileClass(user.class_name || '');
       setProfileSection(user.section || '');
       setProfileError(null);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmInput.trim() !== 'DELETE') {
+      setDeleteError('Please type DELETE to confirm account deletion.');
+      return;
+    }
+
+    setIsDeleting(true);
+    setDeleteError(null);
+
+    try {
+      const res = await fetch('/api/auth/delete-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ confirmation: 'DELETE' }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setDeleteError(data.error || 'Failed to delete account');
+        setIsDeleting(false);
+        return;
+      }
+
+      // Deletion successful: clear local caches, terminate session, redirect to public login page
+      try {
+        const { dataCache } = await import('@/components/DataCacheContext');
+        dataCache.invalidate();
+      } catch {}
+
+      window.location.href = `/login?notice=${encodeURIComponent(
+        'Your account and all associated personal data have been permanently deleted.'
+      )}`;
+    } catch {
+      setDeleteError('Network error connecting to deletion service. Please try again.');
+      setIsDeleting(false);
     }
   };
 
@@ -568,6 +613,139 @@ export default function SettingsPage() {
           </p>
         </div>
       </div>
+
+      {/* Danger Zone: Delete Account for both Students and Teachers */}
+      <div className="bg-red-50/40 border border-red-200 rounded-xl p-6 shadow-2xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h3 className="text-sm font-bold text-red-900 flex items-center gap-2">
+              <Trash2 className="w-4 h-4 text-red-600" />
+              <span>Delete Account</span>
+            </h3>
+            <p className="text-xs text-red-700/80 max-w-xl leading-relaxed">
+              Permanently delete your CodeTrack account, personal profile, linked coding platform records, and history. This action cannot be reversed.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setIsDeleteModalOpen(true);
+              setDeleteConfirmInput('');
+              setDeleteError(null);
+            }}
+            className="px-4 py-2.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white rounded-lg text-xs font-bold transition shadow-xs shrink-0 cursor-pointer flex items-center justify-center gap-2"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>Delete Account</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Delete Account Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-red-200 p-6 space-y-5 animate-in fade-in duration-200">
+            {/* Modal Header */}
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-red-100 text-red-600 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-base font-bold text-slate-900">Permanently Delete Account?</h3>
+                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                  This action is permanent and immediate. All data associated with your account will be deleted:
+                </p>
+              </div>
+            </div>
+
+            {/* What gets deleted list */}
+            <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-700 space-y-2">
+              <div className="flex items-start gap-2">
+                <span className="text-red-500 font-bold">•</span>
+                <span>User profile, name, email, register number, and settings</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-red-500 font-bold">•</span>
+                <span>LeetCode & CodeChef profile links, cached stats, and daily activity</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-red-500 font-bold">•</span>
+                <span>Classroom memberships and individual contest attendance history</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-slate-400 font-bold">•</span>
+                <span className="text-slate-500 text-[11px]">
+                  Institutional records and audit logs are retained with personal identifiers removed.
+                </span>
+              </div>
+              {user?.role === 'teacher' && (
+                <div className="mt-2 pt-2 border-t border-slate-200 text-amber-700 font-medium text-[11px]">
+                  ⚠️ Teachers with active classrooms containing enrolled students cannot delete their account until classroom ownership is transferred.
+                </div>
+              )}
+            </div>
+
+            {/* Error display */}
+            {deleteError && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-800 flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+                <span className="leading-relaxed">{deleteError}</span>
+              </div>
+            )}
+
+            {/* Confirmation typing prompt */}
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold text-slate-700">
+                To confirm, type <span className="font-mono font-bold text-red-600">DELETE</span> in the box below:
+              </label>
+              <input
+                type="text"
+                value={deleteConfirmInput}
+                onChange={(e) => setDeleteConfirmInput(e.target.value)}
+                placeholder="Type DELETE"
+                disabled={isDeleting}
+                className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-mono font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              />
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  if (!isDeleting) {
+                    setIsDeleteModalOpen(false);
+                    setDeleteConfirmInput('');
+                    setDeleteError(null);
+                  }
+                }}
+                disabled={isDeleting}
+                className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition disabled:opacity-50 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteAccount}
+                disabled={isDeleting || deleteConfirmInput.trim() !== 'DELETE'}
+                className="px-5 py-2.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white rounded-xl text-xs font-bold transition shadow-xs flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              >
+                {isDeleting ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Deleting Account...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Permanently Delete My Account</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

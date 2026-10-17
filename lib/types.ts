@@ -261,6 +261,7 @@ export interface LeetCodeExtractedData {
     todaySubmissions: number;
     yesterdayDate: string;
     yesterdaySubmissions: number;
+    isAvailable?: boolean;
   };
 }
 
@@ -289,6 +290,7 @@ export interface CodeChefExtractedData {
     todaySubmissions: number;
     yesterdayDate: string;
     yesterdaySubmissions: number;
+    isAvailable?: boolean;
   };
 }
 

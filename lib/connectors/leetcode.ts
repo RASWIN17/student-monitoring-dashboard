@@ -218,16 +218,21 @@ export class LeetCodeConnector {
 
       // Submission calendar
       let submissionCalendar: Record<string, number> = {};
+      let calendarValid = false;
       if (matchedUser.submissionCalendar) {
         try {
-          submissionCalendar = typeof matchedUser.submissionCalendar === 'string'
+          const parsed = typeof matchedUser.submissionCalendar === 'string'
             ? JSON.parse(matchedUser.submissionCalendar)
             : matchedUser.submissionCalendar;
+          if (typeof parsed === 'object' && parsed !== null) {
+            submissionCalendar = parsed;
+            calendarValid = true;
+          }
         } catch {}
       }
 
       // Compute Asia/Kolkata daily submissions
-      const dailyKolkata = this.calculateAsiaKolkataSubmissions(submissionCalendar);
+      const dailyKolkata = this.calculateAsiaKolkataSubmissions(submissionCalendar, calendarValid);
 
       const availableFields = [
         'username',
@@ -304,7 +309,7 @@ export class LeetCodeConnector {
     }
   }
 
-  private static calculateAsiaKolkataSubmissions(calendar: Record<string, number>) {
+  private static calculateAsiaKolkataSubmissions(calendar: Record<string, number>, isAvailable = true) {
     const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
     const yesterdayDateObj = new Date();
     yesterdayDateObj.setDate(yesterdayDateObj.getDate() - 1);
@@ -316,9 +321,10 @@ export class LeetCodeConnector {
     for (const [timestampStr, count] of Object.entries(calendar)) {
       const ts = Number(timestampStr) * 1000;
       const dateKolkata = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date(ts));
-      if (dateKolkata === today) {
+      const dateUtc = new Date(ts).toISOString().slice(0, 10);
+      if (dateKolkata === today || dateUtc === today) {
         todaySubmissions += Number(count);
-      } else if (dateKolkata === yesterday) {
+      } else if (dateKolkata === yesterday || dateUtc === yesterday) {
         yesterdaySubmissions += Number(count);
       }
     }
@@ -328,6 +334,7 @@ export class LeetCodeConnector {
       todaySubmissions,
       yesterdayDate: yesterday,
       yesterdaySubmissions,
+      isAvailable,
     };
   }
 }
