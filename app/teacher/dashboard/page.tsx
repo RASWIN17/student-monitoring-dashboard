@@ -35,8 +35,6 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-import { usePageLoading } from '@/components/LoadingContext';
-
 export default function TeacherDashboardPage() {
   const router = useRouter();
   const { user, selectedClassroom, classrooms, loading: authLoading } = useAuth();
@@ -44,9 +42,6 @@ export default function TeacherDashboardPage() {
   const [stats, setStats] = useState<any>(() => dataCache.get(cacheKey) || null);
   const [loading, setLoading] = useState(() => !dataCache.get(cacheKey));
   const [isScanModalOpen, setIsScanModalOpen] = useState(false);
-
-  // Connect genuine initial data loading to GlobalLoader
-  usePageLoading(loading && !stats, 'teacher-dashboard-stats');
 
   // Security Guard: Prevent students from accessing the teacher dashboard
   useEffect(() => {
