@@ -240,19 +240,14 @@ export function ContestDetailView({ platform, contestId }: ContestDetailViewProp
     const maxTotalInRecords = Math.max(0, ...baseList.map((r) => r.contest_total_problems || 0));
     const maxSolvedInRecords = Math.max(0, ...baseList.map((r) => r.contest_problems_solved || 0));
 
-    let maxProblems = 6;
-    if (platform === 'leetcode') {
-      maxProblems = Math.max(10, maxTotalInRecords, maxSolvedInRecords);
-    } else {
-      maxProblems = Math.max(6, maxTotalInRecords, maxSolvedInRecords);
-    }
+    const maxProblems = Math.max(10, maxTotalInRecords, maxSolvedInRecords);
 
     const options: number[] = [];
     for (let i = 1; i <= maxProblems; i++) {
       options.push(i);
     }
     return options;
-  }, [baseList, platform]);
+  }, [baseList]);
 
   // Apply Problem-Solved Filter and search
   const filteredList = baseList.filter((item) => {
@@ -539,7 +534,7 @@ export function ContestDetailView({ platform, contestId }: ContestDetailViewProp
             >
               <span>
                 {solvedFilter === null
-                  ? 'Starting'
+                  ? 'Select'
                   : `${solvedFilter} ${solvedFilter === 1 ? 'Problem' : 'Problems'}`}
               </span>
               <ChevronDown
@@ -550,7 +545,7 @@ export function ContestDetailView({ platform, contestId }: ContestDetailViewProp
             </button>
 
             {dropdownOpen && (
-              <div className="absolute left-0 mt-1.5 w-44 bg-white rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.12)] border border-[#e1eaf5] py-1.5 z-50">
+              <div className="absolute left-0 mt-1.5 w-44 bg-white rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.12)] border border-[#e1eaf5] py-1.5 z-50 max-h-64 overflow-y-auto">
                 <button
                   type="button"
                   onClick={() => {
@@ -559,7 +554,7 @@ export function ContestDetailView({ platform, contestId }: ContestDetailViewProp
                   }}
                   className="w-full px-3.5 py-2 text-left text-xs font-bold text-[#0f1b35] hover:bg-[#f1f5f9] flex items-center justify-between transition min-h-[36px]"
                 >
-                  <span>Starting</span>
+                  <span>Select</span>
                   {solvedFilter === null && <Check className="w-3.5 h-3.5 text-[#1769ff]" />}
                 </button>
                 {problemOptions.map((num) => (
