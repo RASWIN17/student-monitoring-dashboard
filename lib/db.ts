@@ -982,7 +982,7 @@ export async function getContestAnalyticsForClassroom(contestId: string, classro
   // 3. Batch fetch latest snapshots
   const { data: snapshots } = await supabase
     .from('platform_profile_snapshots')
-    .select('*')
+    .select('id, platform_account_id, total_solved, easy_solved, medium_solved, hard_solved, accepted_submissions, acceptance_rate, contest_rating, highest_rating, global_rank, country_rank, observed_at')
     .in('platform_account_id', accountIds)
     .order('observed_at', { ascending: false });
 
@@ -1113,6 +1113,153 @@ export async function getContestAnalyticsForClassroom(contestId: string, classro
   };
 }
 
+export interface ContestAttendanceSummary {
+  totalLinked: number;
+  attendedCount: number;
+  notAttendedCount: number;
+  pendingCount: number;
+}
+
+export async function getBatchContestSummaryForClassroom(
+  contests: Contest[],
+  classroomId?: string | null
+): Promise<Record<string, ContestAttendanceSummary>> {
+  const result: Record<string, ContestAttendanceSummary> = {};
+  if (!contests || contests.length === 0) return result;
+
+  for (const c of contests) {
+    result[c.id] = {
+      totalLinked: 0,
+      attendedCount: 0,
+      notAttendedCount: 0,
+      pendingCount: 0,
+    };
+  }
+
+  const supabase = getSupabase();
+
+  // 1. Fetch students for classroom or all students if no classroomId
+  let students: UserProfile[] = [];
+  if (classroomId) {
+    students = await getEnrolledStudents(classroomId);
+  } else {
+    const { data: allStudents } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('role', 'student');
+    students = (allStudents || []) as UserProfile[];
+  }
+
+  if (students.length === 0) {
+    return result;
+  }
+
+  const studentIds = students.map((s) => s.id);
+
+  // 2. Fetch platform accounts for these students in a single query
+  const { data: accounts } = await supabase
+    .from('platform_accounts')
+    .select('id, student_id, platform')
+    .in('student_id', studentIds);
+
+  if (!accounts || accounts.length === 0) {
+    return result;
+  }
+
+  const accountIds = accounts.map((a) => a.id);
+  const leetcodeAccounts = accounts.filter((a) => a.platform === 'leetcode');
+  const codechefAccounts = accounts.filter((a) => a.platform === 'codechef');
+
+  // 3. Batch fetch contest records matching all these accountIds in a single query
+  const { data: records } = await supabase
+    .from('contest_records')
+    .select('platform_account_id, contest_name, platform_contest_id, participation_status')
+    .in('platform_account_id', accountIds);
+
+  const allRecords = (records || []) as ContestRecord[];
+
+  // 4. Calculate summary for each contest in memory
+  for (const contest of contests) {
+    const targetAccounts = contest.platform === 'leetcode'
+      ? leetcodeAccounts
+      : contest.platform === 'codechef'
+        ? codechefAccounts
+        : accounts.filter((a) => a.platform === contest.platform);
+
+    const totalLinked = targetAccounts.length;
+    if (totalLinked === 0) {
+      result[contest.id] = {
+        totalLinked: 0,
+        attendedCount: 0,
+        notAttendedCount: 0,
+        pendingCount: 0,
+      };
+      continue;
+    }
+
+    const contestTitleLower = (contest.title || '').toLowerCase();
+    const contestCodeLower = (contest.contest_code || '').toLowerCase();
+
+    // Index matching records for this contest by platform_account_id
+    const contestRecordByAccount: Record<string, ContestRecord> = {};
+    for (const r of allRecords) {
+      const matchName = r.contest_name && (
+        r.contest_name.toLowerCase() === contestTitleLower ||
+        r.contest_name.toLowerCase().includes(contestTitleLower) ||
+        contestTitleLower.includes(r.contest_name.toLowerCase())
+      );
+      const matchCode = r.platform_contest_id && (
+        r.platform_contest_id.toLowerCase() === contestCodeLower
+      );
+      if (matchName || matchCode) {
+        contestRecordByAccount[r.platform_account_id] = r;
+      }
+    }
+
+    let attendedCount = 0;
+    let notAttendedCount = 0;
+    let pendingCount = 0;
+
+    for (const acc of targetAccounts) {
+      const cRec = contestRecordByAccount[acc.id] || null;
+
+      let partStatus: 'attended' | 'not_attended' | 'pending_verification' = 'not_attended';
+      if (cRec && cRec.participation_status === 'attended') {
+        partStatus = 'attended';
+      } else if (cRec && cRec.participation_status === 'pending_verification') {
+        partStatus = 'pending_verification';
+      } else if (contest.status === 'upcoming' || contest.status === 'live') {
+        partStatus = 'pending_verification';
+      } else if (
+        contest.scan_status === 'retrying' ||
+        contest.scan_status === 'not_started' ||
+        contest.scan_status === 'scheduled'
+      ) {
+        partStatus = 'pending_verification';
+      } else {
+        partStatus = 'not_attended';
+      }
+
+      if (partStatus === 'attended') {
+        attendedCount++;
+      } else if (partStatus === 'pending_verification') {
+        pendingCount++;
+      } else {
+        notAttendedCount++;
+      }
+    }
+
+    result[contest.id] = {
+      totalLinked,
+      attendedCount,
+      notAttendedCount,
+      pendingCount,
+    };
+  }
+
+  return result;
+}
+
 
 // ----------------------------------------------------
 // SCAN JOBS
@@ -1228,6 +1375,32 @@ export async function createScanJobItem(data: {
   return created as ScanJobItem;
 }
 
+export async function createScanJobItems(items: Array<{
+  scan_job_id: string;
+  platform_account_id: string;
+  platform: 'leetcode' | 'codechef';
+}>): Promise<ScanJobItem[]> {
+  if (items.length === 0) return [];
+  const supabase = getSupabase();
+  const payloads = items.map((item) => ({
+    id: crypto.randomUUID(),
+    scan_job_id: item.scan_job_id,
+    platform_account_id: item.platform_account_id,
+    platform: item.platform,
+    status: 'queued',
+  }));
+
+  const { data: created, error } = await supabase
+    .from('scan_job_items')
+    .insert(payloads)
+    .select();
+
+  if (error || !created) {
+    throw new Error(`Failed to create scan job items: ${error?.message}`);
+  }
+  return created as ScanJobItem[];
+}
+
 export async function updateScanJobItem(id: string, updates: Partial<ScanJobItem>): Promise<void> {
   const supabase = getSupabase();
   await supabase
@@ -1304,7 +1477,7 @@ export async function getClassroomOverview(classroomId: string): Promise<Student
   if (accountIds.length > 0) {
     const { data: snapData } = await supabase
       .from('platform_profile_snapshots')
-      .select('*')
+      .select('id, platform_account_id, scan_job_id, total_solved, easy_solved, medium_solved, hard_solved, total_questions, total_submissions, accepted_submissions, acceptance_rate, global_rank, country_rank, contest_rating, highest_rating, highest_score, contests_attended, validation_status, observed_at')
       .in('platform_account_id', accountIds)
       .order('observed_at', { ascending: false });
 
@@ -1438,7 +1611,7 @@ export async function getClassroomKPIs(classroomId: string | null) {
   if (accountIds.length > 0) {
     const { data: snapData } = await supabase
       .from('platform_profile_snapshots')
-      .select('*')
+      .select('id, platform_account_id, total_solved, observed_at')
       .in('platform_account_id', accountIds)
       .order('observed_at', { ascending: false });
     snapshots = (snapData || []) as PlatformProfileSnapshot[];

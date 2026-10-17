@@ -26,7 +26,9 @@ export async function GET() {
     classrooms = await getClassroomsForStudent(user.id);
   }
 
-  return NextResponse.json({ classrooms });
+  const response = NextResponse.json({ classrooms });
+  response.headers.set('Cache-Control', 'private, s-maxage=30, stale-while-revalidate=120');
+  return response;
 }
 
 export async function POST(req: Request) {

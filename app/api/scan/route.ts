@@ -6,6 +6,7 @@ import {
   getPlatformAccountsForStudent,
   createScanJob,
   createScanJobItem,
+  createScanJobItems,
   getScanJobsForClassroom,
   logAuditAction,
   getClassroomsForStudent,
@@ -143,18 +144,27 @@ export async function POST(req: Request) {
       targetStudents = await getEnrolledStudents(classroomId);
     }
 
-    // Collect linked accounts to scan
+    // Collect linked accounts to scan in a single bulk query
     const accountsToScan: { accountId: string; platform: 'leetcode' | 'codechef' }[] = [];
+    const studentIds = targetStudents.map((s) => s.id);
 
-    for (const student of targetStudents) {
-      const accounts = await getPlatformAccountsForStudent(student.id);
-      for (const acc of accounts) {
-        if (platform === 'all' || platform === acc.platform) {
-          accountsToScan.push({
-            accountId: acc.id,
-            platform: acc.platform,
-          });
-        }
+    if (studentIds.length > 0) {
+      const supabase = createAdminClient();
+      let query = supabase
+        .from('platform_accounts')
+        .select('id, platform')
+        .in('student_id', studentIds);
+
+      if (platform !== 'all') {
+        query = query.eq('platform', platform);
+      }
+
+      const { data: accounts } = await query;
+      for (const acc of (accounts || [])) {
+        accountsToScan.push({
+          accountId: acc.id,
+          platform: acc.platform,
+        });
       }
     }
 
@@ -175,14 +185,14 @@ export async function POST(req: Request) {
       total_accounts: accountsToScan.length,
     });
 
-    // Create individual scan job items
-    for (const item of accountsToScan) {
-      await createScanJobItem({
+    // Create individual scan job items in a single bulk insert
+    await createScanJobItems(
+      accountsToScan.map((item) => ({
         scan_job_id: job.id,
         platform_account_id: item.accountId,
         platform: item.platform,
-      });
-    }
+      }))
+    );
 
     await logAuditAction({
       user_id: user.id,

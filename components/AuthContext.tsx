@@ -25,6 +25,8 @@ const AuthContext = createContext<AuthContextType>({
   logout: async () => {},
 });
 
+const SESSION_CACHE_KEY = 'codetrack_session_user';
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -34,8 +36,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refreshUser = async () => {
     try {
       const res = await fetch('/api/auth/me');
-      const data = await res.json();
-      setUser(data.user);
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data.user);
+        if (data.user) {
+          try {
+            sessionStorage.setItem(SESSION_CACHE_KEY, JSON.stringify(data.user));
+          } catch {}
+        } else {
+          try {
+            sessionStorage.removeItem(SESSION_CACHE_KEY);
+          } catch {}
+        }
+      } else {
+        setUser(null);
+        try {
+          sessionStorage.removeItem(SESSION_CACHE_KEY);
+        } catch {}
+      }
     } catch {
       setUser(null);
     }
@@ -55,8 +73,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    // 1. Optimistic hydration from session storage
+    try {
+      const cached = sessionStorage.getItem(SESSION_CACHE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && parsed.id) {
+          setUser(parsed);
+          setLoading(false);
+        }
+      }
+    } catch {}
+
+    // 2. Validate/refresh session in background
     (async () => {
-      setLoading(true);
       await refreshUser();
       setLoading(false);
     })();
@@ -69,6 +99,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   const logout = async () => {
+    try {
+      sessionStorage.removeItem(SESSION_CACHE_KEY);
+    } catch {}
     try {
       const { dataCache } = await import('@/components/DataCacheContext');
       dataCache.invalidate();

@@ -144,26 +144,28 @@ export function ClassroomStudentDetailsView({ platform, classroomId: propClassro
     if (!dataCache.get(cacheKey)) setLoading(true);
     setError(null);
     try {
-      // 1. Fetch classroom details
-      const cRes = await fetch(`/api/classrooms/${effectiveClassroomId}`);
+      // Parallel fetch: classroom details and student records
+      const [cRes, sRes] = await Promise.all([
+        fetch(`/api/classrooms/${effectiveClassroomId}`),
+        fetch(`/api/classrooms/${effectiveClassroomId}/students`),
+      ]);
+
       if (!cRes.ok) {
         if (cRes.status === 404) throw new Error('Classroom not found.');
         throw new Error('Failed to load classroom details.');
       }
-      const cData = await cRes.json();
+      if (!sRes.ok) {
+        throw new Error('Failed to load student records.');
+      }
+
+      const [cData, sData] = await Promise.all([cRes.json(), sRes.json()]);
       const loadedClassroom = cData.classroom;
+      const loadedStudents = sData.students || [];
+
       setClassroom(loadedClassroom);
       if (loadedClassroom && selectedClassroom?.id !== loadedClassroom.id) {
         setSelectedClassroom(loadedClassroom);
       }
-
-      // 2. Fetch classroom students overview
-      const sRes = await fetch(`/api/classrooms/${effectiveClassroomId}/students`);
-      if (!sRes.ok) {
-        throw new Error('Failed to load student records.');
-      }
-      const sData = await sRes.json();
-      const loadedStudents = sData.students || [];
       setStudents(loadedStudents);
       dataCache.set(cacheKey, { classroom: loadedClassroom, students: loadedStudents });
     } catch (err: any) {

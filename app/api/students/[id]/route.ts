@@ -21,12 +21,15 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     return NextResponse.json({ error: 'Access forbidden' }, { status: 403 });
   }
 
-  const student = await getUserById(id);
+  // Parallel fetch: student profile and enrolled classrooms
+  const [student, classrooms] = await Promise.all([
+    getUserById(id),
+    getClassroomsForStudent(id),
+  ]);
+
   if (!student) {
     return NextResponse.json({ error: 'Student not found' }, { status: 404 });
   }
-
-  const classrooms = await getClassroomsForStudent(id);
 
   // If user is a teacher, verify they teach at least one classroom this student belongs to
   if (user.role === 'teacher') {
@@ -39,63 +42,67 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     }
   }
 
-  // LeetCode data
-  const lcAccount = await getPlatformAccount(id, 'leetcode');
-  const lcSnapshot = lcAccount ? await getLatestSnapshotForAccount(lcAccount.id) : null;
-  const lcContests = lcAccount ? await getContestsForAccount(lcAccount.id, 20) : [];
+  // Parallel fetch: LeetCode and CodeChef platform accounts
+  const [lcAccount, ccAccount] = await Promise.all([
+    getPlatformAccount(id, 'leetcode'),
+    getPlatformAccount(id, 'codechef'),
+  ]);
 
-  // CodeChef data
-  const ccAccount = await getPlatformAccount(id, 'codechef');
-  const ccSnapshot = ccAccount ? await getLatestSnapshotForAccount(ccAccount.id) : null;
-  const ccContests = ccAccount ? await getContestsForAccount(ccAccount.id, 20) : [];
-
-  // Daily activity history for both
   const supabase = createAdminClient();
 
-  let lcDaily: any[] = [];
-  if (lcAccount) {
-    const { data } = await supabase
-      .from('daily_activity_snapshots')
-      .select('*')
-      .eq('platform_account_id', lcAccount.id)
-      .order('activity_date', { ascending: false })
-      .limit(30);
-    lcDaily = data || [];
-  }
+  // Parallel fetch: snapshots, contest records, daily activity, and historical metrics for both platforms
+  const [
+    lcSnapshot,
+    lcContests,
+    lcDailyRes,
+    lcHistoryRes,
+    ccSnapshot,
+    ccContests,
+    ccDailyRes,
+    ccHistoryRes,
+  ] = await Promise.all([
+    lcAccount ? getLatestSnapshotForAccount(lcAccount.id) : Promise.resolve(null),
+    lcAccount ? getContestsForAccount(lcAccount.id, 20) : Promise.resolve([]),
+    lcAccount
+      ? supabase
+          .from('daily_activity_snapshots')
+          .select('*')
+          .eq('platform_account_id', lcAccount.id)
+          .order('activity_date', { ascending: false })
+          .limit(30)
+      : Promise.resolve({ data: [] }),
+    lcAccount
+      ? supabase
+          .from('platform_profile_snapshots')
+          .select('total_solved, contest_rating, acceptance_rate, observed_at')
+          .eq('platform_account_id', lcAccount.id)
+          .order('observed_at', { ascending: true })
+          .limit(50)
+      : Promise.resolve({ data: [] }),
+    ccAccount ? getLatestSnapshotForAccount(ccAccount.id) : Promise.resolve(null),
+    ccAccount ? getContestsForAccount(ccAccount.id, 20) : Promise.resolve([]),
+    ccAccount
+      ? supabase
+          .from('daily_activity_snapshots')
+          .select('*')
+          .eq('platform_account_id', ccAccount.id)
+          .order('activity_date', { ascending: false })
+          .limit(30)
+      : Promise.resolve({ data: [] }),
+    ccAccount
+      ? supabase
+          .from('platform_profile_snapshots')
+          .select('total_solved, contest_rating, observed_at')
+          .eq('platform_account_id', ccAccount.id)
+          .order('observed_at', { ascending: true })
+          .limit(50)
+      : Promise.resolve({ data: [] }),
+  ]);
 
-  let ccDaily: any[] = [];
-  if (ccAccount) {
-    const { data } = await supabase
-      .from('daily_activity_snapshots')
-      .select('*')
-      .eq('platform_account_id', ccAccount.id)
-      .order('activity_date', { ascending: false })
-      .limit(30);
-    ccDaily = data || [];
-  }
-
-  // Historical snapshots (for metric changes over time)
-  let lcHistory: any[] = [];
-  if (lcAccount) {
-    const { data } = await supabase
-      .from('platform_profile_snapshots')
-      .select('total_solved, contest_rating, acceptance_rate, observed_at')
-      .eq('platform_account_id', lcAccount.id)
-      .order('observed_at', { ascending: true })
-      .limit(50);
-    lcHistory = data || [];
-  }
-
-  let ccHistory: any[] = [];
-  if (ccAccount) {
-    const { data } = await supabase
-      .from('platform_profile_snapshots')
-      .select('total_solved, contest_rating, observed_at')
-      .eq('platform_account_id', ccAccount.id)
-      .order('observed_at', { ascending: true })
-      .limit(50);
-    ccHistory = data || [];
-  }
+  const lcDaily = lcDailyRes.data || [];
+  const lcHistory = lcHistoryRes.data || [];
+  const ccDaily = ccDailyRes.data || [];
+  const ccHistory = ccHistoryRes.data || [];
 
   return NextResponse.json({
     student,

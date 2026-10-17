@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { ContestService } from '@/lib/connectors/contests';
-import { getContests, getContestAnalyticsForClassroom, getClassroomById, isStudentInClassroom } from '@/lib/db';
+import { getContests, getBatchContestSummaryForClassroom, getClassroomById, isStudentInClassroom } from '@/lib/db';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser();
@@ -56,27 +56,30 @@ export async function GET(req: Request) {
     // 2. Fetch up-to-date contests
     const contests = await getContests({ platform, status, limit: 100 });
 
-    // 3. If classroomId is provided (and authorized), enrich with attendance summary
+    // 3. If classroomId is provided (and authorized), enrich with attendance summary in a single batch
     const shouldEnrichAttendance = Boolean(classroomId || user.role === 'admin');
-    const enriched = await Promise.all(
-      contests.map(async (c) => {
-        if (!shouldEnrichAttendance) {
-          return c;
-        }
-        try {
-          const analytics = await getContestAnalyticsForClassroom(c.id, classroomId || null);
-          return {
-            ...c,
-            linked_accounts_count: analytics?.summary.totalLinked ?? 0,
-            attended_count: analytics?.summary.attendedCount ?? 0,
-            not_attended_count: analytics?.summary.notAttendedCount ?? 0,
-            pending_verification_count: analytics?.summary.pendingCount ?? 0,
-          };
-        } catch {
-          return c;
-        }
-      })
-    );
+    let summaryMap: Record<string, { totalLinked: number; attendedCount: number; notAttendedCount: number; pendingCount: number }> = {};
+    if (shouldEnrichAttendance && contests.length > 0) {
+      try {
+        summaryMap = await getBatchContestSummaryForClassroom(contests, classroomId || null);
+      } catch (err) {
+        console.warn('Batch contest summary error:', err);
+      }
+    }
+
+    const enriched = contests.map((c) => {
+      if (!shouldEnrichAttendance) {
+        return c;
+      }
+      const summary = summaryMap[c.id];
+      return {
+        ...c,
+        linked_accounts_count: summary?.totalLinked ?? 0,
+        attended_count: summary?.attendedCount ?? 0,
+        not_attended_count: summary?.notAttendedCount ?? 0,
+        pending_verification_count: summary?.pendingCount ?? 0,
+      };
+    });
 
     // 4. Ensure upcoming & live contests are ordered in ascending chronological order (soonest first)
     // while completed contests remain in descending order (most recently completed first)
@@ -105,7 +108,9 @@ export async function GET(req: Request) {
           ? upcomingAndLive
           : [...upcomingAndLive, ...completed];
 
-    return NextResponse.json({ contests: sortedContests });
+    const response = NextResponse.json({ contests: sortedContests });
+    response.headers.set('Cache-Control', 'private, s-maxage=30, stale-while-revalidate=120');
+    return response;
   } catch (err: any) {
     console.error('Error in /api/contests:', err);
     return NextResponse.json({ error: err?.message || 'Failed to fetch contests' }, { status: 500 });

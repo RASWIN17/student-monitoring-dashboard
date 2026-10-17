@@ -150,7 +150,7 @@ export async function GET(req: Request) {
   const accountIds = accounts.map((a) => a.id);
   const { data: snapshots } = await supabase
     .from('platform_profile_snapshots')
-    .select('*')
+    .select('id, platform_account_id, total_solved, global_rank, country_rank, contest_rating, highest_rating, highest_score, contests_attended, observed_at')
     .in('platform_account_id', accountIds)
     .order('observed_at', { ascending: false });
 
