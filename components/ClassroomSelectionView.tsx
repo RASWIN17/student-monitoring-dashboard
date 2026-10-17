@@ -75,25 +75,25 @@ export function ClassroomSelectionView({ platform }: Props) {
       </div>
 
       {/* Top Header Card */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-start gap-4">
+      <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-xs">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex items-start gap-3.5 sm:gap-4 min-w-0">
             <div
-              className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 border ${
+              className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0 border ${
                 platform === 'leetcode'
                   ? 'bg-amber-500/10 border-amber-500/20 text-amber-600'
                   : 'bg-orange-500/10 border-orange-500/20 text-orange-600'
               }`}
             >
               {platform === 'leetcode' ? (
-                <LeetCodeIcon className="w-8 h-8" />
+                <LeetCodeIcon className="w-7 h-7 sm:w-8 sm:h-8" />
               ) : (
-                <CodeChefIcon className="w-8 h-8" />
+                <CodeChefIcon className="w-7 h-7 sm:w-8 sm:h-8" />
               )}
             </div>
 
-            <div>
-              <div className="flex items-center gap-2 mb-1">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2 mb-1">
                 <span
                   className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wide ${
                     platform === 'leetcode'
@@ -107,20 +107,20 @@ export function ClassroomSelectionView({ platform }: Props) {
                 <span className="text-xs text-slate-400 font-medium">Step 2 of 3</span>
               </div>
 
-              <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
                 Select a Classroom
               </h1>
-              <p className="text-xs text-slate-500 mt-1 max-w-xl">
+              <p className="text-xs text-slate-500 mt-1 max-w-xl leading-relaxed">
                 Choose a classroom section below to view all enrolled students, their verified {platformDisplayName}{' '}
                 profile metrics, problem counts, contest ratings, and leaderboard rankings.
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 self-start md:self-center shrink-0">
+          <div className="flex flex-wrap items-center gap-2 self-start lg:self-center shrink-0">
             <Link
               href="/students"
-              className="px-3.5 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg shadow-2xs flex items-center gap-1.5 transition"
+              className="min-h-[44px] px-3.5 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg shadow-2xs flex items-center gap-1.5 transition cursor-pointer"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back to Platforms</span>
@@ -128,7 +128,7 @@ export function ClassroomSelectionView({ platform }: Props) {
 
             <Link
               href="/classrooms"
-              className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition"
+              className="min-h-[44px] px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>New Classroom</span>
@@ -201,7 +201,7 @@ export function ClassroomSelectionView({ platform }: Props) {
             <span className="text-xs text-slate-400">Click a classroom to view {platformDisplayName} details</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             {classrooms.map((c) => {
               const enrolled = c.enrolled_count ?? 0;
               const targetUrl = `/students/${platform}/${c.id}`;
@@ -210,7 +210,7 @@ export function ClassroomSelectionView({ platform }: Props) {
                 <Link
                   key={c.id}
                   href={targetUrl}
-                  className={`clickable-card group bg-white rounded-2xl border border-slate-200 p-6 flex flex-col justify-between hover:shadow-lg transition-all duration-300 relative overflow-hidden ${
+                  className={`clickable-card group bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 flex flex-col justify-between hover:shadow-lg transition-all duration-300 relative overflow-hidden ${
                     platform === 'leetcode'
                       ? 'hover:border-amber-400 hover:ring-2 hover:ring-amber-400/20'
                       : 'hover:border-orange-500 hover:ring-2 hover:ring-orange-500/20'

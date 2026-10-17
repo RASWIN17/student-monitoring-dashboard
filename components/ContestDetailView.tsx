@@ -418,25 +418,25 @@ export function ContestDetailView({ platform, contestId }: ContestDetailViewProp
       </div>
 
       {/* Four Primary Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Card 1: Linked Accounts */}
         <button
           type="button"
           onClick={() => setActiveCard('linked')}
-          className={`text-left p-5 rounded-2xl transition-all duration-150 ${
+          className={`text-left p-4 sm:p-5 rounded-2xl transition-all duration-150 min-h-[44px] ${
             activeCard === 'linked'
               ? 'border-2 border-[#1769ff] bg-[#fbfdff] shadow-[0_4px_16px_rgba(23,105,255,0.06)]'
               : 'border border-[#e1eaf5] bg-white hover:border-slate-300 hover:shadow-sm'
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-600">
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-600">
               1. LINKED ACCOUNTS
             </span>
             <Users className="w-4 h-4 text-[#1769ff]" />
           </div>
-          <div className="text-3xl font-black text-[#0f1b35] my-2">{summary.totalLinked}</div>
-          <div className="text-xs text-slate-400 font-medium">
+          <div className="text-2xl sm:text-3xl font-black text-[#0f1b35] my-1.5 sm:my-2">{summary.totalLinked}</div>
+          <div className="text-[11px] sm:text-xs text-slate-400 font-medium">
             {platform === 'codechef'
               ? 'Verified student accounts linked to CodeChef'
               : 'Verified student accounts linked to LeetCode'}
@@ -447,22 +447,22 @@ export function ContestDetailView({ platform, contestId }: ContestDetailViewProp
         <button
           type="button"
           onClick={() => setActiveCard('attended')}
-          className={`text-left p-5 rounded-2xl transition-all duration-150 ${
+          className={`text-left p-4 sm:p-5 rounded-2xl transition-all duration-150 min-h-[44px] ${
             activeCard === 'attended'
               ? 'border-2 border-[#16a34a] bg-[#fbfdfb] shadow-[0_4px_16px_rgba(22,163,74,0.06)]'
               : 'border border-[#e1eaf5] bg-white hover:border-slate-300 hover:shadow-sm'
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#16a34a]">
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#16a34a]">
               2. CONTEST ATTENDED
             </span>
             <CheckCircle2 className="w-4 h-4 text-[#16a34a]" />
           </div>
-          <div className="text-3xl font-black text-[#16a34a] my-2">
+          <div className="text-2xl sm:text-3xl font-black text-[#16a34a] my-1.5 sm:my-2">
             {isContestOngoingOrUpcoming ? '—' : summary.attendedCount}
           </div>
-          <div className="text-xs text-slate-400 font-medium">
+          <div className="text-[11px] sm:text-xs text-slate-400 font-medium">
             {isContestOngoingOrUpcoming
               ? 'Available after contest completes'
               : 'Verified participants with evidence'}
@@ -473,22 +473,22 @@ export function ContestDetailView({ platform, contestId }: ContestDetailViewProp
         <button
           type="button"
           onClick={() => setActiveCard('not_attended')}
-          className={`text-left p-5 rounded-2xl transition-all duration-150 ${
+          className={`text-left p-4 sm:p-5 rounded-2xl transition-all duration-150 min-h-[44px] ${
             activeCard === 'not_attended'
               ? 'border-2 border-[#dc2626] bg-[#fdfbfb] shadow-[0_4px_16px_rgba(220,38,38,0.06)]'
               : 'border border-[#e1eaf5] bg-white hover:border-slate-300 hover:shadow-sm'
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#dc2626]">
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#dc2626]">
               3. CONTEST NOT ATTENDED
             </span>
             <XCircle className="w-4 h-4 text-[#dc2626]" />
           </div>
-          <div className="text-3xl font-black text-[#dc2626] my-2">
+          <div className="text-2xl sm:text-3xl font-black text-[#dc2626] my-1.5 sm:my-2">
             {isContestOngoingOrUpcoming ? '—' : summary.notAttendedCount}
           </div>
-          <div className="text-xs text-slate-400 font-medium">
+          <div className="text-[11px] sm:text-xs text-slate-400 font-medium">
             {isContestOngoingOrUpcoming
               ? 'Available after contest completes'
               : `${summary.notAttendedCount} verified absent`}
@@ -499,33 +499,33 @@ export function ContestDetailView({ platform, contestId }: ContestDetailViewProp
         <button
           type="button"
           onClick={() => setActiveCard('pending')}
-          className={`text-left p-5 rounded-2xl transition-all duration-150 ${
+          className={`text-left p-4 sm:p-5 rounded-2xl transition-all duration-150 min-h-[44px] ${
             activeCard === 'pending'
               ? 'border-2 border-[#d97706] bg-[#fffdfb] shadow-[0_4px_16px_rgba(217,119,6,0.06)]'
               : 'border border-[#e1eaf5] bg-white hover:border-slate-300 hover:shadow-sm'
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#d97706]">
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#d97706]">
               4. PENDING VERIFICATION
             </span>
             <Clock className="w-4 h-4 text-[#d97706]" />
           </div>
-          <div className="text-3xl font-black text-[#0f1b35] my-2">
+          <div className="text-2xl sm:text-3xl font-black text-[#0f1b35] my-1.5 sm:my-2">
             {summary.pendingCount}
           </div>
-          <div className="text-xs text-slate-400 font-medium">
+          <div className="text-[11px] sm:text-xs text-slate-400 font-medium">
             {summary.pendingCount === 1 ? '1 student awaiting verification' : `${summary.pendingCount} students awaiting verification`}
           </div>
         </button>
       </div>
 
       {/* Filter and Search Controls */}
-      <div className="bg-white rounded-2xl border border-[#e1eaf5] p-4 shadow-[0_2px_10px_rgba(30,64,175,0.03)] flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-3 w-full sm:w-auto">
+      <div className="bg-white rounded-2xl border border-[#e1eaf5] p-3.5 sm:p-4 shadow-[0_2px_10px_rgba(30,64,175,0.03)] flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 sm:gap-4">
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
           <div className="flex items-center gap-2 shrink-0">
             <Filter className="w-4 h-4 text-[#1769ff]" />
-            <span className="text-xs font-extrabold text-[#0f1b35] uppercase tracking-wider">
+            <span className="text-[11px] sm:text-xs font-extrabold text-[#0f1b35] uppercase tracking-wider">
               CONTEST PROBLEMS SOLVED
             </span>
           </div>
@@ -535,7 +535,7 @@ export function ContestDetailView({ platform, contestId }: ContestDetailViewProp
             <button
               type="button"
               onClick={() => setDropdownOpen((prev) => !prev)}
-              className="border border-[#1769ff] bg-white text-[#0f1b35] text-xs font-bold rounded-xl px-3.5 py-2 flex items-center justify-between gap-4 min-w-[130px] shadow-[0_1px_3px_rgba(23,105,255,0.08)] hover:bg-blue-50/20 transition"
+              className="border border-[#1769ff] bg-white text-[#0f1b35] text-xs font-bold rounded-xl px-3.5 py-2 flex items-center justify-between gap-4 min-w-[130px] min-h-[40px] shadow-[0_1px_3px_rgba(23,105,255,0.08)] hover:bg-blue-50/20 transition"
             >
               <span>
                 {solvedFilter === null
@@ -557,7 +557,7 @@ export function ContestDetailView({ platform, contestId }: ContestDetailViewProp
                     setSolvedFilter(null);
                     setDropdownOpen(false);
                   }}
-                  className="w-full px-3.5 py-2 text-left text-xs font-bold text-[#0f1b35] hover:bg-[#f1f5f9] flex items-center justify-between transition"
+                  className="w-full px-3.5 py-2 text-left text-xs font-bold text-[#0f1b35] hover:bg-[#f1f5f9] flex items-center justify-between transition min-h-[36px]"
                 >
                   <span>Starting</span>
                   {solvedFilter === null && <Check className="w-3.5 h-3.5 text-[#1769ff]" />}
@@ -570,7 +570,7 @@ export function ContestDetailView({ platform, contestId }: ContestDetailViewProp
                       setSolvedFilter(num);
                       setDropdownOpen(false);
                     }}
-                    className="w-full px-3.5 py-2 text-left text-xs font-semibold text-[#334155] hover:bg-[#f1f5f9] flex items-center justify-between transition"
+                    className="w-full px-3.5 py-2 text-left text-xs font-semibold text-[#334155] hover:bg-[#f1f5f9] flex items-center justify-between transition min-h-[36px]"
                   >
                     <span>{num} {num === 1 ? 'Problem' : 'Problems'}</span>
                     {solvedFilter === num && <Check className="w-3.5 h-3.5 text-[#1769ff]" />}
@@ -582,20 +582,20 @@ export function ContestDetailView({ platform, contestId }: ContestDetailViewProp
         </div>
 
         {/* Search Input */}
-        <div className="relative w-full sm:w-72">
+        <div className="relative w-full md:w-72">
           <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             placeholder="Search student or handle..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3.5 py-2 bg-white border border-[#e1eaf5] rounded-xl text-xs placeholder-slate-400 text-[#0f1b35] focus:outline-none focus:border-[#1769ff] transition shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
+            className="w-full pl-9 pr-3.5 py-2 min-h-[40px] bg-white border border-[#e1eaf5] rounded-xl text-xs placeholder-slate-400 text-[#0f1b35] focus:outline-none focus:border-[#1769ff] transition shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs p-1"
             >
               ×
             </button>
@@ -603,7 +603,7 @@ export function ContestDetailView({ platform, contestId }: ContestDetailViewProp
         </div>
       </div>
 
-      {/* Main Student Data Table */}
+      {/* Main Student Data Section (Dual Responsive: Desktop Table + Mobile Cards) */}
       <div className="bg-white rounded-2xl border border-[#e1eaf5] shadow-[0_2px_12px_rgba(30,64,175,0.03)] overflow-hidden">
         {loading ? (
           <div className="py-20 text-center text-slate-400">
@@ -633,103 +633,195 @@ export function ContestDetailView({ platform, contestId }: ContestDetailViewProp
               <button
                 type="button"
                 onClick={() => setSolvedFilter(null)}
-                className="mt-3 px-3 py-1.5 bg-blue-50 text-[#1769ff] text-xs font-semibold rounded-lg hover:bg-blue-100 transition"
+                className="mt-3 px-3 py-1.5 bg-blue-50 text-[#1769ff] text-xs font-semibold rounded-lg hover:bg-blue-100 transition min-h-[36px]"
               >
                 Reset Solved Filter
               </button>
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="bg-[#fbfcfd] border-b border-[#e1eaf5] text-black font-extrabold uppercase tracking-wider text-[11px]">
-                  <th className="py-4 px-6">
-                    {platform === 'codechef' ? 'NAME' : 'STUDENT NAME'}
-                  </th>
-                  <th className="py-4 px-6">REGISTER NUMBER</th>
-                  <th className="py-4 px-6">
-                    {platform === 'codechef' ? 'CODECHEF USERNAME' : 'LEETCODE USERNAME'}
-                  </th>
-                  <th className="py-4 px-6 text-center">
-                    {platform === 'codechef' ? 'PARTICIPATION STATUS' : 'CONTEST STATUS'}
-                  </th>
-                  <th className="py-4 px-6 text-center bg-[#fff8f5] text-black font-black border-l border-[#ffedd5]/60 w-[220px]">
-                    CONTEST PROBLEMS SOLVED
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#f1f5f9] text-[#334155]">
-                {filteredList.map((st, idx) => (
-                  <tr key={idx} className="hover:bg-[#f8fafc]/80 transition-colors">
-                    {/* 1. Student Name */}
-                    <td className="py-4 px-6 font-bold text-[#0f1b35] whitespace-nowrap">
+          <>
+            {/* 1. Desktop Table View (Hidden on mobile < md) */}
+            <div className="hidden md:block overflow-x-auto responsive-table-wrapper">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-[#fbfcfd] border-b border-[#e1eaf5] text-black font-extrabold uppercase tracking-wider text-[11px]">
+                    <th className="py-4 px-6">
+                      {platform === 'codechef' ? 'NAME' : 'STUDENT NAME'}
+                    </th>
+                    <th className="py-4 px-6">REGISTER NUMBER</th>
+                    <th className="py-4 px-6">
+                      {platform === 'codechef' ? 'CODECHEF USERNAME' : 'LEETCODE USERNAME'}
+                    </th>
+                    <th className="py-4 px-6 text-center">
+                      {platform === 'codechef' ? 'PARTICIPATION STATUS' : 'CONTEST STATUS'}
+                    </th>
+                    <th className="py-4 px-6 text-center bg-[#fff8f5] text-black font-black border-l border-[#ffedd5]/60 w-[220px]">
+                      CONTEST PROBLEMS SOLVED
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#f1f5f9] text-[#334155]">
+                  {filteredList.map((st, idx) => (
+                    <tr key={idx} className="hover:bg-[#f8fafc]/80 transition-colors">
+                      {/* 1. Student Name */}
+                      <td className="py-4 px-6 font-bold text-[#0f1b35] whitespace-nowrap">
+                        <Link
+                          href={`/students/${st.student_id}?platform=${platform}`}
+                          className="hover:text-[#1769ff] hover:underline transition"
+                        >
+                          {st.student_name}
+                        </Link>
+                      </td>
+
+                      {/* 2. Register Number */}
+                      <td className="py-4 px-6 font-mono text-[#334155] font-semibold whitespace-nowrap">
+                        {st.register_number ? st.register_number : <span className="text-slate-400 font-mono">—</span>}
+                      </td>
+
+                      {/* 3. Platform Username */}
+                      <td className="py-4 px-6 font-mono text-[#0f1b35] font-medium whitespace-nowrap">
+                        <div className="flex items-center gap-1.5">
+                          <span>{st.username}</span>
+                          {st.public_profile_url && (
+                            <a
+                              href={st.public_profile_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-slate-400 hover:text-[#1769ff] transition"
+                              title={`Open ${platform === 'codechef' ? 'CodeChef' : 'LeetCode'} Profile`}
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </a>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* 4. Contest / Participation Status */}
+                      <td className="py-4 px-6 text-center whitespace-nowrap">
+                        {st.participation_status === 'attended' ? (
+                          <span className="inline-flex items-center gap-1.5 text-[#059669] bg-[#ecfdf5] border border-emerald-200/80 px-3 py-1 rounded-full text-xs font-bold">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-[#059669]" />
+                            <span>Attended</span>
+                          </span>
+                        ) : st.participation_status === 'pending_verification' ? (
+                          <span className="inline-flex items-center gap-1.5 text-[#1769ff] bg-[#eef4ff] border border-blue-200/80 px-3 py-1 rounded-full text-xs font-bold">
+                            <Clock className="w-3.5 h-3.5 text-[#1769ff]" />
+                            <span>Pending Verification</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 text-[#64748b] bg-[#f8fafc] border border-slate-200 px-3 py-1 rounded-full text-xs font-bold">
+                            <XCircle className="w-3.5 h-3.5 text-slate-400" />
+                            <span>Absent</span>
+                          </span>
+                        )}
+                      </td>
+
+                      {/* 5. Contest Problems Solved */}
+                      <td className="py-4 px-6 text-center bg-[#fff8f5]/40 border-l border-[#ffedd5]/40 whitespace-nowrap">
+                        {isContestOngoingOrUpcoming || st.participation_status !== 'attended' || st.contest_problems_solved === null ? (
+                          <span className="text-[#ea580c] font-black text-sm">—</span>
+                        ) : (
+                          <span className="font-mono font-black text-sm text-[#0f1b35]">
+                            {st.contest_problems_solved}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* 2. Mobile Cards View (Visible on < md) */}
+            <div className="md:hidden divide-y divide-[#f1f5f9] p-3 sm:p-4 space-y-3 sm:space-y-4">
+              {filteredList.map((st, idx) => (
+                <div
+                  key={idx}
+                  className="bg-[#fafcff] rounded-xl border border-[#e1eaf5] p-3.5 sm:p-4 space-y-3 shadow-[0_1px_4px_rgba(0,0,0,0.02)]"
+                >
+                  {/* Top: Name & Status Badge */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
                       <Link
                         href={`/students/${st.student_id}?platform=${platform}`}
-                        className="hover:text-[#1769ff] hover:underline transition"
+                        className="text-sm font-bold text-[#0f1b35] hover:text-[#1769ff] transition block truncate"
                       >
                         {st.student_name}
                       </Link>
-                    </td>
+                      <div className="text-[11px] font-mono font-semibold text-slate-500 mt-0.5">
+                        {st.register_number ? `Reg: ${st.register_number}` : 'Reg: —'}
+                      </div>
+                    </div>
+                    {/* Status Badge */}
+                    <div className="shrink-0">
+                      {st.participation_status === 'attended' ? (
+                        <span className="inline-flex items-center gap-1 text-[#059669] bg-[#ecfdf5] border border-emerald-200 px-2.5 py-1 rounded-full text-[11px] font-bold">
+                          <CheckCircle2 className="w-3 h-3 text-[#059669]" />
+                          <span>Attended</span>
+                        </span>
+                      ) : st.participation_status === 'pending_verification' ? (
+                        <span className="inline-flex items-center gap-1 text-[#1769ff] bg-[#eef4ff] border border-blue-200 px-2.5 py-1 rounded-full text-[11px] font-bold">
+                          <Clock className="w-3 h-3 text-[#1769ff]" />
+                          <span>Pending</span>
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[#64748b] bg-[#f8fafc] border border-slate-200 px-2.5 py-1 rounded-full text-[11px] font-bold">
+                          <XCircle className="w-3 h-3 text-slate-400" />
+                          <span>Absent</span>
+                        </span>
+                      )}
+                    </div>
+                  </div>
 
-                    {/* 2. Register Number */}
-                    <td className="py-4 px-6 font-mono text-[#334155] font-semibold whitespace-nowrap">
-                      {st.register_number ? st.register_number : <span className="text-slate-400 font-mono">—</span>}
-                    </td>
-
-                    {/* 3. Platform Username */}
-                    <td className="py-4 px-6 font-mono text-[#0f1b35] font-medium whitespace-nowrap">
-                      <div className="flex items-center gap-1.5">
-                        <span>{st.username}</span>
+                  {/* Middle Info Grid */}
+                  <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-[#f1f5f9]">
+                    <div className="min-w-0">
+                      <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                        {platform === 'codechef' ? 'CodeChef User' : 'LeetCode User'}
+                      </div>
+                      <div className="flex items-center gap-1 font-mono font-medium text-[#0f1b35] mt-0.5 truncate">
+                        <span className="truncate">{st.username}</span>
                         {st.public_profile_url && (
                           <a
                             href={st.public_profile_url}
                             target="_blank"
                             rel="noreferrer"
-                            className="text-slate-400 hover:text-[#1769ff] transition"
-                            title={`Open ${platform === 'codechef' ? 'CodeChef' : 'LeetCode'} Profile`}
+                            className="text-slate-400 hover:text-[#1769ff] shrink-0"
+                            title="Profile"
                           >
-                            <ExternalLink className="w-3.5 h-3.5" />
+                            <ExternalLink className="w-3 h-3" />
                           </a>
                         )}
                       </div>
-                    </td>
+                    </div>
 
-                    {/* 4. Contest / Participation Status */}
-                    <td className="py-4 px-6 text-center whitespace-nowrap">
-                      {st.participation_status === 'attended' ? (
-                        <span className="inline-flex items-center gap-1.5 text-[#059669] bg-[#ecfdf5] border border-emerald-200/80 px-3 py-1 rounded-full text-xs font-bold">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-[#059669]" />
-                          <span>Attended</span>
-                        </span>
-                      ) : st.participation_status === 'pending_verification' ? (
-                        <span className="inline-flex items-center gap-1.5 text-[#1769ff] bg-[#eef4ff] border border-blue-200/80 px-3 py-1 rounded-full text-xs font-bold">
-                          <Clock className="w-3.5 h-3.5 text-[#1769ff]" />
-                          <span>Pending Verification</span>
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5 text-[#64748b] bg-[#f8fafc] border border-slate-200 px-3 py-1 rounded-full text-xs font-bold">
-                          <XCircle className="w-3.5 h-3.5 text-slate-400" />
-                          <span>Absent</span>
-                        </span>
-                      )}
-                    </td>
+                    <div className="text-right">
+                      <div className="text-[10px] uppercase font-bold text-[#ea580c] tracking-wider">
+                        Problems Solved
+                      </div>
+                      <div className="font-mono font-black text-sm text-[#0f1b35] mt-0.5">
+                        {isContestOngoingOrUpcoming || st.participation_status !== 'attended' || st.contest_problems_solved === null
+                          ? '—'
+                          : st.contest_problems_solved}
+                      </div>
+                    </div>
+                  </div>
 
-                    {/* 5. Contest Problems Solved */}
-                    <td className="py-4 px-6 text-center bg-[#fff8f5]/40 border-l border-[#ffedd5]/40 whitespace-nowrap">
-                      {isContestOngoingOrUpcoming || st.participation_status !== 'attended' || st.contest_problems_solved === null ? (
-                        <span className="text-[#ea580c] font-black text-sm">—</span>
-                      ) : (
-                        <span className="font-mono font-black text-sm text-[#0f1b35]">
-                          {st.contest_problems_solved}
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                  {/* Action Button */}
+                  <div className="pt-2 border-t border-[#f1f5f9]">
+                    <Link
+                      href={`/students/${st.student_id}?platform=${platform}`}
+                      className="w-full min-h-[38px] px-3 py-1.5 bg-white hover:bg-blue-50/50 border border-[#e1eaf5] text-[#1769ff] rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition active:scale-[0.99]"
+                    >
+                      <span>View Student Details</span>
+                      <ArrowLeft className="w-3 h-3 rotate-180" />
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
 

@@ -198,28 +198,28 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
 
         {/* Large Classroom Summary Card */}
         {classroom && (
-          <div className="bg-white rounded-2xl border border-[#e1eaf5] p-6 lg:p-7 shadow-[0_8px_30px_rgba(30,64,175,0.06)] flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+          <div className="bg-white rounded-2xl border border-[#e1eaf5] p-4 sm:p-6 lg:p-7 shadow-[0_8px_30px_rgba(30,64,175,0.06)] flex flex-col xl:flex-row xl:items-center justify-between gap-5 sm:gap-6">
             {/* Left & Center Information */}
-            <div className="flex items-center gap-5">
-              <div className="w-[76px] h-[76px] rounded-2xl bg-[#eef4ff] text-[#1769ff] flex items-center justify-center shrink-0 shadow-2xs">
-                <GraduationCap className="w-9 h-9 text-[#1769ff]" />
+            <div className="flex items-start sm:items-center gap-3.5 sm:gap-5">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 lg:w-[76px] lg:h-[76px] rounded-2xl bg-[#eef4ff] text-[#1769ff] flex items-center justify-center shrink-0 shadow-2xs">
+                <GraduationCap className="w-6 h-6 sm:w-8 sm:h-8 lg:w-9 lg:h-9 text-[#1769ff]" />
               </div>
-              <div>
-                <div className="flex items-center gap-2.5 flex-wrap">
-                  <span className="text-[11px] font-bold uppercase tracking-wider px-3 py-0.5 rounded-full bg-[#eef4ff] text-[#1769ff] border border-blue-200/50">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
+                  <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-2.5 sm:px-3 py-0.5 rounded-full bg-[#eef4ff] text-[#1769ff] border border-blue-200/50">
                     SECTION {classroom.section}
                   </span>
-                  <span className="text-xs font-semibold text-[#667a9e]">
+                  <span className="text-[11px] sm:text-xs font-semibold text-[#667a9e]">
                     {classroom.academic_year}
                   </span>
                   {!isTeacher && (
-                    <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
                       <Eye className="w-3 h-3 text-emerald-600" />
                       <span>View-Only</span>
                     </span>
                   )}
                 </div>
-                <h1 className="text-2xl lg:text-3xl font-extrabold text-[#0f1b35] tracking-tight mt-1.5 mb-1">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-[#0f1b35] tracking-tight mt-1.5 mb-1 break-words">
                   {classroom.name}
                 </h1>
                 <p className="text-xs text-[#667a9e] font-normal">
@@ -229,35 +229,38 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
             </div>
 
             {/* Right Mini-Cards: Total Students & Join Code */}
-            <div className="flex flex-wrap items-center gap-4">
+            <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 sm:gap-4 w-full xl:w-auto">
               {/* Elevated Mini-Card 1: Total Students */}
-              <div className="bg-white border border-[#e8f0fe] rounded-2xl p-4 px-5 shadow-[0_4px_16px_rgba(30,64,175,0.04)] flex items-center gap-4 min-w-[170px]">
-                <div className="w-11 h-11 rounded-full bg-[#eef4ff] text-[#1769ff] flex items-center justify-center shrink-0">
+              <div className="bg-white border border-[#e8f0fe] rounded-2xl p-3.5 sm:p-4 sm:px-5 shadow-[0_4px_16px_rgba(30,64,175,0.04)] flex items-center gap-3.5 sm:gap-4 min-w-0">
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#eef4ff] text-[#1769ff] flex items-center justify-center shrink-0">
                   <Users className="w-5 h-5 text-[#1769ff]" />
                 </div>
                 <div>
-                  <div className="text-xs text-[#667a9e] font-medium leading-none">Total Students</div>
-                  <div className="text-2xl font-bold text-[#0f1b35] leading-tight mt-1">
+                  <div className="text-[11px] sm:text-xs text-[#667a9e] font-medium leading-none">Total Students</div>
+                  <div className="text-xl sm:text-2xl font-bold text-[#0f1b35] leading-tight mt-1">
                     {enrolledStudentCount}
                   </div>
                 </div>
               </div>
 
               {/* Elevated Mini-Card 2: Join Code */}
-              <div className="bg-white border border-[#e8f0fe] rounded-2xl p-4 px-5 shadow-[0_4px_16px_rgba(30,64,175,0.04)] flex items-center gap-4 min-w-[195px]">
-                <div className="w-11 h-11 rounded-full bg-[#eef4ff] text-[#1769ff] flex items-center justify-center shrink-0">
-                  <Code2 className="w-5 h-5 text-[#1769ff]" />
-                </div>
-                <div>
-                  <div className="text-[11px] text-[#667a9e] font-medium leading-none">Join Code</div>
-                  <div className="font-mono text-sm font-extrabold text-[#0f1b35] tracking-wider mt-1">
-                    {classroom.join_code}
+              <div className="bg-white border border-[#e8f0fe] rounded-2xl p-3.5 sm:p-4 sm:px-5 shadow-[0_4px_16px_rgba(30,64,175,0.04)] flex items-center justify-between gap-3 min-w-0">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#eef4ff] text-[#1769ff] flex items-center justify-center shrink-0">
+                    <Code2 className="w-5 h-5 text-[#1769ff]" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-[10px] sm:text-[11px] text-[#667a9e] font-medium leading-none">Join Code</div>
+                    <div className="font-mono text-xs sm:text-sm font-extrabold text-[#0f1b35] tracking-wider mt-1 truncate">
+                      {classroom.join_code}
+                    </div>
                   </div>
                 </div>
                 <button
                   onClick={() => copyJoinCode(classroom.join_code)}
-                  className="p-1.5 text-[#8297b8] hover:text-[#1769ff] hover:bg-[#eef4ff] rounded-lg transition-colors cursor-pointer ml-1"
+                  className="p-2 min-h-[36px] min-w-[36px] text-[#8297b8] hover:text-[#1769ff] hover:bg-[#eef4ff] rounded-lg transition-colors cursor-pointer shrink-0"
                   title="Copy Join Code"
+                  aria-label="Copy Join Code"
                 >
                   {copiedCode ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
                 </button>
@@ -301,12 +304,12 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
       {/* Enrolled Students Card */}
       <div className="bg-white rounded-2xl border border-[#e1eaf5] shadow-[0_8px_30px_rgba(30,64,175,0.06)] overflow-hidden">
         {/* Section Header */}
-        <div className="p-6 pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+        <div className="p-4 sm:p-6 pb-4 sm:pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 sm:gap-4">
+          <div className="flex items-center gap-2.5 sm:gap-3">
             <div className="text-[#1769ff]">
               <Users className="w-5 h-5" />
             </div>
-            <h2 className="text-base font-bold text-[#0f1b35]">
+            <h2 className="text-sm sm:text-base font-bold text-[#0f1b35]">
               Enrolled Students
             </h2>
             <span className="px-2.5 py-0.5 rounded-full bg-[#eef4ff] text-[#1769ff] text-xs font-semibold">
@@ -322,7 +325,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
               placeholder="Search by name, reg no, email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-white border border-[#dce6f5] rounded-xl text-xs text-[#0f1b35] placeholder-[#94a3b8] shadow-[0_2px_8px_rgba(30,64,175,0.04)] focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#1769ff] transition"
+              className="w-full pl-10 pr-4 py-2 min-h-[40px] bg-white border border-[#dce6f5] rounded-xl text-xs text-[#0f1b35] placeholder-[#94a3b8] shadow-[0_2px_8px_rgba(30,64,175,0.04)] focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#1769ff] transition"
             />
           </div>
         </div>
@@ -341,7 +344,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
             <p className="text-[11px] text-red-600 mt-1">Please try fetching the roster again.</p>
             <button
               onClick={fetchStudentsData}
-              className="mt-3 px-4 py-2 bg-red-600 text-white rounded-xl text-xs font-semibold hover:bg-red-700 transition cursor-pointer"
+              className="mt-3 px-4 py-2 bg-red-600 text-white rounded-xl text-xs font-semibold hover:bg-red-700 transition cursor-pointer min-h-[40px]"
             >
               Retry
             </button>
@@ -370,103 +373,186 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
             <p>No students matching &quot;{searchQuery}&quot;.</p>
             <button
               onClick={() => setSearchQuery('')}
-              className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition cursor-pointer"
+              className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition cursor-pointer min-h-[36px]"
             >
               Clear Search
             </button>
           </div>
         ) : (
-          /* Student Details Table */
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="bg-[#f8faff] border-y border-[#edf2f9] text-black font-bold uppercase text-[11px] tracking-wider">
-                  <th className="py-3.5 px-6">STUDENT NAME</th>
-                  <th className="py-3.5 px-6">REGISTER NUMBER</th>
-                  <th className="py-3.5 px-6">SECTION</th>
-                  <th className="py-3.5 px-6">GMAIL ID</th>
-                  {isTeacher && <th className="py-3.5 px-6 text-right">ACTION</th>}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#f1f5f9]">
-                {filteredStudents.map((row) => {
-                  const s = row.student;
-                  const studentSection = s.section || classroom?.section || '—';
-                  const regNo = s.register_number || 'N/A';
+          <>
+            {/* 1. Desktop Student Details Table (Hidden on mobile < md) */}
+            <div className="hidden md:block overflow-x-auto responsive-table-wrapper">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-[#f8faff] border-y border-[#edf2f9] text-black font-bold uppercase text-[11px] tracking-wider">
+                    <th className="py-3.5 px-6">STUDENT NAME</th>
+                    <th className="py-3.5 px-6">REGISTER NUMBER</th>
+                    <th className="py-3.5 px-6">SECTION</th>
+                    <th className="py-3.5 px-6">GMAIL ID</th>
+                    {isTeacher && <th className="py-3.5 px-6 text-right">ACTION</th>}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#f1f5f9]">
+                  {filteredStudents.map((row) => {
+                    const s = row.student;
+                    const studentSection = s.section || classroom?.section || '—';
+                    const regNo = s.register_number || 'N/A';
 
-                  return (
-                    <tr
-                      key={s.id}
-                      className="hover:bg-[#fbfdff] transition-colors group"
-                    >
-                      {/* Column 1: Student Name */}
-                      <td className="py-4 px-6">
-                        <div className="flex items-center gap-3.5">
-                          <div className="w-10 h-10 rounded-full bg-[#eef4ff] text-[#1769ff] font-bold flex items-center justify-center shrink-0 text-sm shadow-2xs">
-                            {s.display_name?.charAt(0)?.toUpperCase() || 'S'}
+                    return (
+                      <tr
+                        key={s.id}
+                        className="hover:bg-[#fbfdff] transition-colors group"
+                      >
+                        {/* Column 1: Student Name */}
+                        <td className="py-4 px-6">
+                          <div className="flex items-center gap-3.5">
+                            <div className="w-10 h-10 rounded-full bg-[#eef4ff] text-[#1769ff] font-bold flex items-center justify-center shrink-0 text-sm shadow-2xs">
+                              {s.display_name?.charAt(0)?.toUpperCase() || 'S'}
+                            </div>
+                            <div>
+                              <div className="font-bold text-sm text-[#0f1b35]">{s.display_name}</div>
+                              {s.class_name && (
+                                <div className="text-xs text-[#8c9eb9] mt-0.5">
+                                  Class: {s.class_name}
+                                </div>
+                              )}
+                            </div>
                           </div>
-                          <div>
-                            <div className="font-bold text-sm text-[#0f1b35]">{s.display_name}</div>
-                            {s.class_name && (
-                              <div className="text-xs text-[#8c9eb9] mt-0.5">
-                                Class: {s.class_name}
-                              </div>
-                            )}
-                          </div>
+                        </td>
+
+                        {/* Column 2: Register Number */}
+                        <td className="py-4 px-6 font-bold text-sm text-[#0f1b35]">
+                          {regNo}
+                        </td>
+
+                        {/* Column 3: Section */}
+                        <td className="py-4 px-6">
+                          <span className="px-3 py-1 bg-[#eef4ff] text-[#1769ff] font-bold rounded-md text-xs uppercase inline-block">
+                            {studentSection}
+                          </span>
+                        </td>
+
+                        {/* Column 4: Gmail ID */}
+                        <td className="py-4 px-6 text-[#4b5563] text-xs">
+                          <a
+                            href={`mailto:${s.email}`}
+                            className="hover:text-[#1769ff] hover:underline inline-flex items-center gap-2"
+                          >
+                            <Mail className="w-4 h-4 text-slate-400 shrink-0" />
+                            <span>{s.email}</span>
+                          </a>
+                        </td>
+
+                        {/* Column 5: Action (Teachers Only) */}
+                        {isTeacher && (
+                          <td className="py-4 px-6 text-right">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setDeleteError(null);
+                                setStudentToDelete({
+                                  id: s.id,
+                                  name: s.display_name,
+                                  registerNumber: regNo,
+                                  email: s.email,
+                                });
+                              }}
+                              className="px-3.5 py-2 bg-[#feecee] hover:bg-[#fedddf] text-[#ef4444] rounded-xl text-xs font-semibold inline-flex items-center gap-2 transition cursor-pointer min-h-[38px]"
+                              title="Delete Student from Classroom"
+                            >
+                              <Trash2 className="w-3.5 h-3.5 text-[#ef4444]" />
+                              <span>Delete Student</span>
+                            </button>
+                          </td>
+                        )}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* 2. Mobile Student Cards (Visible on < md) */}
+            <div className="md:hidden divide-y divide-[#f1f5f9] p-3 sm:p-4 space-y-3">
+              {filteredStudents.map((row) => {
+                const s = row.student;
+                const studentSection = s.section || classroom?.section || '—';
+                const regNo = s.register_number || 'N/A';
+
+                return (
+                  <div
+                    key={s.id}
+                    className="bg-[#fafcff] rounded-xl border border-[#e1eaf5] p-3.5 sm:p-4 space-y-3 shadow-[0_1px_4px_rgba(0,0,0,0.02)]"
+                  >
+                    {/* Header: Avatar, Name, Section */}
+                    <div className="flex items-start justify-between gap-2.5">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-full bg-[#eef4ff] text-[#1769ff] font-bold flex items-center justify-center shrink-0 text-sm shadow-2xs">
+                          {s.display_name?.charAt(0)?.toUpperCase() || 'S'}
                         </div>
-                      </td>
+                        <div className="min-w-0">
+                          <div className="font-bold text-sm text-[#0f1b35] truncate">{s.display_name}</div>
+                          {s.class_name && (
+                            <div className="text-[11px] text-[#8c9eb9] truncate">
+                              Class: {s.class_name}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <span className="px-2.5 py-0.5 bg-[#eef4ff] text-[#1769ff] font-bold rounded-md text-[11px] uppercase shrink-0">
+                        Sec {studentSection}
+                      </span>
+                    </div>
 
-                      {/* Column 2: Register Number */}
-                      <td className="py-4 px-6 font-bold text-sm text-[#0f1b35]">
-                        {regNo}
-                      </td>
+                    {/* Metadata Grid */}
+                    <div className="grid grid-cols-1 xs:grid-cols-2 gap-2 text-xs pt-2 border-t border-[#f1f5f9]">
+                      <div>
+                        <div className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">
+                          Register Number
+                        </div>
+                        <div className="font-bold text-[#0f1b35] mt-0.5 truncate">{regNo}</div>
+                      </div>
 
-                      {/* Column 3: Section */}
-                      <td className="py-4 px-6">
-                        <span className="px-3 py-1 bg-[#eef4ff] text-[#1769ff] font-bold rounded-md text-xs uppercase inline-block">
-                          {studentSection}
-                        </span>
-                      </td>
-
-                      {/* Column 4: Gmail ID */}
-                      <td className="py-4 px-6 text-[#4b5563] text-xs">
+                      <div className="min-w-0">
+                        <div className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">
+                          Gmail ID
+                        </div>
                         <a
                           href={`mailto:${s.email}`}
-                          className="hover:text-[#1769ff] hover:underline inline-flex items-center gap-2"
+                          className="text-[#1769ff] hover:underline inline-flex items-center gap-1.5 mt-0.5 truncate w-full"
                         >
-                          <Mail className="w-4 h-4 text-slate-400 shrink-0" />
-                          <span>{s.email}</span>
+                          <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          <span className="truncate">{s.email}</span>
                         </a>
-                      </td>
+                      </div>
+                    </div>
 
-                      {/* Column 5: Action (Teachers Only) */}
-                      {isTeacher && (
-                        <td className="py-4 px-6 text-right">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setDeleteError(null);
-                              setStudentToDelete({
-                                id: s.id,
-                                name: s.display_name,
-                                registerNumber: regNo,
-                                email: s.email,
-                              });
-                            }}
-                            className="px-3.5 py-2 bg-[#feecee] hover:bg-[#fedddf] text-[#ef4444] rounded-xl text-xs font-semibold inline-flex items-center gap-2 transition cursor-pointer"
-                            title="Delete Student from Classroom"
-                          >
-                            <Trash2 className="w-3.5 h-3.5 text-[#ef4444]" />
-                            <span>Delete Student</span>
-                          </button>
-                        </td>
-                      )}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                    {/* Teacher Action */}
+                    {isTeacher && (
+                      <div className="pt-2 border-t border-[#f1f5f9]">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDeleteError(null);
+                            setStudentToDelete({
+                              id: s.id,
+                              name: s.display_name,
+                              registerNumber: regNo,
+                              email: s.email,
+                            });
+                          }}
+                          className="w-full min-h-[44px] px-3.5 py-2 bg-[#feecee] hover:bg-[#fedddf] text-[#ef4444] rounded-xl text-xs font-semibold inline-flex items-center justify-center gap-2 transition cursor-pointer active:scale-[0.99]"
+                        >
+                          <Trash2 className="w-4 h-4 text-[#ef4444]" />
+                          <span>Delete Student from Classroom</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </>
         )}
       </div>
 

@@ -316,9 +316,9 @@ export function StudentLeetCodeAnalytics({ user }: StudentLeetCodeAnalyticsProps
       )}
 
       {/* 4 Summary Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Total Solved */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
+        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-2xs">
           <div className="text-xs text-slate-500 font-medium">Total Problems Solved</div>
           <div className="text-2xl font-bold text-slate-900 mt-1">
             {snapshot?.total_solved != null ? snapshot.total_solved : 'N/A'}
@@ -332,7 +332,7 @@ export function StudentLeetCodeAnalytics({ user }: StudentLeetCodeAnalyticsProps
         </div>
 
         {/* Global Rank */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
+        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-2xs">
           <div className="text-xs text-slate-500 font-medium">Global Ranking</div>
           <div className="text-2xl font-bold text-slate-900 mt-1 font-mono">
             {snapshot?.global_rank != null ? `#${snapshot.global_rank.toLocaleString()}` : 'N/A'}
@@ -341,7 +341,7 @@ export function StudentLeetCodeAnalytics({ user }: StudentLeetCodeAnalyticsProps
         </div>
 
         {/* Contest Rating */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
+        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-2xs">
           <div className="text-xs text-slate-500 font-medium">Contest Rating</div>
           <div className="text-2xl font-bold text-amber-600 mt-1 font-mono">
             {snapshot?.contest_rating != null ? Math.round(snapshot.contest_rating) : 'N/A'}
@@ -354,7 +354,7 @@ export function StudentLeetCodeAnalytics({ user }: StudentLeetCodeAnalyticsProps
         </div>
 
         {/* Submissions */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
+        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-2xs">
           <div className="text-xs text-slate-500 font-medium">Accepted Submissions</div>
           <div className="text-2xl font-bold text-slate-900 mt-1">
             {snapshot?.accepted_submissions != null
@@ -370,35 +370,35 @@ export function StudentLeetCodeAnalytics({ user }: StudentLeetCodeAnalyticsProps
       </div>
 
       {/* Difficulty Breakdown Card */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-2xs">
-        <h2 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
+      <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 shadow-2xs">
+        <h2 className="text-sm font-bold text-slate-900 mb-3 sm:mb-4 flex items-center gap-2">
           <Layers className="w-4 h-4 text-amber-500" />
           <span>Difficulty Breakdown</span>
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           {/* Easy */}
-          <div className="p-4 rounded-xl bg-emerald-50/60 border border-emerald-200/80">
+          <div className="p-3.5 sm:p-4 rounded-xl bg-emerald-50/60 border border-emerald-200/80">
             <div className="text-xs font-semibold text-emerald-800 uppercase tracking-wider">Easy</div>
-            <div className="text-2xl font-bold text-emerald-700 mt-1">
+            <div className="text-xl sm:text-2xl font-bold text-emerald-700 mt-1">
               {snapshot?.easy_solved != null ? snapshot.easy_solved : 'N/A'}
             </div>
             <p className="text-[11px] text-emerald-600/90 mt-0.5">Foundational concepts</p>
           </div>
 
           {/* Medium */}
-          <div className="p-4 rounded-xl bg-amber-50/60 border border-amber-200/80">
+          <div className="p-3.5 sm:p-4 rounded-xl bg-amber-50/60 border border-amber-200/80">
             <div className="text-xs font-semibold text-amber-800 uppercase tracking-wider">Medium</div>
-            <div className="text-2xl font-bold text-amber-700 mt-1">
+            <div className="text-xl sm:text-2xl font-bold text-amber-700 mt-1">
               {snapshot?.medium_solved != null ? snapshot.medium_solved : 'N/A'}
             </div>
             <p className="text-[11px] text-amber-600/90 mt-0.5">Core algorithms & structures</p>
           </div>
 
           {/* Hard */}
-          <div className="p-4 rounded-xl bg-rose-50/60 border border-rose-200/80">
+          <div className="p-3.5 sm:p-4 rounded-xl bg-rose-50/60 border border-rose-200/80">
             <div className="text-xs font-semibold text-rose-800 uppercase tracking-wider">Hard</div>
-            <div className="text-2xl font-bold text-rose-700 mt-1">
+            <div className="text-xl sm:text-2xl font-bold text-rose-700 mt-1">
               {snapshot?.hard_solved != null ? snapshot.hard_solved : 'N/A'}
             </div>
             <p className="text-[11px] text-rose-600/90 mt-0.5">Advanced competitive topics</p>
@@ -407,8 +407,8 @@ export function StudentLeetCodeAnalytics({ user }: StudentLeetCodeAnalyticsProps
       </div>
 
       {/* Verified Contest Participation History */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-2xs">
-        <div className="flex items-center justify-between mb-4">
+      <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 shadow-2xs">
+        <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-2 mb-4">
           <div>
             <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <Trophy className="w-4 h-4 text-amber-500" />
@@ -418,7 +418,7 @@ export function StudentLeetCodeAnalytics({ user }: StudentLeetCodeAnalyticsProps
               Historical contests in which you participated on LeetCode.
             </p>
           </div>
-          <span className="text-xs font-semibold text-slate-500">
+          <span className="text-xs font-semibold text-slate-500 shrink-0">
             {contests.length} {contests.length === 1 ? 'Contest' : 'Contests'}
           </span>
         </div>
@@ -432,46 +432,88 @@ export function StudentLeetCodeAnalytics({ user }: StudentLeetCodeAnalyticsProps
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="bg-slate-50/80 border-b border-slate-200 text-black font-bold uppercase text-[10px] tracking-wider">
-                  <th className="py-2.5 px-3">Contest Name</th>
-                  <th className="py-2.5 px-3">Date</th>
-                  <th className="py-2.5 px-3">Rank</th>
-                  <th className="py-2.5 px-3">Problems Solved</th>
-                  <th className="py-2.5 px-3 text-right">Rating After</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {contests.map((c) => (
-                  <tr key={c.id || c.contest_name} className="hover:bg-slate-50/60 transition-colors">
-                    <td className="py-3 px-3 font-semibold text-slate-900">
-                      {c.contest_name}
-                    </td>
-                    <td className="py-3 px-3 text-slate-500">
-                      {c.contest_date ? new Date(c.contest_date).toLocaleDateString() : 'N/A'}
-                    </td>
-                    <td className="py-3 px-3 font-mono font-semibold text-slate-800">
-                      {c.rank != null ? `#${c.rank.toLocaleString()}` : 'N/A'}
-                    </td>
-                    <td className="py-3 px-3">
-                      {c.problems_solved != null ? (
-                        <span className="font-semibold text-slate-800">
-                          {c.problems_solved} {c.total_problems != null ? `/ ${c.total_problems}` : 'solved'}
-                        </span>
-                      ) : (
-                        <span className="text-slate-400">N/A</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-3 text-right font-mono font-bold text-amber-600">
-                      {c.rating_after != null ? Math.round(c.rating_after) : 'N/A'}
-                    </td>
+          <>
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto responsive-table-wrapper">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/80 border-b border-slate-200 text-black font-bold uppercase text-[10px] tracking-wider">
+                    <th className="py-2.5 px-3">Contest Name</th>
+                    <th className="py-2.5 px-3">Date</th>
+                    <th className="py-2.5 px-3">Rank</th>
+                    <th className="py-2.5 px-3">Problems Solved</th>
+                    <th className="py-2.5 px-3 text-right">Rating After</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {contests.map((c) => (
+                    <tr key={c.id || c.contest_name} className="hover:bg-slate-50/60 transition-colors">
+                      <td className="py-3 px-3 font-semibold text-slate-900">
+                        {c.contest_name}
+                      </td>
+                      <td className="py-3 px-3 text-slate-500">
+                        {c.contest_date ? new Date(c.contest_date).toLocaleDateString() : 'N/A'}
+                      </td>
+                      <td className="py-3 px-3 font-mono font-semibold text-slate-800">
+                        {c.rank != null ? `#${c.rank.toLocaleString()}` : 'N/A'}
+                      </td>
+                      <td className="py-3 px-3">
+                        {c.problems_solved != null ? (
+                          <span className="font-semibold text-slate-800">
+                            {c.problems_solved} {c.total_problems != null ? `/ ${c.total_problems}` : 'solved'}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400">N/A</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-3 text-right font-mono font-bold text-amber-600">
+                        {c.rating_after != null ? Math.round(c.rating_after) : 'N/A'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards View */}
+            <div className="md:hidden divide-y divide-slate-100 space-y-3">
+              {contests.map((c) => (
+                <div
+                  key={c.id || c.contest_name}
+                  className="bg-slate-50/60 rounded-xl border border-slate-200/80 p-3.5 space-y-2.5"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="font-bold text-xs text-slate-900 break-words">{c.contest_name}</div>
+                      <div className="text-[11px] text-slate-500 mt-0.5">
+                        {c.contest_date ? new Date(c.contest_date).toLocaleDateString() : 'N/A'}
+                      </div>
+                    </div>
+                    {c.rating_after != null && (
+                      <span className="shrink-0 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-mono text-xs font-bold">
+                        {Math.round(c.rating_after)}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs pt-1.5 border-t border-slate-200/60">
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Rank</span>
+                      <div className="font-mono font-semibold text-slate-800 mt-0.5">
+                        {c.rank != null ? `#${c.rank.toLocaleString()}` : 'N/A'}
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Problems</span>
+                      <div className="font-semibold text-slate-800 mt-0.5">
+                        {c.problems_solved != null ? `${c.problems_solved} solved` : 'N/A'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>

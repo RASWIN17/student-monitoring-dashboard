@@ -238,18 +238,18 @@ function StudentDetailContent() {
       ) : (
         <div className="p-6 space-y-6">
           {/* KPI Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="p-4 bg-slate-50 rounded-lg border border-slate-100">
+          <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+            <div className="p-3.5 sm:p-4 bg-slate-50 rounded-lg border border-slate-100">
               <div className="text-xs text-slate-500 font-semibold uppercase">Total Solved</div>
-              <div className="text-2xl font-bold text-slate-900 mt-1">{lcSnap.total_solved}</div>
+              <div className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">{lcSnap.total_solved}</div>
               <div className="text-[11px] text-slate-400 mt-0.5">
                 Easy: {lcSnap.easy_solved || 0} • Med: {lcSnap.medium_solved || 0} • Hard: {lcSnap.hard_solved || 0}
               </div>
             </div>
 
-            <div className="p-4 bg-slate-50 rounded-lg border border-slate-100">
+            <div className="p-3.5 sm:p-4 bg-slate-50 rounded-lg border border-slate-100">
               <div className="text-xs text-slate-500 font-semibold uppercase">Contest Rating</div>
-              <div className="text-2xl font-bold text-slate-900 mt-1">
+              <div className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">
                 {lcSnap.contest_rating ? Number(lcSnap.contest_rating).toFixed(1) : 'Unrated'}
               </div>
               <div className="text-[11px] text-slate-400 mt-0.5">
@@ -257,31 +257,31 @@ function StudentDetailContent() {
               </div>
             </div>
 
-            <div className="p-4 bg-slate-50 rounded-lg border border-slate-100">
+            <div className="p-3.5 sm:p-4 bg-slate-50 rounded-lg border border-slate-100">
               <div className="text-xs text-slate-500 font-semibold uppercase">Global Ranking</div>
-              <div className="text-2xl font-bold text-slate-900 mt-1">
+              <div className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">
                 {lcSnap.global_rank ? `#${lcSnap.global_rank.toLocaleString()}` : 'N/A'}
               </div>
               <div className="text-[11px] text-slate-400 mt-0.5">Profile ranking</div>
             </div>
 
-            <div className="p-4 bg-slate-50 rounded-lg border border-slate-100">
+            <div className="p-3.5 sm:p-4 bg-slate-50 rounded-lg border border-slate-100">
               <div className="text-xs text-slate-500 font-semibold uppercase">Acceptance Rate</div>
-              <div className="text-2xl font-bold text-slate-900 mt-1">
+              <div className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">
                 {lcSnap.acceptance_rate ? `${lcSnap.acceptance_rate}%` : 'N/A'}
               </div>
-              <div className="text-[11px] text-slate-400 mt-0.5">
-                {lcSnap.accepted_submissions || 0} / {lcSnap.total_submissions || 0} submissions
+              <div className="text-[11px] text-slate-400 mt-0.5 truncate">
+                {lcSnap.accepted_submissions || 0} / {lcSnap.total_submissions || 0} attempts
               </div>
             </div>
           </div>
 
           {/* Difficulty Breakdown Badges */}
-          <div className="p-4 bg-slate-50 rounded-xl border border-slate-200/80">
+          <div className="p-3.5 sm:p-4 bg-slate-50 rounded-xl border border-slate-200/80">
             <div className="text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
               Problem Difficulty Breakdown
             </div>
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
               <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg">
                 <span className="text-xs font-bold text-emerald-800">Easy</span>
                 <span className="text-sm font-extrabold text-emerald-900">{lcSnap.easy_solved ?? 0}</span>
@@ -297,13 +297,15 @@ function StudentDetailContent() {
             </div>
           </div>
 
-          {/* Contest History Table */}
+          {/* Contest History Section */}
           {leetcode.contests && leetcode.contests.length > 0 && (
             <div>
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-3">
                 Recent Verified Contest History
               </h3>
-              <div className="border border-slate-200 rounded-lg overflow-hidden">
+
+              {/* Desktop Table View */}
+              <div className="hidden md:block border border-slate-200 rounded-lg overflow-hidden responsive-table-wrapper">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-50 border-b border-slate-200 text-black font-bold">
                     <tr>
@@ -333,6 +335,39 @@ function StudentDetailContent() {
                   </tbody>
                 </table>
               </div>
+
+              {/* Mobile Cards View */}
+              <div className="md:hidden space-y-2.5">
+                {leetcode.contests.map((c: any) => (
+                  <div
+                    key={c.id}
+                    className="p-3 bg-white border border-slate-200 rounded-lg space-y-2 shadow-2xs"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="font-semibold text-xs text-slate-800">{c.contest_name}</div>
+                      {c.rating_after && (
+                        <span className="font-mono font-bold text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
+                          {Math.round(c.rating_after)}
+                        </span>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-3 gap-1.5 text-[11px] text-slate-600 pt-1.5 border-t border-slate-100">
+                      <div>
+                        <span className="text-slate-400 block text-[10px]">Rank</span>
+                        <span className="font-mono">{c.rank ? `#${c.rank}` : '—'}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 block text-[10px]">Solved</span>
+                        <span>{c.problems_solved !== null ? `${c.problems_solved}/${c.total_problems || 4}` : '—'}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-slate-400 block text-[10px]">Date</span>
+                        <span>{new Date(c.contest_date).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -343,14 +378,14 @@ function StudentDetailContent() {
   // Render CodeChef section JSX
   const renderCodeChefSection = () => (
     <div key="codechef-section" className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-2xs">
-      <div className="p-5 border-b border-slate-100 bg-slate-50/60 flex items-center justify-between">
+      <div className="p-4 sm:p-5 border-b border-slate-100 bg-slate-50/60 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className="p-1.5 bg-white border border-orange-200/80 rounded-lg shadow-2xs flex items-center justify-center">
             <CodeChefIcon className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-slate-900">CodeChef Verified Performance</h2>
-            <p className="text-xs text-slate-400">
+            <h2 className="text-sm sm:text-base font-bold text-slate-900">CodeChef Verified Performance</h2>
+            <p className="text-[11px] sm:text-xs text-slate-400">
               {ccSnap
                 ? `Source: ${ccSnap.source} • Synced: ${new Date(ccSnap.observed_at).toLocaleString()}`
                 : 'No CodeChef snapshot available'}
@@ -362,7 +397,7 @@ function StudentDetailContent() {
           <button
             onClick={() => handleSingleScan('codechef')}
             disabled={isScanning}
-            className="px-3 py-1.5 bg-orange-50 hover:bg-orange-100 border border-orange-200 text-orange-800 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition disabled:opacity-50"
+            className="px-3 py-1.5 bg-orange-50 hover:bg-orange-100 border border-orange-200 text-orange-800 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition disabled:opacity-50 min-h-[36px]"
             title="Scan CodeChef only for this student"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isScanning ? 'animate-spin' : ''}`} />
@@ -376,20 +411,20 @@ function StudentDetailContent() {
           No verified CodeChef data available for this student. Click &quot;Scan Now&quot; above to fetch stats.
         </div>
       ) : (
-        <div className="p-6 space-y-6">
+        <div className="p-4 sm:p-6 space-y-5 sm:space-y-6">
           {/* KPI Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5">
-            <div className="p-4 bg-slate-50 rounded-lg border border-slate-100">
+          <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-5 gap-3 sm:gap-3.5">
+            <div className="p-3.5 sm:p-4 bg-slate-50 rounded-lg border border-slate-100">
               <div className="text-xs text-slate-500 font-semibold uppercase">Star Tier</div>
-              <div className="text-2xl font-bold text-amber-900 mt-1">
+              <div className="text-xl sm:text-2xl font-bold text-amber-900 mt-1">
                 {getCodeChefStars(ccSnap.contest_rating ?? ccSnap.highest_rating)}
               </div>
               <div className="text-[11px] text-slate-400 mt-0.5">Rating Tier</div>
             </div>
 
-            <div className="p-4 bg-slate-50 rounded-lg border border-slate-100">
+            <div className="p-3.5 sm:p-4 bg-slate-50 rounded-lg border border-slate-100">
               <div className="text-xs text-slate-500 font-semibold uppercase">Current Rating</div>
-              <div className="text-2xl font-bold text-slate-900 mt-1">
+              <div className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">
                 {ccSnap.contest_rating ? Math.round(ccSnap.contest_rating) : 'Unrated'}
               </div>
               <div className="text-[11px] text-slate-400 mt-0.5">
@@ -397,36 +432,36 @@ function StudentDetailContent() {
               </div>
             </div>
 
-            <div className="p-4 bg-slate-50 rounded-lg border border-slate-100">
+            <div className="p-3.5 sm:p-4 bg-slate-50 rounded-lg border border-slate-100">
               <div className="text-xs text-slate-500 font-semibold uppercase">Total Solved</div>
-              <div className="text-2xl font-bold text-slate-900 mt-1">{ccSnap.total_solved}</div>
+              <div className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">{ccSnap.total_solved}</div>
               <div className="text-[11px] text-slate-400 mt-0.5">Problems solved count</div>
             </div>
 
-            <div className="p-4 bg-slate-50 rounded-lg border border-slate-100">
+            <div className="p-3.5 sm:p-4 bg-slate-50 rounded-lg border border-slate-100">
               <div className="text-xs text-slate-500 font-semibold uppercase">Global & Country Rank</div>
-              <div className="text-xl font-bold text-slate-900 mt-1">
+              <div className="text-lg sm:text-xl font-bold text-slate-900 mt-1">
                 {ccSnap.global_rank ? `#${ccSnap.global_rank.toLocaleString()}` : 'Inactive'}
               </div>
-              <div className="text-[11px] text-slate-400 mt-0.5">
+              <div className="text-[11px] text-slate-400 mt-0.5 truncate">
                 Country: {ccSnap.country_rank ? `#${ccSnap.country_rank.toLocaleString()}` : 'Inactive'}
               </div>
             </div>
 
-            <div className="p-4 bg-slate-50 rounded-lg border border-slate-100 col-span-2 md:col-span-1">
+            <div className="p-3.5 sm:p-4 bg-slate-50 rounded-lg border border-slate-100 xs:col-span-2 md:col-span-1">
               <div className="text-xs text-slate-500 font-semibold uppercase">Contests Attended</div>
-              <div className="text-2xl font-bold text-slate-900 mt-1">{ccSnap.contests_attended || 0}</div>
+              <div className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">{ccSnap.contests_attended || 0}</div>
               <div className="text-[11px] text-slate-400 mt-0.5">Retrieved history</div>
             </div>
           </div>
 
           {/* Difficulty breakdown if available */}
           {(ccSnap.easy_solved != null || ccSnap.medium_solved != null || ccSnap.hard_solved != null) && (
-            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200/80">
+            <div className="p-3.5 sm:p-4 bg-slate-50 rounded-xl border border-slate-200/80">
               <div className="text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
                 Problem Difficulty Breakdown
               </div>
-              <div className="flex flex-wrap items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
                 <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg">
                   <span className="text-xs font-bold text-emerald-800">Easy</span>
                   <span className="text-sm font-extrabold text-emerald-900">{ccSnap.easy_solved ?? 0}</span>
@@ -443,13 +478,15 @@ function StudentDetailContent() {
             </div>
           )}
 
-          {/* Contest History Table */}
+          {/* Contest History Section */}
           {codechef.contests && codechef.contests.length > 0 && (
             <div>
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-3">
                 Recent Verified CodeChef Contests
               </h3>
-              <div className="border border-slate-200 rounded-lg overflow-hidden">
+
+              {/* Desktop Table View */}
+              <div className="hidden md:block border border-slate-200 rounded-lg overflow-hidden responsive-table-wrapper">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-50 border-b border-slate-200 text-black font-bold">
                     <tr>
@@ -474,6 +511,35 @@ function StudentDetailContent() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Mobile Cards View */}
+              <div className="md:hidden space-y-2.5">
+                {codechef.contests.map((c: any) => (
+                  <div
+                    key={c.id}
+                    className="p-3 bg-white border border-slate-200 rounded-lg space-y-2 shadow-2xs"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="font-semibold text-xs text-slate-800">{c.contest_name}</div>
+                      {c.rating_after && (
+                        <span className="font-mono font-bold text-xs text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded">
+                          {Math.round(c.rating_after)}
+                        </span>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600 pt-1.5 border-t border-slate-100">
+                      <div>
+                        <span className="text-slate-400 block text-[10px]">Rank</span>
+                        <span className="font-mono">{c.rank ? `#${c.rank}` : '—'}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-slate-400 block text-[10px]">Date</span>
+                        <span>{new Date(c.contest_date).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -543,15 +609,15 @@ function StudentDetailContent() {
       )}
 
       {/* Student Identity Card */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-2xs">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="h-14 w-14 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-700 text-xl">
+      <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 shadow-2xs">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex items-start sm:items-center gap-3.5 sm:gap-4 min-w-0">
+            <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-700 text-lg sm:text-xl shrink-0">
               {student.display_name?.charAt(0).toUpperCase() || 'S'}
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-xl font-bold text-slate-900">{student.display_name}</h1>
+                <h1 className="text-lg sm:text-xl font-bold text-slate-900 break-words">{student.display_name}</h1>
                 {student.register_number && (
                   <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
                     Reg No: {student.register_number}
@@ -564,9 +630,9 @@ function StudentDetailContent() {
                 )}
               </div>
 
-              <div className="text-xs text-slate-500 font-mono mt-0.5">{student.email}</div>
+              <div className="text-xs text-slate-500 font-mono mt-0.5 truncate">{student.email}</div>
 
-              <div className="flex flex-wrap items-center gap-2 mt-2">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-2">
                 {classrooms?.map((c: any) => (
                   <span
                     key={c.id}
@@ -579,18 +645,18 @@ function StudentDetailContent() {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 text-xs">
+          <div className="grid grid-cols-1 xs:grid-cols-2 gap-2.5 sm:gap-3 text-xs w-full lg:w-auto">
             {/* LeetCode Account Status */}
-            <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg min-w-0">
               <div className="text-[10px] uppercase font-bold text-slate-400">LeetCode Profile</div>
               {leetcode?.account ? (
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="font-mono font-bold text-slate-800">{leetcode.account.username}</span>
+                <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
+                  <span className="font-mono font-bold text-slate-800 truncate">{leetcode.account.username}</span>
                   <a
                     href={leetcode.account.public_profile_url}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-slate-400 hover:text-blue-600"
+                    className="text-slate-400 hover:text-blue-600 shrink-0"
                     title="Open public profile"
                   >
                     <ExternalLink className="w-3 h-3" />
@@ -602,16 +668,16 @@ function StudentDetailContent() {
             </div>
 
             {/* CodeChef Account Status */}
-            <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg min-w-0">
               <div className="text-[10px] uppercase font-bold text-slate-400">CodeChef Profile</div>
               {codechef?.account ? (
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="font-mono font-bold text-slate-800">{codechef.account.username}</span>
+                <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
+                  <span className="font-mono font-bold text-slate-800 truncate">{codechef.account.username}</span>
                   <a
                     href={codechef.account.public_profile_url}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-slate-400 hover:text-blue-600"
+                    className="text-slate-400 hover:text-blue-600 shrink-0"
                     title="Open public profile"
                   >
                     <ExternalLink className="w-3 h-3" />

@@ -128,12 +128,12 @@ export default function ClassroomsPage() {
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-12">
       {/* Top Header matching reference image */}
-      <div className="flex items-center justify-between gap-4 pt-1">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-[#e6f0ff] border border-[#d4e4fe] flex items-center justify-center shadow-xs shrink-0">
-            <GraduationCap className="w-6 h-6 text-[#1769ff]" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
+        <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#e6f0ff] border border-[#d4e4fe] flex items-center justify-center shadow-xs shrink-0">
+            <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6 text-[#1769ff]" />
           </div>
-          <h1 className="text-3xl font-black text-[#0f172a] tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-black text-[#0f172a] tracking-tight truncate">
             Classroom
           </h1>
         </div>
@@ -141,7 +141,7 @@ export default function ClassroomsPage() {
         {isTeacher ? (
           <button
             onClick={() => setIsCreateOpen(true)}
-            className="px-5 py-2.5 bg-[#1769ff] hover:bg-[#0052cc] text-white text-sm font-bold rounded-xl shadow-[0_2px_10px_rgba(23,105,255,0.25)] flex items-center gap-2 transition cursor-pointer"
+            className="min-h-[44px] px-5 py-2.5 bg-[#1769ff] hover:bg-[#0052cc] text-white text-sm font-bold rounded-xl shadow-[0_2px_10px_rgba(23,105,255,0.25)] flex items-center justify-center gap-2 transition cursor-pointer self-start sm:self-auto"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>New Classroom</span>
@@ -149,7 +149,7 @@ export default function ClassroomsPage() {
         ) : (
           <button
             onClick={() => setIsJoinOpen(true)}
-            className="px-5 py-2.5 bg-[#1769ff] hover:bg-[#0052cc] text-white text-sm font-bold rounded-xl shadow-[0_2px_10px_rgba(23,105,255,0.25)] flex items-center gap-2 transition cursor-pointer"
+            className="min-h-[44px] px-5 py-2.5 bg-[#1769ff] hover:bg-[#0052cc] text-white text-sm font-bold rounded-xl shadow-[0_2px_10px_rgba(23,105,255,0.25)] flex items-center justify-center gap-2 transition cursor-pointer self-start sm:self-auto"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>Join Classroom</span>
@@ -188,7 +188,7 @@ export default function ClassroomsPage() {
                   setSelectedClassroom(c);
                   router.push(`/classrooms/${c.id}`);
                 }}
-                className="clickable-card relative bg-white rounded-[24px] border border-[#dce6f5] p-7 shadow-[0_2px_16px_rgba(30,64,175,0.04)] overflow-hidden flex flex-col justify-between cursor-pointer group"
+                className="clickable-card relative bg-white rounded-[22px] sm:rounded-[24px] border border-[#dce6f5] p-5 sm:p-7 shadow-[0_2px_16px_rgba(30,64,175,0.04)] overflow-hidden flex flex-col justify-between cursor-pointer group"
               >
                 {/* Decorative curved shapes in the upper-right corner */}
                 <div className="absolute top-0 right-0 w-36 h-36 bg-gradient-to-bl from-[#edf4ff] via-[#f4f8fe]/60 to-transparent rounded-bl-[100px] pointer-events-none" />
@@ -312,16 +312,16 @@ export default function ClassroomsPage() {
 
       {/* Create Classroom Modal */}
       {isCreateOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full border border-slate-200 overflow-hidden">
-            <div className="px-6 py-4 bg-slate-50 border-b border-slate-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-3 sm:p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full border border-slate-200 overflow-hidden max-h-[92vh] flex flex-col">
+            <div className="px-5 sm:px-6 py-4 bg-slate-50 border-b border-slate-200 shrink-0">
               <h3 className="text-base font-bold text-slate-900">Create New Classroom</h3>
               <p className="text-xs text-slate-500">
                 Setup a classroom section to track student coding progress.
               </p>
             </div>
 
-            <form onSubmit={handleCreate} className="p-6 space-y-4">
+            <form onSubmit={handleCreate} className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1">
               {formError && (
                 <div className="p-3 bg-red-50 text-red-700 text-xs rounded-lg border border-red-200">
                   {formError}
@@ -342,7 +342,7 @@ export default function ClassroomsPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
                     Department
@@ -371,7 +371,7 @@ export default function ClassroomsPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
                     Batch
@@ -400,18 +400,18 @@ export default function ClassroomsPage() {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setIsCreateOpen(false)}
-                  className="px-3.5 py-2 text-xs font-medium text-slate-600 hover:text-slate-800 cursor-pointer"
+                  className="min-h-[44px] px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 cursor-pointer flex items-center justify-center rounded-lg hover:bg-slate-100"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={creating}
-                  className="px-4 py-2 bg-[#1769ff] hover:bg-[#0052cc] text-white rounded-lg text-xs font-semibold disabled:opacity-50 cursor-pointer shadow-xs"
+                  className="min-h-[44px] px-4 py-2 bg-[#1769ff] hover:bg-[#0052cc] text-white rounded-lg text-xs font-semibold disabled:opacity-50 cursor-pointer shadow-xs flex items-center justify-center"
                 >
                   {creating ? 'Creating...' : 'Create Classroom'}
                 </button>
@@ -423,16 +423,16 @@ export default function ClassroomsPage() {
 
       {/* Join Classroom Modal for Students */}
       {isJoinOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-3 sm:p-4">
           <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <div className="px-6 py-4 bg-slate-50 border-b border-slate-200">
+            <div className="px-5 sm:px-6 py-4 bg-slate-50 border-b border-slate-200">
               <h3 className="text-base font-bold text-slate-900">Join Classroom</h3>
               <p className="text-xs text-slate-500">
                 Enter the classroom join code provided by your instructor.
               </p>
             </div>
 
-            <form onSubmit={handleJoin} className="p-6 space-y-4">
+            <form onSubmit={handleJoin} className="p-5 sm:p-6 space-y-4">
               {joinError && (
                 <div className="p-3 bg-red-50 text-red-700 text-xs rounded-lg border border-red-200">
                   {joinError}
@@ -448,23 +448,23 @@ export default function ClassroomsPage() {
                   placeholder="e.g. CT-ABC123"
                   value={joinCode}
                   onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-mono uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm font-mono uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setIsJoinOpen(false)}
-                  className="px-3.5 py-2 text-xs font-medium text-slate-600 hover:text-slate-800 cursor-pointer"
+                  className="min-h-[44px] px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 cursor-pointer flex items-center justify-center rounded-lg hover:bg-slate-100"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={joining}
-                  className="px-4 py-2 bg-[#1769ff] hover:bg-[#0052cc] text-white rounded-lg text-xs font-semibold disabled:opacity-50 cursor-pointer shadow-xs"
+                  className="min-h-[44px] px-4 py-2 bg-[#1769ff] hover:bg-[#0052cc] text-white rounded-lg text-xs font-semibold disabled:opacity-50 cursor-pointer shadow-xs flex items-center justify-center"
                 >
                   {joining ? 'Joining...' : 'Join Classroom'}
                 </button>

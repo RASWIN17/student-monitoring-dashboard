@@ -110,19 +110,19 @@ export function ScanModal({
     : 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-xl w-full border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-2 sm:p-4">
+      <div className="bg-white rounded-xl shadow-2xl max-w-xl w-full border border-slate-200 overflow-hidden flex flex-col max-h-[92vh]">
         {/* Modal Header */}
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-blue-100 text-blue-700 rounded-lg">
+        <div className="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="p-2 bg-blue-100 text-blue-700 rounded-lg shrink-0">
               <RefreshCw className={`w-5 h-5 ${activeJob?.status === 'running' ? 'animate-spin' : ''}`} />
             </div>
-            <div>
-              <h3 className="font-semibold text-slate-900 text-base">
+            <div className="min-w-0">
+              <h3 className="font-semibold text-slate-900 text-sm sm:text-base truncate">
                 {activeJob ? 'Scanning In Progress' : 'Initiate Platform Scan'}
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 truncate">
                 {targetStudentName
                   ? `Scanning single student: ${targetStudentName}`
                   : `Classroom: ${selectedClassroom?.name || 'All Enrolled'}`}
@@ -132,14 +132,15 @@ export function ScanModal({
           <button
             onClick={onClose}
             disabled={activeJob?.status === 'running'}
-            className="text-slate-400 hover:text-slate-600 disabled:opacity-40 p-1 rounded-md"
+            aria-label="Close modal"
+            className="text-slate-400 hover:text-slate-600 disabled:opacity-40 p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-md cursor-pointer shrink-0"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 overflow-y-auto space-y-5 flex-1">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-4 sm:space-y-5 flex-1">
           {errorMessage && (
             <div className="p-3.5 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm flex items-start gap-2.5">
               <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
@@ -154,11 +155,11 @@ export function ScanModal({
                 <label className="block text-xs font-semibold uppercase text-slate-600 mb-1.5">
                   Platform Scope
                 </label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 xs:grid-cols-3 gap-2">
                   <button
                     type="button"
                     onClick={() => setPlatform('all')}
-                    className={`py-2.5 px-3 rounded-lg text-xs font-medium border text-center transition ${
+                    className={`min-h-[44px] py-2.5 px-3 rounded-lg text-xs font-medium border text-center transition cursor-pointer flex items-center justify-center ${
                       platform === 'all'
                         ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
                         : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
@@ -169,7 +170,7 @@ export function ScanModal({
                   <button
                     type="button"
                     onClick={() => setPlatform('leetcode')}
-                    className={`py-2.5 px-3 rounded-lg text-xs font-medium border text-center transition ${
+                    className={`min-h-[44px] py-2.5 px-3 rounded-lg text-xs font-medium border text-center transition cursor-pointer flex items-center justify-center ${
                       platform === 'leetcode'
                         ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
                         : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
@@ -180,7 +181,7 @@ export function ScanModal({
                   <button
                     type="button"
                     onClick={() => setPlatform('codechef')}
-                    className={`py-2.5 px-3 rounded-lg text-xs font-medium border text-center transition ${
+                    className={`min-h-[44px] py-2.5 px-3 rounded-lg text-xs font-medium border text-center transition cursor-pointer flex items-center justify-center ${
                       platform === 'codechef'
                         ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
                         : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
@@ -291,13 +292,13 @@ export function ScanModal({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-3.5 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+        <div className="px-4 sm:px-6 py-3 sm:py-3.5 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-3">
           {!activeJob ? (
             <>
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-xs font-medium text-slate-600 hover:text-slate-800 transition"
+                className="min-h-[44px] px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 transition cursor-pointer flex items-center justify-center rounded-lg hover:bg-slate-100"
               >
                 Cancel
               </button>
@@ -305,10 +306,10 @@ export function ScanModal({
                 type="button"
                 disabled={isStarting}
                 onClick={handleStartScan}
-                className="px-5 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition flex items-center gap-2 shadow-sm disabled:opacity-50"
+                className="min-h-[44px] px-5 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 active:bg-blue-800 transition flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer"
               >
                 <Play className="w-3.5 h-3.5 fill-current" />
-                {isStarting ? 'Queuing...' : 'Start Scan Now'}
+                <span>{isStarting ? 'Queuing...' : 'Start Scan Now'}</span>
               </button>
             </>
           ) : (
@@ -317,7 +318,7 @@ export function ScanModal({
                 type="button"
                 onClick={onClose}
                 disabled={activeJob.status === 'running'}
-                className="px-5 py-2 bg-slate-800 text-white rounded-lg text-xs font-semibold hover:bg-slate-900 transition disabled:opacity-50"
+                className="min-h-[44px] px-5 py-2 bg-slate-800 text-white rounded-lg text-xs font-semibold hover:bg-slate-900 transition disabled:opacity-50 cursor-pointer flex items-center justify-center"
               >
                 {activeJob.status === 'running' ? 'Scanning...' : 'Done'}
               </button>

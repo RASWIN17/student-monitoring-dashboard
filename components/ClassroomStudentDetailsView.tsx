@@ -20,6 +20,7 @@ import {
   AlertTriangle,
   Hash,
   ChevronRight,
+  ChevronDown,
   TrendingUp,
   Star,
   UserX,
@@ -116,6 +117,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId: propClassro
 
   // Scan modal state
   const [isScanClassroomOpen, setIsScanClassroomOpen] = useState(false);
+  const [expandedStudentId, setExpandedStudentId] = useState<string | null>(null);
 
   const platformDisplayName = platform === 'leetcode' ? 'LeetCode' : 'CodeChef';
   const platformSelectionUrl = `/students/${platform}`;
@@ -405,7 +407,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId: propClassro
       </div>
 
       {/* 3. KPI Summary Cards Row (Exactly 5 cards in required order, fully clickable) */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
         {/* Card 1: Total Students */}
         <button
           type="button"
@@ -521,7 +523,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId: propClassro
           onClick={() => handleCardClick('non_active')}
           aria-pressed={activeFilter === 'non_active'}
           aria-label={`Non-Active Students: ${stats.nonActiveTodayCount}. Click to show verified non-active students today.`}
-          className={`text-left rounded-2xl border p-5 transition-all flex flex-col justify-between col-span-2 md:col-span-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1769ff] ${
+          className={`text-left rounded-2xl border p-4 sm:p-5 transition-all flex flex-col justify-between col-span-2 sm:col-span-1 lg:col-span-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1769ff] ${
             activeFilter === 'non_active'
               ? 'bg-[#f8fafc] border-slate-500 ring-2 ring-slate-400/40 shadow-[0_4px_16px_rgba(100,116,139,0.12)]'
               : 'bg-white border-[#e1eaf5] hover:border-[#cbd5e1] hover:shadow-[0_4px_14px_rgba(30,64,175,0.06)]'
@@ -687,263 +689,500 @@ export function ClassroomStudentDetailsView({ platform, classroomId: propClassro
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-white border-b border-[#edf2f9] text-[11px] font-extrabold text-black uppercase tracking-wider">
-                  <th className="py-4 px-5 whitespace-nowrap">STUDENT NAME</th>
-                  <th className="py-4 px-5 whitespace-nowrap">REGISTRATION NUMBER</th>
-                  <th className="py-4 px-5 whitespace-nowrap">{platform === 'leetcode' ? 'LEETCODE HANDLE' : 'CODECHEF HANDLE'}</th>
-                  <th className="py-4 px-5 whitespace-nowrap">TODAY&apos;S ACTIVITY</th>
-                  <th className="py-4 px-5 whitespace-nowrap">TOTAL SOLVED</th>
-                  {platform === 'leetcode' ? (
-                    <>
-                      <th className="py-4 px-5 whitespace-nowrap">DIFFICULTY BREAKDOWN</th>
-                      <th className="py-4 px-5 whitespace-nowrap">CONTEST RATING</th>
-                      <th className="py-4 px-5 whitespace-nowrap">HIGHEST RATING</th>
-                      <th className="py-4 px-5 whitespace-nowrap">GLOBAL RANKING</th>
-                    </>
-                  ) : (
-                    <>
-                      <th className="py-4 px-5 whitespace-nowrap">STAR TIER</th>
-                      <th className="py-4 px-5 whitespace-nowrap">CONTEST RATING</th>
-                      <th className="py-4 px-5 whitespace-nowrap">HIGHEST RATING</th>
-                      <th className="py-4 px-5 whitespace-nowrap">GLOBAL RANK</th>
-                      <th className="py-4 px-5 whitespace-nowrap">COUNTRY RANK</th>
-                    </>
-                  )}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#edf2f9] text-xs">
-                {processedStudents.map((item) => {
-                  const s = item.student;
-                  const account = platform === 'leetcode' ? item.leetcodeAccount : item.codechefAccount;
-                  const snap = platform === 'leetcode' ? item.leetcodeSnapshot : item.codechefSnapshot;
-                  const todayAct = platform === 'leetcode' ? item.leetcodeTodayActivity : item.codechefTodayActivity;
+          <>
+            {/* Desktop / Large Screen Table (Hidden on small mobile screens) */}
+            <div className="hidden md:block overflow-x-auto responsive-table-wrapper">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-white border-b border-[#edf2f9] text-[11px] font-extrabold text-black uppercase tracking-wider">
+                    <th className="py-4 px-5 whitespace-nowrap">STUDENT NAME</th>
+                    <th className="py-4 px-5 whitespace-nowrap">REGISTRATION NUMBER</th>
+                    <th className="py-4 px-5 whitespace-nowrap">{platform === 'leetcode' ? 'LEETCODE HANDLE' : 'CODECHEF HANDLE'}</th>
+                    <th className="py-4 px-5 whitespace-nowrap">TODAY&apos;S ACTIVITY</th>
+                    <th className="py-4 px-5 whitespace-nowrap">TOTAL SOLVED</th>
+                    {platform === 'leetcode' ? (
+                      <>
+                        <th className="py-4 px-5 whitespace-nowrap">DIFFICULTY BREAKDOWN</th>
+                        <th className="py-4 px-5 whitespace-nowrap">CONTEST RATING</th>
+                        <th className="py-4 px-5 whitespace-nowrap">HIGHEST RATING</th>
+                        <th className="py-4 px-5 whitespace-nowrap">GLOBAL RANKING</th>
+                      </>
+                    ) : (
+                      <>
+                        <th className="py-4 px-5 whitespace-nowrap">STAR TIER</th>
+                        <th className="py-4 px-5 whitespace-nowrap">CONTEST RATING</th>
+                        <th className="py-4 px-5 whitespace-nowrap">HIGHEST RATING</th>
+                        <th className="py-4 px-5 whitespace-nowrap">GLOBAL RANK</th>
+                        <th className="py-4 px-5 whitespace-nowrap">COUNTRY RANK</th>
+                      </>
+                    )}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#edf2f9] text-xs">
+                  {processedStudents.map((item) => {
+                    const s = item.student;
+                    const account = platform === 'leetcode' ? item.leetcodeAccount : item.codechefAccount;
+                    const snap = platform === 'leetcode' ? item.leetcodeSnapshot : item.codechefSnapshot;
+                    const todayAct = platform === 'leetcode' ? item.leetcodeTodayActivity : item.codechefTodayActivity;
 
-                  const isLinked = !!account && account.account_status !== 'error' && account.account_status !== 'not_found';
-                  const totalSolved = snap?.total_solved != null ? snap.total_solved : null;
+                    const isLinked = !!account && account.account_status !== 'error' && account.account_status !== 'not_found';
+                    const totalSolved = snap?.total_solved != null ? snap.total_solved : null;
 
-                  return (
-                    <tr
-                      key={s.id}
-                      className="hover:bg-slate-50/70 transition-colors group"
-                    >
-                      {/* 1. Student Name */}
-                      <td className="py-4 px-5 whitespace-nowrap">
-                        <Link
-                          href={`/students/${s.id}?platform=${platform}&classroomId=${effectiveClassroomId}&filter=${activeFilter}`}
-                          className="font-bold text-sm text-[#0f1b35] hover:text-[#1769ff] transition truncate hover:underline"
-                        >
-                          {s.display_name}
-                        </Link>
-                      </td>
+                    return (
+                      <tr
+                        key={s.id}
+                        className="hover:bg-slate-50/70 transition-colors group"
+                      >
+                        {/* 1. Student Name */}
+                        <td className="py-4 px-5 whitespace-nowrap">
+                          <Link
+                            href={`/students/${s.id}?platform=${platform}&classroomId=${effectiveClassroomId}&filter=${activeFilter}`}
+                            className="font-bold text-sm text-[#0f1b35] hover:text-[#1769ff] transition truncate hover:underline"
+                          >
+                            {s.display_name}
+                          </Link>
+                        </td>
 
-                      {/* 2. Registration Number */}
-                      <td className="py-4 px-5 whitespace-nowrap">
-                        {s.register_number ? (
-                          <span className="font-mono text-xs font-medium text-[#475569]">{s.register_number}</span>
-                        ) : (
-                          <span className="text-slate-400 font-mono">—</span>
-                        )}
-                      </td>
+                        {/* 2. Registration Number */}
+                        <td className="py-4 px-5 whitespace-nowrap">
+                          {s.register_number ? (
+                            <span className="font-mono text-xs font-medium text-[#475569]">{s.register_number}</span>
+                          ) : (
+                            <span className="text-slate-400 font-mono">—</span>
+                          )}
+                        </td>
 
-                      {/* 3. Platform Handle */}
-                      <td className="py-4 px-5 whitespace-nowrap">
-                        {isLinked ? (
-                          <div className="flex items-center gap-1.5">
-                            <a
-                              href={account.public_profile_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="font-mono text-xs font-bold text-[#1769ff] hover:underline flex items-center gap-1"
+                        {/* 3. Platform Handle */}
+                        <td className="py-4 px-5 whitespace-nowrap">
+                          {isLinked ? (
+                            <div className="flex items-center gap-1.5">
+                              <a
+                                href={account.public_profile_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-mono text-xs font-bold text-[#1769ff] hover:underline flex items-center gap-1"
+                              >
+                                <span>{account.username}</span>
+                                <ExternalLink className="w-3.5 h-3.5 text-[#1769ff]" />
+                              </a>
+                              {account.account_status === 'error' && (
+                                <span className="px-1.5 py-0.5 rounded text-[10px] bg-red-100 text-red-700 font-semibold">Error</span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-slate-100 text-slate-500 border border-slate-200">
+                              Not Linked
+                            </span>
+                          )}
+                        </td>
+
+                        {/* 4. Today's Activity */}
+                        <td className="py-4 px-5 whitespace-nowrap">
+                          {!isLinked ? (
+                            <span className="text-slate-400 font-mono text-xs">—</span>
+                          ) : todayAct?.activity_status === 'active' && (todayAct?.submission_count ?? 0) > 0 ? (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-[#ecfdf5] text-[#059669] border border-[#a7f3d0]">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse" />
+                              <span>Active ({todayAct.submission_count} {todayAct.submission_count === 1 ? 'submission' : 'submissions'})</span>
+                            </span>
+                          ) : todayAct?.activity_status === 'no_activity' && (todayAct?.submission_count ?? 0) === 0 ? (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+                              <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                              <span>Inactive (0 submissions)</span>
+                            </span>
+                          ) : (
+                            <span
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-200"
+                              title="Daily activity data not yet scanned or unavailable"
                             >
-                              <span>{account.username}</span>
-                              <ExternalLink className="w-3.5 h-3.5 text-[#1769ff]" />
-                            </a>
-                            {account.account_status === 'error' && (
-                              <span className="px-1.5 py-0.5 rounded text-[10px] bg-red-100 text-red-700 font-semibold">Error</span>
+                              <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                              <span>Pending Scan</span>
+                            </span>
+                          )}
+                        </td>
+
+                        {/* 5. Total Solved */}
+                        <td className="py-4 px-5 whitespace-nowrap">
+                          {totalSolved != null ? (
+                            <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-black bg-[#eef4ff] text-[#1769ff]">
+                              {totalSolved.toLocaleString()}
+                            </span>
+                          ) : (
+                            <span className="text-slate-400">—</span>
+                          )}
+                        </td>
+
+                        {/* LeetCode Specific Columns (5 to 8) */}
+                        {platform === 'leetcode' && (
+                          <>
+                            {/* 5. Difficulty Breakdown */}
+                            <td className="py-4 px-5 whitespace-nowrap">
+                              {snap ? (
+                                <div className="flex items-center gap-2 text-[11px]">
+                                  <span
+                                    className="px-2.5 py-0.5 rounded-md font-bold bg-[#ecfdf5] text-[#059669]"
+                                    title="Easy problems solved"
+                                  >
+                                    E: {snap.easy_solved ?? 0}
+                                  </span>
+                                  <span
+                                    className="px-2.5 py-0.5 rounded-md font-bold bg-[#fffbeb] text-[#d97706]"
+                                    title="Medium problems solved"
+                                  >
+                                    M: {snap.medium_solved ?? 0}
+                                  </span>
+                                  <span
+                                    className="px-2.5 py-0.5 rounded-md font-bold bg-[#fff1f2] text-[#e11d48]"
+                                    title="Hard problems solved"
+                                  >
+                                    H: {snap.hard_solved ?? 0}
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className="text-slate-400">—</span>
+                              )}
+                            </td>
+
+                            {/* 6. Contest Rating */}
+                            <td className="py-4 px-5 whitespace-nowrap">
+                              {snap?.contest_rating != null && Number(snap.contest_rating) > 0 ? (
+                                <span className="text-[#ea580c] font-mono font-bold text-xs">
+                                  {Number(snap.contest_rating).toFixed(1)}
+                                </span>
+                              ) : (
+                                <span className="text-slate-400 font-normal">N/A</span>
+                              )}
+                            </td>
+
+                            {/* 7. Highest Rating */}
+                            <td className="py-4 px-5 whitespace-nowrap">
+                              {snap?.highest_rating != null && Number(snap.highest_rating) > 0 ? (
+                                <span className="font-mono font-bold text-xs text-[#0f1b35]">
+                                  {Number(snap.highest_rating).toFixed(1)}
+                                </span>
+                              ) : (
+                                <span className="text-slate-400 font-normal">N/A</span>
+                              )}
+                            </td>
+
+                            {/* 8. Global Ranking */}
+                            <td className="py-4 px-5 whitespace-nowrap">
+                              {snap?.global_rank != null && Number(snap.global_rank) > 0 && Number(snap.global_rank) < 5000000 ? (
+                                <span className="font-mono text-xs font-bold text-[#0f1b35]">
+                                  #{Number(snap.global_rank).toLocaleString('en-US')}
+                                </span>
+                              ) : (
+                                <span className="text-slate-400 font-normal">N/A</span>
+                              )}
+                            </td>
+                          </>
+                        )}
+
+                        {/* CodeChef Specific Columns (5 to 9) */}
+                        {platform === 'codechef' && (
+                          <>
+                            {/* 5. Star Tier */}
+                            <td className="py-4 px-5 whitespace-nowrap">
+                              {snap ? (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-[#fef3c7] text-[#b45309]">
+                                  <span>{getCodeChefStars(snap.contest_rating ?? snap.highest_rating).replace('★', '')}</span>
+                                  <Star className="w-3 h-3 fill-[#b45309] text-[#b45309]" />
+                                </span>
+                              ) : (
+                                <span className="text-slate-400">—</span>
+                              )}
+                            </td>
+
+                            {/* 6. Contest Rating */}
+                            <td className="py-4 px-5 whitespace-nowrap">
+                              {snap?.contest_rating != null ? (
+                                <span className="text-[#ea580c] font-mono font-bold text-xs">
+                                  {snap.contest_rating}
+                                </span>
+                              ) : (
+                                <span className="text-slate-400 font-normal">Unrated</span>
+                              )}
+                            </td>
+
+                            {/* 7. Highest Rating */}
+                            <td className="py-4 px-5 whitespace-nowrap">
+                              {snap?.highest_rating != null ? (
+                                <span className="font-mono font-bold text-xs text-[#0f1b35]">
+                                  {Math.round(snap.highest_rating)}
+                                </span>
+                              ) : snap?.highest_score != null ? (
+                                <span className="font-mono font-bold text-xs text-[#0f1b35]">
+                                  {Math.round(snap.highest_score)}
+                                </span>
+                              ) : (
+                                <span className="text-slate-400 font-normal">—</span>
+                              )}
+                            </td>
+
+                            {/* 8. Global Rank */}
+                            <td className="py-4 px-5 whitespace-nowrap">
+                              {snap?.global_rank != null ? (
+                                <span className="font-mono text-xs font-medium text-[#475569]">
+                                  #{snap.global_rank.toLocaleString()}
+                                </span>
+                              ) : (
+                                <span className="text-slate-400">—</span>
+                              )}
+                            </td>
+
+                            {/* 9. Country Rank */}
+                            <td className="py-4 px-5 whitespace-nowrap">
+                              {snap?.country_rank != null ? (
+                                <span className="font-mono text-xs font-medium text-[#475569]">
+                                  #{snap.country_rank.toLocaleString()}
+                                </span>
+                              ) : (
+                                <span className="text-slate-400">—</span>
+                              )}
+                            </td>
+                          </>
+                        )}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile / Narrow Screen Student Cards Presentation */}
+            <div className="md:hidden divide-y divide-[#edf2f9]">
+              {processedStudents.map((item) => {
+                const s = item.student;
+                const account = platform === 'leetcode' ? item.leetcodeAccount : item.codechefAccount;
+                const snap = platform === 'leetcode' ? item.leetcodeSnapshot : item.codechefSnapshot;
+                const todayAct = platform === 'leetcode' ? item.leetcodeTodayActivity : item.codechefTodayActivity;
+                const isLinked = !!account && account.account_status !== 'error' && account.account_status !== 'not_found';
+                const totalSolved = snap?.total_solved != null ? snap.total_solved : null;
+                const isExpanded = expandedStudentId === s.id;
+                const detailsUrl = `/students/${s.id}?platform=${platform}&classroomId=${effectiveClassroomId}&filter=${activeFilter}`;
+
+                return (
+                  <div key={`mobile-card-${s.id}`} className="p-4 sm:p-5 hover:bg-slate-50/70 transition-colors space-y-3.5">
+                    {/* Top Row: Student Identity & Primary Action */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-full bg-[#eef4ff] text-[#1769ff] font-bold flex items-center justify-center shrink-0 text-sm shadow-2xs">
+                          {s.display_name?.charAt(0)?.toUpperCase() || 'S'}
+                        </div>
+                        <div className="min-w-0">
+                          <Link
+                            href={detailsUrl}
+                            className="font-bold text-sm text-[#0f1b35] hover:text-[#1769ff] transition block truncate hover:underline"
+                          >
+                            {s.display_name}
+                          </Link>
+                          <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+                            <span className="text-[11px] text-[#64748b]">Reg:</span>
+                            {s.register_number ? (
+                              <span className="font-mono text-xs font-semibold text-[#334155] bg-slate-100 px-1.5 py-0.5 rounded">
+                                {s.register_number}
+                              </span>
+                            ) : (
+                              <span className="text-slate-400 font-mono text-xs">—</span>
                             )}
                           </div>
-                        ) : (
-                          <span className="px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-slate-100 text-slate-500 border border-slate-200">
-                            Not Linked
-                          </span>
-                        )}
-                      </td>
+                        </div>
+                      </div>
 
-                      {/* 4. Today's Activity */}
-                      <td className="py-4 px-5 whitespace-nowrap">
-                        {!isLinked ? (
-                          <span className="text-slate-400 font-mono text-xs">—</span>
-                        ) : todayAct?.activity_status === 'active' && (todayAct?.submission_count ?? 0) > 0 ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-[#ecfdf5] text-[#059669] border border-[#a7f3d0]">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse" />
-                            <span>Active ({todayAct.submission_count} {todayAct.submission_count === 1 ? 'submission' : 'submissions'})</span>
-                          </span>
-                        ) : todayAct?.activity_status === 'no_activity' && (todayAct?.submission_count ?? 0) === 0 ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">
-                            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                            <span>Inactive (0 submissions)</span>
-                          </span>
-                        ) : (
-                          <span
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-200"
-                            title="Daily activity data not yet scanned or unavailable"
+                      <Link
+                        href={detailsUrl}
+                        className="px-3 py-1.5 bg-[#eef4ff] text-[#1769ff] hover:bg-blue-100 rounded-xl text-xs font-bold flex items-center gap-1 transition shrink-0 min-h-[36px]"
+                        aria-label={`View details for ${s.display_name}`}
+                      >
+                        <span>View</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </Link>
+                    </div>
+
+                    {/* Middle Row: Platform Handle & Today's Activity Badges */}
+                    <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                      {/* Platform Handle */}
+                      {isLinked ? (
+                        <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50/70 border border-blue-100/80 text-[11px] font-mono font-bold text-[#1769ff]">
+                          <span>@{account.username}</span>
+                          <a
+                            href={account.public_profile_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Open public profile"
+                            className="hover:text-blue-700"
                           >
-                            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                            <span>Pending Scan</span>
-                          </span>
-                        )}
-                      </td>
+                            <ExternalLink className="w-3 h-3 text-[#1769ff]" />
+                          </a>
+                        </div>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-slate-100 text-slate-500 border border-slate-200">
+                          Not Linked
+                        </span>
+                      )}
 
-                      {/* 5. Total Solved */}
-                      <td className="py-4 px-5 whitespace-nowrap">
-                        {totalSolved != null ? (
-                          <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-black bg-[#eef4ff] text-[#1769ff]">
-                            {totalSolved.toLocaleString()}
-                          </span>
-                        ) : (
-                          <span className="text-slate-400">—</span>
-                        )}
-                      </td>
+                      {/* Today's Activity */}
+                      {!isLinked ? (
+                        <span className="text-slate-400 font-mono text-xs">—</span>
+                      ) : todayAct?.activity_status === 'active' && (todayAct?.submission_count ?? 0) > 0 ? (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[#ecfdf5] text-[#059669] border border-[#a7f3d0]">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse" />
+                          <span>Active ({todayAct.submission_count} {todayAct.submission_count === 1 ? 'submission' : 'submissions'})</span>
+                        </span>
+                      ) : todayAct?.activity_status === 'no_activity' && (todayAct?.submission_count ?? 0) === 0 ? (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+                          <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                          <span>Inactive (0 submissions)</span>
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                          <span>Pending Scan</span>
+                        </span>
+                      )}
+                    </div>
 
-                      {/* LeetCode Specific Columns (5 to 8) */}
-                      {platform === 'leetcode' && (
-                        <>
-                          {/* 5. Difficulty Breakdown */}
-                          <td className="py-4 px-5 whitespace-nowrap">
-                            {snap ? (
-                              <div className="flex items-center gap-2 text-[11px]">
-                                <span
-                                  className="px-2.5 py-0.5 rounded-md font-bold bg-[#ecfdf5] text-[#059669]"
-                                  title="Easy problems solved"
-                                >
-                                  E: {snap.easy_solved ?? 0}
+                    {/* Metrics Highlights Grid */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 bg-slate-50/80 p-3 rounded-xl border border-slate-100 text-xs">
+                      <div>
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Solved</div>
+                        <div className="font-extrabold text-[#1769ff] text-sm mt-0.5">
+                          {totalSolved != null ? totalSolved.toLocaleString() : '—'}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Contest Rating</div>
+                        <div className="font-mono font-bold text-slate-800 text-xs mt-0.5">
+                          {snap?.contest_rating != null && Number(snap.contest_rating) > 0
+                            ? Number(snap.contest_rating).toFixed(1)
+                            : platform === 'codechef' && snap?.contest_rating != null
+                            ? snap.contest_rating
+                            : 'N/A'}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                          {platform === 'leetcode' ? 'Global Rank' : 'Star Tier'}
+                        </div>
+                        <div className="font-mono font-bold text-slate-800 text-xs mt-0.5">
+                          {platform === 'leetcode' ? (
+                            snap?.global_rank != null && Number(snap.global_rank) > 0 && Number(snap.global_rank) < 5000000 ? (
+                              `#${Number(snap.global_rank).toLocaleString('en-US')}`
+                            ) : (
+                              'N/A'
+                            )
+                          ) : snap ? (
+                            <span className="inline-flex items-center gap-0.5 text-amber-600 font-bold">
+                              <span>{getCodeChefStars(snap.contest_rating ?? snap.highest_rating)}</span>
+                            </span>
+                          ) : (
+                            '—'
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Expandable Section for Detailed Metrics */}
+                    <div className="pt-0.5">
+                      <button
+                        type="button"
+                        onClick={() => setExpandedStudentId(isExpanded ? null : s.id)}
+                        className="text-[11px] font-bold text-[#1769ff] hover:text-blue-700 inline-flex items-center gap-1 transition cursor-pointer"
+                        aria-expanded={isExpanded}
+                      >
+                        <span>{isExpanded ? 'Hide metrics' : 'Show all metrics'}</span>
+                        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                      </button>
+
+                      {isExpanded && (
+                        <div className="mt-2.5 p-3.5 bg-[#f8faff] rounded-xl border border-blue-100/70 space-y-2.5 animate-in fade-in duration-150 text-xs">
+                          {platform === 'leetcode' ? (
+                            <>
+                              <div>
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                                  Difficulty Breakdown
                                 </span>
-                                <span
-                                  className="px-2.5 py-0.5 rounded-md font-bold bg-[#fffbeb] text-[#d97706]"
-                                  title="Medium problems solved"
-                                >
-                                  M: {snap.medium_solved ?? 0}
-                                </span>
-                                <span
-                                  className="px-2.5 py-0.5 rounded-md font-bold bg-[#fff1f2] text-[#e11d48]"
-                                  title="Hard problems solved"
-                                >
-                                  H: {snap.hard_solved ?? 0}
-                                </span>
+                                {snap ? (
+                                  <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+                                    <span className="px-2 py-0.5 rounded-md font-bold bg-[#ecfdf5] text-[#059669]">
+                                      Easy: {snap.easy_solved ?? 0}
+                                    </span>
+                                    <span className="px-2 py-0.5 rounded-md font-bold bg-[#fffbeb] text-[#d97706]">
+                                      Medium: {snap.medium_solved ?? 0}
+                                    </span>
+                                    <span className="px-2 py-0.5 rounded-md font-bold bg-[#fff1f2] text-[#e11d48]">
+                                      Hard: {snap.hard_solved ?? 0}
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <span className="text-slate-400">—</span>
+                                )}
                               </div>
-                            ) : (
-                              <span className="text-slate-400">—</span>
-                            )}
-                          </td>
-
-                          {/* 6. Contest Rating */}
-                          <td className="py-4 px-5 whitespace-nowrap">
-                            {snap?.contest_rating != null && Number(snap.contest_rating) > 0 ? (
-                              <span className="text-[#ea580c] font-mono font-bold text-xs">
-                                {Number(snap.contest_rating).toFixed(1)}
-                              </span>
-                            ) : (
-                              <span className="text-slate-400 font-normal">N/A</span>
-                            )}
-                          </td>
-
-                          {/* 7. Highest Rating */}
-                          <td className="py-4 px-5 whitespace-nowrap">
-                            {snap?.highest_rating != null && Number(snap.highest_rating) > 0 ? (
-                              <span className="font-mono font-bold text-xs text-[#0f1b35]">
-                                {Number(snap.highest_rating).toFixed(1)}
-                              </span>
-                            ) : (
-                              <span className="text-slate-400 font-normal">N/A</span>
-                            )}
-                          </td>
-
-                          {/* 8. Global Ranking */}
-                          <td className="py-4 px-5 whitespace-nowrap">
-                            {snap?.global_rank != null && Number(snap.global_rank) > 0 && Number(snap.global_rank) < 5000000 ? (
-                              <span className="font-mono text-xs font-bold text-[#0f1b35]">
-                                #{Number(snap.global_rank).toLocaleString('en-US')}
-                              </span>
-                            ) : (
-                              <span className="text-slate-400 font-normal">N/A</span>
-                            )}
-                          </td>
-                        </>
+                              <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-200/50">
+                                <div>
+                                  <span className="text-[10px] text-slate-400 block">Highest Rating</span>
+                                  <span className="font-mono font-bold text-slate-800">
+                                    {snap?.highest_rating != null && Number(snap.highest_rating) > 0
+                                      ? Number(snap.highest_rating).toFixed(1)
+                                      : 'N/A'}
+                                  </span>
+                                </div>
+                                <div>
+                                  <span className="text-[10px] text-slate-400 block">Global Ranking</span>
+                                  <span className="font-mono font-bold text-slate-800">
+                                    {snap?.global_rank != null && Number(snap.global_rank) > 0 && Number(snap.global_rank) < 5000000
+                                      ? `#${Number(snap.global_rank).toLocaleString('en-US')}`
+                                      : 'N/A'}
+                                  </span>
+                                </div>
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                  <span className="text-[10px] text-slate-400 block">Highest Rating</span>
+                                  <span className="font-mono font-bold text-slate-800">
+                                    {snap?.highest_rating != null
+                                      ? Math.round(snap.highest_rating)
+                                      : snap?.highest_score != null
+                                      ? Math.round(snap.highest_score)
+                                      : '—'}
+                                  </span>
+                                </div>
+                                <div>
+                                  <span className="text-[10px] text-slate-400 block">Global Rank</span>
+                                  <span className="font-mono font-bold text-slate-800">
+                                    {snap?.global_rank != null ? `#${snap.global_rank.toLocaleString()}` : '—'}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-200/50">
+                                <div>
+                                  <span className="text-[10px] text-slate-400 block">Country Rank</span>
+                                  <span className="font-mono font-bold text-slate-800">
+                                    {snap?.country_rank != null ? `#${snap.country_rank.toLocaleString()}` : '—'}
+                                  </span>
+                                </div>
+                                <div>
+                                  <span className="text-[10px] text-slate-400 block">Star Tier</span>
+                                  <span className="font-bold text-amber-700">
+                                    {snap ? getCodeChefStars(snap.contest_rating ?? snap.highest_rating) : '—'}
+                                  </span>
+                                </div>
+                              </div>
+                            </>
+                          )}
+                        </div>
                       )}
-
-                      {/* CodeChef Specific Columns (5 to 9) */}
-                      {platform === 'codechef' && (
-                        <>
-                          {/* 5. Star Tier */}
-                          <td className="py-4 px-5 whitespace-nowrap">
-                            {snap ? (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-[#fef3c7] text-[#b45309]">
-                                <span>{getCodeChefStars(snap.contest_rating ?? snap.highest_rating).replace('★', '')}</span>
-                                <Star className="w-3 h-3 fill-[#b45309] text-[#b45309]" />
-                              </span>
-                            ) : (
-                              <span className="text-slate-400">—</span>
-                            )}
-                          </td>
-
-                          {/* 6. Contest Rating */}
-                          <td className="py-4 px-5 whitespace-nowrap">
-                            {snap?.contest_rating != null ? (
-                              <span className="text-[#ea580c] font-mono font-bold text-xs">
-                                {snap.contest_rating}
-                              </span>
-                            ) : (
-                              <span className="text-slate-400 font-normal">Unrated</span>
-                            )}
-                          </td>
-
-                          {/* 7. Highest Rating */}
-                          <td className="py-4 px-5 whitespace-nowrap">
-                            {snap?.highest_rating != null ? (
-                              <span className="font-mono font-bold text-xs text-[#0f1b35]">
-                                {Math.round(snap.highest_rating)}
-                              </span>
-                            ) : snap?.highest_score != null ? (
-                              <span className="font-mono font-bold text-xs text-[#0f1b35]">
-                                {Math.round(snap.highest_score)}
-                              </span>
-                            ) : (
-                              <span className="text-slate-400 font-normal">—</span>
-                            )}
-                          </td>
-
-                          {/* 8. Global Rank */}
-                          <td className="py-4 px-5 whitespace-nowrap">
-                            {snap?.global_rank != null ? (
-                              <span className="font-mono text-xs font-medium text-[#475569]">
-                                #{snap.global_rank.toLocaleString()}
-                              </span>
-                            ) : (
-                              <span className="text-slate-400">—</span>
-                            )}
-                          </td>
-
-                          {/* 9. Country Rank */}
-                          <td className="py-4 px-5 whitespace-nowrap">
-                            {snap?.country_rank != null ? (
-                              <span className="font-mono text-xs font-medium text-[#475569]">
-                                #{snap.country_rank.toLocaleString()}
-                              </span>
-                            ) : (
-                              <span className="text-slate-400">—</span>
-                            )}
-                          </td>
-                        </>
-                      )}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
         )}
       </div>
 

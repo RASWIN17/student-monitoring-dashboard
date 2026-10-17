@@ -107,22 +107,22 @@ export function PlatformLandingView({ platform }: Props) {
 
       {/* 2. Platform Logo & Title (Moved slightly up to manage white space) */}
       <div className="max-w-4xl mx-auto pt-1 sm:pt-2">
-        <div className="flex items-center justify-center gap-4 sm:gap-5 mb-8 sm:mb-10">
+        <div className="flex items-center justify-center gap-3.5 sm:gap-5 mb-6 sm:mb-10">
           {isLeetCode ? (
             <>
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-[22px] bg-black flex items-center justify-center p-2.5 shadow-[0_6px_20px_rgba(0,0,0,0.18)] shrink-0">
+              <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-[18px] sm:rounded-[22px] bg-black flex items-center justify-center p-2 sm:p-2.5 shadow-[0_6px_20px_rgba(0,0,0,0.18)] shrink-0">
                 <LeetCodeIcon className="w-full h-full object-contain" />
               </div>
-              <h1 className="text-4xl sm:text-[48px] font-black text-[#0f172a] tracking-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-[48px] font-black text-[#0f172a] tracking-tight">
                 LeetCode
               </h1>
             </>
           ) : (
             <>
-              <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center shrink-0">
+              <div className="w-14 h-14 sm:w-20 sm:h-20 flex items-center justify-center shrink-0">
                 <CodeChefIcon className="w-full h-full object-contain drop-shadow-xs" />
               </div>
-              <h1 className="text-4xl sm:text-[48px] font-black text-[#0f172a] tracking-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-[48px] font-black text-[#0f172a] tracking-tight">
                 CodeChef
               </h1>
             </>
@@ -130,11 +130,11 @@ export function PlatformLandingView({ platform }: Props) {
         </div>
 
         {/* 3. Contest and Progress Cards (Side-by-Side) */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8 max-w-3xl mx-auto">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-5 sm:gap-8 max-w-3xl mx-auto">
         {/* Card 1: Contest */}
         <Link
           href={contestUrl}
-          className="clickable-card group relative w-full sm:w-[350px] min-h-[260px] sm:h-[280px] bg-gradient-to-b from-[#fffefc] via-[#fffdf7] to-[#fff9e6] rounded-[28px] border-[1.5px] border-[#fde68a] p-8 flex flex-col items-center justify-center shadow-[0_8px_28px_rgba(250,204,21,0.07)] hover:shadow-[0_16px_36px_rgba(250,204,21,0.16)] overflow-hidden cursor-pointer select-none"
+          className="clickable-card group relative w-full sm:w-[350px] min-h-[240px] sm:h-[280px] bg-gradient-to-b from-[#fffefc] via-[#fffdf7] to-[#fff9e6] rounded-[24px] sm:rounded-[28px] border-[1.5px] border-[#fde68a] p-6 sm:p-8 flex flex-col items-center justify-center shadow-[0_8px_28px_rgba(250,204,21,0.07)] hover:shadow-[0_16px_36px_rgba(250,204,21,0.16)] overflow-hidden cursor-pointer select-none"
         >
           {/* Subtle bottom wavy layers */}
           <svg
@@ -157,11 +157,11 @@ export function PlatformLandingView({ platform }: Props) {
 
           {/* Trophy Icon */}
           <div className="relative z-10 transition-transform duration-300 group-hover:scale-105">
-            <ContestTrophyIcon className="w-20 h-20 sm:w-22 sm:h-22 drop-shadow-xs" />
+            <ContestTrophyIcon className="w-18 h-18 sm:w-22 sm:h-22 drop-shadow-xs" />
           </div>
 
           {/* Title */}
-          <h2 className="text-2xl sm:text-[28px] font-black text-[#0f172a] mt-4 tracking-tight relative z-10">
+          <h2 className="text-2xl sm:text-[28px] font-black text-[#0f172a] mt-3 sm:mt-4 tracking-tight relative z-10">
             Contest
           </h2>
         </Link>
@@ -169,7 +169,7 @@ export function PlatformLandingView({ platform }: Props) {
         {/* Card 2: Progress */}
         <Link
           href={progressUrl}
-          className="clickable-card group relative w-full sm:w-[350px] min-h-[260px] sm:h-[280px] bg-gradient-to-b from-[#fdfcff] via-[#faf7ff] to-[#f3ebff] rounded-[28px] border-[1.5px] border-[#e9d5ff] p-8 flex flex-col items-center justify-center shadow-[0_8px_28px_rgba(168,85,247,0.07)] hover:shadow-[0_16px_36px_rgba(168,85,247,0.16)] overflow-hidden cursor-pointer select-none"
+          className="clickable-card group relative w-full sm:w-[350px] min-h-[240px] sm:h-[280px] bg-gradient-to-b from-[#fdfcff] via-[#faf7ff] to-[#f3ebff] rounded-[24px] sm:rounded-[28px] border-[1.5px] border-[#e9d5ff] p-6 sm:p-8 flex flex-col items-center justify-center shadow-[0_8px_28px_rgba(168,85,247,0.07)] hover:shadow-[0_16px_36px_rgba(168,85,247,0.16)] overflow-hidden cursor-pointer select-none"
         >
           {/* Subtle bottom wavy layers */}
           <svg

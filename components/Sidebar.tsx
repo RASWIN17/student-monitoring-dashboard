@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from './AuthContext';
@@ -11,13 +11,42 @@ import {
   FileSpreadsheet,
   Settings,
   LogOut,
+  X,
 } from 'lucide-react';
 
-export function Sidebar() {
+interface SidebarProps {
+  mobileOpen?: boolean;
+  onCloseMobile?: () => void;
+}
+
+export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
 
   const isTeacher = user?.role === 'teacher' || user?.role === 'admin';
+
+  // Keyboard accessibility: Close mobile drawer on Escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && mobileOpen && onCloseMobile) {
+        onCloseMobile();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [mobileOpen, onCloseMobile]);
+
+  // Lock body scroll when mobile drawer is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileOpen]);
 
   const navItems = [
     { label: 'Classrooms', href: '/classrooms', icon: GraduationCap, roles: ['teacher', 'admin', 'student'] },
@@ -34,17 +63,46 @@ export function Sidebar() {
   const userInitial = user?.display_name ? user.display_name.charAt(0).toUpperCase() : 'T';
 
   return (
-    <aside className="w-[228px] min-w-[228px] bg-gradient-to-b from-[#081226] via-[#0b1736] to-[#081226] text-white flex flex-col h-screen border-r border-[#152549] shrink-0 select-none sticky top-0 z-40">
-      {/* Brand Header */}
-      <div className="pt-7 pb-5 px-7 flex items-center gap-3.5">
-        <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-[#1d68ff] to-[#0a4ed8] flex items-center justify-center text-white font-extrabold text-lg shadow-[0_4px_14px_rgba(29,104,255,0.45)] shrink-0">
-          CT
+    <>
+      {/* Mobile Backdrop Overlay */}
+      <div
+        className={`fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 lg:hidden transition-opacity duration-300 ${
+          mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={onCloseMobile}
+        aria-hidden="true"
+      />
+
+      {/* Main Sidebar / Mobile Drawer */}
+      <aside
+        className={`
+          fixed inset-y-0 left-0 z-50 w-[260px] max-w-[85vw] bg-gradient-to-b from-[#081226] via-[#0b1736] to-[#081226] text-white flex flex-col h-screen border-r border-[#152549] shrink-0 select-none transition-transform duration-300 ease-in-out
+          lg:static lg:w-[228px] lg:min-w-[228px] lg:translate-x-0 lg:z-40
+          ${mobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'}
+        `}
+      >
+        {/* Brand Header */}
+        <div className="pt-6 sm:pt-7 pb-5 px-6 sm:px-7 flex items-center justify-between">
+          <div className="flex items-center gap-3.5">
+            <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl bg-gradient-to-br from-[#1d68ff] to-[#0a4ed8] flex items-center justify-center text-white font-extrabold text-lg shadow-[0_4px_14px_rgba(29,104,255,0.45)] shrink-0">
+              CT
+            </div>
+            <div>
+              <div className="text-white font-bold text-lg tracking-tight leading-tight">CodeTrack</div>
+              <div className="text-xs text-[#8ea4c8] font-normal mt-0.5">Activity Monitor</div>
+            </div>
+          </div>
+          {onCloseMobile && (
+            <button
+              type="button"
+              onClick={onCloseMobile}
+              aria-label="Close navigation"
+              className="lg:hidden p-1.5 rounded-lg text-[#8ea4c8] hover:text-white hover:bg-white/10 transition cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
-        <div>
-          <div className="text-white font-bold text-lg tracking-tight leading-tight">CodeTrack</div>
-          <div className="text-xs text-[#8ea4c8] font-normal mt-0.5">Activity Monitor</div>
-        </div>
-      </div>
 
       {/* Teacher Profile Card */}
       {user && (
@@ -88,6 +146,9 @@ export function Sidebar() {
             <Link
               key={item.label}
               href={item.href}
+              onClick={() => {
+                if (onCloseMobile) onCloseMobile();
+              }}
               className={`flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                 isActive
                   ? 'bg-[#1769ff] text-white font-semibold shadow-[0_4px_16px_rgba(23,105,255,0.4)]'
@@ -105,7 +166,10 @@ export function Sidebar() {
       <div className="p-5 pt-3 border-t border-[#152549]">
         {user ? (
           <button
-            onClick={logout}
+            onClick={() => {
+              if (onCloseMobile) onCloseMobile();
+              logout();
+            }}
             className="w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-[#94a3b8] hover:text-white hover:bg-white/[0.06] transition-colors cursor-pointer"
           >
             <LogOut className="w-5 h-5 shrink-0" />
@@ -114,6 +178,9 @@ export function Sidebar() {
         ) : (
           <Link
             href="/login"
+            onClick={() => {
+              if (onCloseMobile) onCloseMobile();
+            }}
             className="w-full flex items-center justify-center py-2.5 px-4 rounded-xl bg-[#1769ff] text-white text-sm font-semibold hover:bg-blue-600 shadow-[0_4px_14px_rgba(23,105,255,0.35)] transition"
           >
             Sign In
@@ -121,5 +188,6 @@ export function Sidebar() {
         )}
       </div>
     </aside>
+  </>
   );
 }

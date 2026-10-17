@@ -111,27 +111,81 @@ export default function ScansPage() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-black font-bold uppercase tracking-wider text-[11px]">
-                  <th className="py-3 px-4">Job ID</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-center">Accounts Total</th>
-                  <th className="py-3 px-4 text-center">Succeeded</th>
-                  <th className="py-3 px-4 text-center">Failed</th>
-                  <th className="py-3 px-4">Platforms</th>
-                  <th className="py-3 px-4">Scope</th>
-                  <th className="py-3 px-4 text-right">Initiated At</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
-                {jobs.map((job) => (
-                  <tr key={job.id} className="hover:bg-slate-50/70 transition">
-                    <td className="py-3 px-4 font-mono font-bold text-slate-800">
-                      {job.id.substring(0, 8)}
-                    </td>
-                    <td className="py-3 px-4">
+          <>
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto responsive-table-wrapper">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-200 text-black font-bold uppercase tracking-wider text-[11px]">
+                    <th className="py-3 px-4">Job ID</th>
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4 text-center">Accounts Total</th>
+                    <th className="py-3 px-4 text-center">Succeeded</th>
+                    <th className="py-3 px-4 text-center">Failed</th>
+                    <th className="py-3 px-4">Platforms</th>
+                    <th className="py-3 px-4">Scope</th>
+                    <th className="py-3 px-4 text-right">Initiated At</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-700">
+                  {jobs.map((job) => (
+                    <tr key={job.id} className="hover:bg-slate-50/70 transition">
+                      <td className="py-3 px-4 font-mono font-bold text-slate-800">
+                        {job.id.substring(0, 8)}
+                      </td>
+                      <td className="py-3 px-4">
+                        {job.status === 'succeeded' && (
+                          <span className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded text-[11px] font-semibold border border-emerald-200">
+                            <CheckCircle2 className="w-3 h-3" /> Succeeded
+                          </span>
+                        )}
+                        {job.status === 'partial' && (
+                          <span className="inline-flex items-center gap-1 text-amber-700 bg-amber-50 px-2 py-0.5 rounded text-[11px] font-semibold border border-amber-200">
+                            <AlertTriangle className="w-3 h-3" /> Partial
+                          </span>
+                        )}
+                        {job.status === 'failed' && (
+                          <span className="inline-flex items-center gap-1 text-red-700 bg-red-50 px-2 py-0.5 rounded text-[11px] font-semibold border border-red-200">
+                            <XCircle className="w-3 h-3" /> Failed
+                          </span>
+                        )}
+                        {job.status === 'running' && (
+                          <span className="inline-flex items-center gap-1 text-blue-700 bg-blue-50 px-2 py-0.5 rounded text-[11px] font-semibold border border-blue-200">
+                            <RefreshCw className="w-3 h-3 animate-spin" /> Running
+                          </span>
+                        )}
+                        {job.status === 'queued' && (
+                          <span className="inline-flex items-center gap-1 text-slate-600 bg-slate-100 px-2 py-0.5 rounded text-[11px]">
+                            <Clock className="w-3 h-3" /> Queued
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-center font-bold">{job.total_accounts}</td>
+                      <td className="py-3 px-4 text-center text-emerald-600 font-semibold">{job.successful_accounts}</td>
+                      <td className="py-3 px-4 text-center text-red-600 font-semibold">{job.failed_accounts}</td>
+                      <td className="py-3 px-4 capitalize">{job.selected_platforms}</td>
+                      <td className="py-3 px-4 capitalize">{job.requested_scope}</td>
+                      <td className="py-3 px-4 text-right text-slate-500">
+                        {new Date(job.created_at).toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards View */}
+            <div className="md:hidden divide-y divide-slate-100 p-3 sm:p-4 space-y-3">
+              {jobs.map((job) => (
+                <div
+                  key={job.id}
+                  className="bg-slate-50/70 rounded-xl border border-slate-200/80 p-3.5 space-y-2.5"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono font-bold text-xs text-slate-800">
+                      ID: #{job.id.substring(0, 8)}
+                    </span>
+                    <div>
                       {job.status === 'succeeded' && (
                         <span className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded text-[11px] font-semibold border border-emerald-200">
                           <CheckCircle2 className="w-3 h-3" /> Succeeded
@@ -157,20 +211,32 @@ export default function ScansPage() {
                           <Clock className="w-3 h-3" /> Queued
                         </span>
                       )}
-                    </td>
-                    <td className="py-3 px-4 text-center font-bold">{job.total_accounts}</td>
-                    <td className="py-3 px-4 text-center text-emerald-600 font-semibold">{job.successful_accounts}</td>
-                    <td className="py-3 px-4 text-center text-red-600 font-semibold">{job.failed_accounts}</td>
-                    <td className="py-3 px-4 capitalize">{job.selected_platforms}</td>
-                    <td className="py-3 px-4 capitalize">{job.requested_scope}</td>
-                    <td className="py-3 px-4 text-right text-slate-500">
-                      {new Date(job.created_at).toLocaleString()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 text-center text-xs py-1.5 bg-white rounded-lg border border-slate-200/60">
+                    <div>
+                      <div className="text-[10px] text-slate-400 font-bold uppercase">Total</div>
+                      <div className="font-bold text-slate-800 mt-0.5">{job.total_accounts}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-emerald-600 font-bold uppercase">Passed</div>
+                      <div className="font-bold text-emerald-600 mt-0.5">{job.successful_accounts}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-red-600 font-bold uppercase">Failed</div>
+                      <div className="font-bold text-red-600 mt-0.5">{job.failed_accounts}</div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500 pt-1">
+                    <span className="capitalize">{job.selected_platforms} • {job.requested_scope}</span>
+                    <span>{new Date(job.created_at).toLocaleDateString()}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>

@@ -318,9 +318,9 @@ export function StudentCodeChefAnalytics({ user }: StudentCodeChefAnalyticsProps
       )}
 
       {/* 4 Summary Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Current Rating */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
+        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-2xs">
           <div className="text-xs text-slate-500 font-medium">Current Rating</div>
           <div className="text-2xl font-bold text-orange-600 mt-1 font-mono">
             {snapshot?.contest_rating != null ? Math.round(snapshot.contest_rating) : 'N/A'}
@@ -334,7 +334,7 @@ export function StudentCodeChefAnalytics({ user }: StudentCodeChefAnalyticsProps
         </div>
 
         {/* Stars / Division */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
+        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-2xs">
           <div className="text-xs text-slate-500 font-medium">Division & Stars</div>
           <div className="text-2xl font-bold text-slate-900 mt-1 flex items-center gap-1">
             <span>{stars ? stars : 'N/A'}</span>
@@ -348,7 +348,7 @@ export function StudentCodeChefAnalytics({ user }: StudentCodeChefAnalyticsProps
         </div>
 
         {/* Global Rank */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
+        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-2xs">
           <div className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
             <Globe className="w-3.5 h-3.5 text-slate-400" />
             <span>Global Rank</span>
@@ -360,7 +360,7 @@ export function StudentCodeChefAnalytics({ user }: StudentCodeChefAnalyticsProps
         </div>
 
         {/* Country Rank */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
+        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-2xs">
           <div className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
             <Flag className="w-3.5 h-3.5 text-slate-400" />
             <span>Country Rank</span>
@@ -373,13 +373,13 @@ export function StudentCodeChefAnalytics({ user }: StudentCodeChefAnalyticsProps
       </div>
 
       {/* Problems Solved & Activity Details */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         {/* Total Solved */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
+        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-2xs">
           <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
             Total Problems Solved
           </h2>
-          <div className="text-3xl font-bold text-slate-900">
+          <div className="text-2xl sm:text-3xl font-bold text-slate-900">
             {snapshot?.total_solved != null ? snapshot.total_solved : 'N/A'}
           </div>
           <p className="text-xs text-slate-400 mt-1">
@@ -388,11 +388,11 @@ export function StudentCodeChefAnalytics({ user }: StudentCodeChefAnalyticsProps
         </div>
 
         {/* Contests Attended */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs">
+        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-2xs">
           <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
             Contest Participation
           </h2>
-          <div className="text-3xl font-bold text-orange-600">
+          <div className="text-2xl sm:text-3xl font-bold text-orange-600">
             {snapshot?.contests_attended != null ? snapshot.contests_attended : 'N/A'}
           </div>
           <p className="text-xs text-slate-400 mt-1">
@@ -402,8 +402,8 @@ export function StudentCodeChefAnalytics({ user }: StudentCodeChefAnalyticsProps
       </div>
 
       {/* Verified Contest History */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-2xs">
-        <div className="flex items-center justify-between mb-4">
+      <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 shadow-2xs">
+        <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-2 mb-4">
           <div>
             <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <Trophy className="w-4 h-4 text-orange-500" />
@@ -413,7 +413,7 @@ export function StudentCodeChefAnalytics({ user }: StudentCodeChefAnalyticsProps
               Historical CodeChef contests in which you participated.
             </p>
           </div>
-          <span className="text-xs font-semibold text-slate-500">
+          <span className="text-xs font-semibold text-slate-500 shrink-0">
             {contests.length} {contests.length === 1 ? 'Contest' : 'Contests'}
           </span>
         </div>
@@ -427,36 +427,70 @@ export function StudentCodeChefAnalytics({ user }: StudentCodeChefAnalyticsProps
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="bg-slate-50/80 border-b border-slate-200 text-black font-bold uppercase text-[10px] tracking-wider">
-                  <th className="py-2.5 px-3">Contest Name</th>
-                  <th className="py-2.5 px-3">Date</th>
-                  <th className="py-2.5 px-3">Rank</th>
-                  <th className="py-2.5 px-3 text-right">Rating After</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {contests.map((c) => (
-                  <tr key={c.id || c.contest_name} className="hover:bg-slate-50/60 transition-colors">
-                    <td className="py-3 px-3 font-semibold text-slate-900">
-                      {c.contest_name}
-                    </td>
-                    <td className="py-3 px-3 text-slate-500">
-                      {c.contest_date ? new Date(c.contest_date).toLocaleDateString() : 'N/A'}
-                    </td>
-                    <td className="py-3 px-3 font-mono font-semibold text-slate-800">
-                      {c.rank != null ? `#${c.rank.toLocaleString()}` : 'N/A'}
-                    </td>
-                    <td className="py-3 px-3 text-right font-mono font-bold text-orange-600">
-                      {c.rating_after != null ? Math.round(c.rating_after) : 'N/A'}
-                    </td>
+          <>
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto responsive-table-wrapper">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/80 border-b border-slate-200 text-black font-bold uppercase text-[10px] tracking-wider">
+                    <th className="py-2.5 px-3">Contest Name</th>
+                    <th className="py-2.5 px-3">Date</th>
+                    <th className="py-2.5 px-3">Rank</th>
+                    <th className="py-2.5 px-3 text-right">Rating After</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {contests.map((c) => (
+                    <tr key={c.id || c.contest_name} className="hover:bg-slate-50/60 transition-colors">
+                      <td className="py-3 px-3 font-semibold text-slate-900">
+                        {c.contest_name}
+                      </td>
+                      <td className="py-3 px-3 text-slate-500">
+                        {c.contest_date ? new Date(c.contest_date).toLocaleDateString() : 'N/A'}
+                      </td>
+                      <td className="py-3 px-3 font-mono font-semibold text-slate-800">
+                        {c.rank != null ? `#${c.rank.toLocaleString()}` : 'N/A'}
+                      </td>
+                      <td className="py-3 px-3 text-right font-mono font-bold text-orange-600">
+                        {c.rating_after != null ? Math.round(c.rating_after) : 'N/A'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards View */}
+            <div className="md:hidden divide-y divide-slate-100 space-y-3">
+              {contests.map((c) => (
+                <div
+                  key={c.id || c.contest_name}
+                  className="bg-slate-50/60 rounded-xl border border-slate-200/80 p-3.5 space-y-2.5"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="font-bold text-xs text-slate-900 break-words">{c.contest_name}</div>
+                      <div className="text-[11px] text-slate-500 mt-0.5">
+                        {c.contest_date ? new Date(c.contest_date).toLocaleDateString() : 'N/A'}
+                      </div>
+                    </div>
+                    {c.rating_after != null && (
+                      <span className="shrink-0 px-2.5 py-0.5 rounded-full bg-orange-50 text-orange-700 border border-orange-200 font-mono text-xs font-bold">
+                        {Math.round(c.rating_after)}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="pt-1.5 border-t border-slate-200/60">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Rank</span>
+                    <div className="font-mono font-semibold text-slate-800 mt-0.5">
+                      {c.rank != null ? `#${c.rank.toLocaleString()}` : 'N/A'}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>
