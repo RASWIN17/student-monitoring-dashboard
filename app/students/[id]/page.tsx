@@ -5,6 +5,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthContext';
 import { dataCache } from '@/components/DataCacheContext';
+import { usePageLoading } from '@/components/LoadingContext';
 import { getCodeChefStars } from '@/components/ClassroomStudentDetailsView';
 import { LeetCodeIcon, CodeChefIcon } from '@/components/PlatformIcons';
 import { BackButton } from '@/components/BackButton';
@@ -38,6 +39,9 @@ function StudentDetailContent() {
   const cacheKey = studentId ? `student:profile:${studentId}` : null;
   const [data, setData] = useState<any>(() => (cacheKey ? dataCache.get(cacheKey) : null));
   const [loading, setLoading] = useState(() => (cacheKey ? !dataCache.get(cacheKey) : true));
+
+  // Connect genuine student profile loading to GlobalLoader
+  usePageLoading(loading && !data, 'student-profile-details');
 
   // Individual Student Scan states
   const [isScanning, setIsScanning] = useState(false);

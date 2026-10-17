@@ -3,7 +3,7 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthContext';
-import { RefreshCw } from 'lucide-react';
+
 
 export default function RootPage() {
   const router = useRouter();
@@ -23,10 +23,5 @@ export default function RootPage() {
     }
   }, [user, authLoading, router]);
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-400 gap-2">
-      <RefreshCw className="w-5 h-5 animate-spin text-blue-600" />
-      <span className="text-sm font-medium">Checking authentication status...</span>
-    </div>
-  );
+  return <div className="min-h-screen bg-white" />;
 }

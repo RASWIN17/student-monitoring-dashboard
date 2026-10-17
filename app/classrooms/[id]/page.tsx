@@ -4,6 +4,7 @@ import React, { useEffect, useState, use } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthContext';
+import { usePageLoading } from '@/components/LoadingContext';
 import { Classroom, StudentPerformanceOverview } from '@/lib/types';
 import {
   GraduationCap,
@@ -34,6 +35,9 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ id: 
   const [classroom, setClassroom] = useState<Classroom | null>(null);
   const [students, setStudents] = useState<StudentPerformanceOverview[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Connect genuine initial classroom loading to GlobalLoader
+  usePageLoading(loading && !classroom, 'classroom-details');
   const [studentsLoading, setStudentsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [studentsError, setStudentsError] = useState<string | null>(null);

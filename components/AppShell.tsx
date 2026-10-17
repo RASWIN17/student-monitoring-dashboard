@@ -5,7 +5,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Sidebar } from './Sidebar';
 import { Navbar } from './Navbar';
 import { useAuth } from './AuthContext';
-import { RefreshCw } from 'lucide-react';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -35,12 +34,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   // While checking auth on protected routes, do not display internal dashboard layout or sidebar
   if (loading && !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-400 gap-2">
-        <RefreshCw className="w-5 h-5 animate-spin text-blue-600" />
-        <span className="text-sm font-medium">Checking authentication status...</span>
-      </div>
-    );
+    return <div className="min-h-screen bg-white" />;
   }
 
   // If unauthenticated, prevent dashboard elements from flashing while redirect is processing
