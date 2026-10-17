@@ -543,29 +543,6 @@ export function ClassroomStudentDetailsView({ platform, classroomId: propClassro
         </button>
       </div>
 
-      {/* Active Filter Indicator Banner */}
-      {activeFilter !== 'all' && (
-        <div className="bg-[#f0f6ff] border border-[#bfdbfe] rounded-2xl px-5 py-3 flex items-center justify-between shadow-2xs">
-          <div className="flex items-center gap-2 text-xs text-[#0f1b35]">
-            <span className="font-bold text-[#1769ff]">Filtered View:</span>
-            <span className="font-semibold">
-              {activeFilter === 'linked' && `Profile Linked (${stats.linkedCount})`}
-              {activeFilter === 'not_linked' && `Profile Not Linked (${stats.notLinkedCount})`}
-              {activeFilter === 'active' && `Active Students Today (${stats.activeTodayCount})`}
-              {activeFilter === 'non_active' && `Non-Active Students Today (${stats.nonActiveTodayCount})`}
-            </span>
-            <span className="text-[#64748b]">• Showing {processedStudents.length} of {stats.totalStudents} student{stats.totalStudents === 1 ? '' : 's'}</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => handleCardClick('all')}
-            className="text-xs font-bold text-[#1769ff] hover:text-[#0052cc] hover:underline"
-          >
-            Clear Filter (Show All)
-          </button>
-        </div>
-      )}
-
       {/* 4. Search, Filter & Sort Controls */}
       <div className="bg-white rounded-2xl border border-[#e1eaf5] p-4 shadow-[0_2px_10px_rgba(30,64,175,0.03)] space-y-3">
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
