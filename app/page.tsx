@@ -12,10 +12,10 @@ export default function RootPage() {
   useEffect(() => {
     if (!authLoading) {
       if (user) {
-        if (user.role === 'teacher' || user.role === 'admin') {
-          router.replace('/students');
+        if (user.role === 'student' && !user.profile_completed) {
+          router.replace('/student/profile/create');
         } else {
-          router.replace(!user.profile_completed ? '/student/profile/create' : '/classrooms');
+          router.replace('/classrooms');
         }
       } else {
         router.replace('/login');

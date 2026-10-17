@@ -369,14 +369,14 @@ describe('CodeTrack Full System & Zero Fake Data Verification Suite', () => {
 
   test('10. Role-Based Dashboard Redirection destination logic', () => {
     function getDashboardRedirectPath(role, profileCompleted = true) {
-      if (role === 'teacher' || role === 'admin') {
-        return '/students';
+      if (role === 'student' && !profileCompleted) {
+        return '/student/profile/create';
       }
-      return profileCompleted ? '/classrooms' : '/student/profile/create';
+      return '/classrooms';
     }
 
-    assert.strictEqual(getDashboardRedirectPath('teacher'), '/students');
-    assert.strictEqual(getDashboardRedirectPath('admin'), '/students');
+    assert.strictEqual(getDashboardRedirectPath('teacher'), '/classrooms');
+    assert.strictEqual(getDashboardRedirectPath('admin'), '/classrooms');
     assert.strictEqual(getDashboardRedirectPath('student', false), '/student/profile/create');
     assert.strictEqual(getDashboardRedirectPath('student', true), '/classrooms');
   });
@@ -591,13 +591,13 @@ describe('CodeTrack Full System & Zero Fake Data Verification Suite', () => {
         return { status: 307, destination: '/classrooms?error=Access restricted to teachers only' };
       }
       if (isTeacher && isStudentRoute) {
-        return { status: 307, destination: '/students' };
+        return { status: 307, destination: '/classrooms' };
       }
       if (isTeacher && pathname.startsWith('/teacher/dashboard')) {
-        return { status: 307, destination: '/students' };
+        return { status: 307, destination: '/classrooms' };
       }
       if (pathname === '/' || pathname === '/login' || pathname === '/register') {
-        return { status: 307, destination: isTeacher ? '/students' : '/classrooms' };
+        return { status: 307, destination: '/classrooms' };
       }
 
       return { status: 200, destination: pathname };
@@ -614,10 +614,10 @@ describe('CodeTrack Full System & Zero Fake Data Verification Suite', () => {
     assert.deepStrictEqual(resolveRouteAccess('/login', null, null), { status: 200, destination: '/login' });
     assert.deepStrictEqual(resolveRouteAccess('/register', null, null), { status: 200, destination: '/register' });
 
-    // 4. Already authenticated teacher -> redirected to /students when opening / or /login
+    // 4. Already authenticated teacher -> redirected to /classrooms when opening / or /login
     const teacherUser = { id: 't1', email: 'teacher@school.edu' };
-    assert.deepStrictEqual(resolveRouteAccess('/', teacherUser, 'teacher'), { status: 307, destination: '/students' });
-    assert.deepStrictEqual(resolveRouteAccess('/login', teacherUser, 'teacher'), { status: 307, destination: '/students' });
+    assert.deepStrictEqual(resolveRouteAccess('/', teacherUser, 'teacher'), { status: 307, destination: '/classrooms' });
+    assert.deepStrictEqual(resolveRouteAccess('/login', teacherUser, 'teacher'), { status: 307, destination: '/classrooms' });
     assert.deepStrictEqual(resolveRouteAccess('/students', teacherUser, 'teacher'), { status: 200, destination: '/students' });
 
     // 5. Already authenticated student -> redirected to /classrooms when opening / or /login
@@ -629,8 +629,8 @@ describe('CodeTrack Full System & Zero Fake Data Verification Suite', () => {
     // 6. Cross-role protection: student prevented from accessing teacher route
     assert.strictEqual(resolveRouteAccess('/students', studentUser, 'student').destination, '/classrooms?error=Access restricted to teachers only');
 
-    // 7. Cross-role protection: teacher redirected to students portal when visiting student route
-    assert.strictEqual(resolveRouteAccess('/student/profile/create', teacherUser, 'teacher').destination, '/students');
+    // 7. Cross-role protection: teacher redirected to classrooms when visiting student route
+    assert.strictEqual(resolveRouteAccess('/student/profile/create', teacherUser, 'teacher').destination, '/classrooms');
   });
 
   test('18. Student Profile Creation, Mandatory Validations & Duplicate Register Number Prevention', () => {

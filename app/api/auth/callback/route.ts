@@ -76,13 +76,11 @@ export async function GET(request: Request) {
         console.warn('Could not update auth metadata with role:', metaErr);
       }
 
-      // 4. Role-Based Dashboard Redirection
-      const isTeacher = profile.role === 'teacher' || profile.role === 'admin';
-      const redirectPath = isTeacher
-        ? '/students'
-        : !profile.profile_completed
-        ? '/student/profile/create'
-        : '/classrooms';
+      // 4. Role-Based Dashboard Redirection: direct all authenticated users to /classrooms
+      const redirectPath =
+        profile.role === 'student' && !profile.profile_completed
+          ? '/student/profile/create'
+          : '/classrooms';
       const response = NextResponse.redirect(`${requestUrl.origin}${redirectPath}`);
 
       // Set verified role cookie for fast, low-overhead server middleware authorization

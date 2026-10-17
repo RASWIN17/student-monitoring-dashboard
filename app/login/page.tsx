@@ -45,9 +45,7 @@ function LoginFormContent() {
         router.replace(returnTo);
       } else {
         const dest =
-          user.role === 'teacher' || user.role === 'admin'
-            ? '/students'
-            : !user.profile_completed
+          user.role === 'student' && !user.profile_completed
             ? '/student/profile/create'
             : '/classrooms';
         router.replace(dest);

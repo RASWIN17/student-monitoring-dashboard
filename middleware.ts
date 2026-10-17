@@ -121,35 +121,35 @@ export async function middleware(request: NextRequest) {
     // Redirect legacy student dashboard route to classrooms
     if (pathname.startsWith('/student/dashboard')) {
       const url = request.nextUrl.clone();
-      url.pathname = isTeacher ? '/students' : '/classrooms';
+      url.pathname = '/classrooms';
       return NextResponse.redirect(url);
     }
 
-    // Direct teachers trying to access student routes to students section
+    // Direct teachers trying to access student routes to classrooms section
     if (isTeacher && isStudentRoute) {
       const url = request.nextUrl.clone();
-      url.pathname = '/students';
+      url.pathname = '/classrooms';
       return NextResponse.redirect(url);
     }
 
-    // Direct teachers trying to access teacher dashboard to students section
+    // Direct teachers trying to access legacy teacher dashboard to classrooms
     if (isTeacher && pathname.startsWith('/teacher/dashboard')) {
       const url = request.nextUrl.clone();
-      url.pathname = '/students';
+      url.pathname = '/classrooms';
       return NextResponse.redirect(url);
     }
 
-    // Root page redirection: already authenticated users go directly to their section
+    // Root page redirection: already authenticated users go directly to classrooms
     if (pathname === '/') {
       const url = request.nextUrl.clone();
-      url.pathname = isTeacher ? '/students' : '/classrooms';
+      url.pathname = '/classrooms';
       return NextResponse.redirect(url);
     }
 
     // Prevent authenticated users from getting stuck on login/register
     if (pathname === '/login' || pathname === '/register') {
       const url = request.nextUrl.clone();
-      url.pathname = isTeacher ? '/students' : '/classrooms';
+      url.pathname = '/classrooms';
       return NextResponse.redirect(url);
     }
   }

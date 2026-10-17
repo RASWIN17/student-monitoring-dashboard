@@ -40,7 +40,7 @@ export default function CreateStudentProfilePage() {
         return;
       }
       if (user.role === 'teacher' || user.role === 'admin') {
-        router.replace('/students');
+        router.replace('/classrooms');
         return;
       }
       // If student already completed their profile, redirect directly to classrooms

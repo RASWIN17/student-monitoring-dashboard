@@ -56,7 +56,11 @@ export default function RegisterPage() {
   };
 
   if (user) {
-    router.replace(user.role === 'teacher' || user.role === 'admin' ? '/students' : '/classrooms');
+    router.replace(
+      user.role === 'student' && !user.profile_completed
+        ? '/student/profile/create'
+        : '/classrooms'
+    );
     return null;
   }
 
