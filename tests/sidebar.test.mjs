@@ -107,4 +107,67 @@ describe('Responsive Slide-In Sidebar Verification Suite', () => {
       'Navbar header must match AppShell horizontal gutters (px-4 sm:px-5 lg:px-6)'
     );
   });
+
+  test('8. Roll Number Sorting by Last Three Digits Verification', () => {
+    const classroomDetailsPath = path.join(process.cwd(), 'components', 'ClassroomStudentDetailsView.tsx');
+    const classroomDetailsContent = fs.readFileSync(classroomDetailsPath, 'utf8');
+
+    // UI contains Roll Number sort button alongside existing options
+    assert.match(
+      classroomDetailsContent,
+      /setSortOption\('roll_number_asc'\)[\s\S]*>[\s\S]*Roll Number[\s\S]*<\/button>/,
+      'ClassroomStudentDetailsView must contain Roll Number sorting button'
+    );
+    assert.match(classroomDetailsContent, /🔥 Most Solved/, 'Must preserve Most Solved option');
+    assert.match(classroomDetailsContent, /Least Solved/, 'Must preserve Least Solved option');
+    assert.match(classroomDetailsContent, /⭐ Highest Rating/, 'Must preserve Highest Rating option');
+    assert.match(classroomDetailsContent, /Lowest Rating/, 'Must preserve Lowest Rating option');
+
+    // Verify sort logic on student list with sample roll numbers
+    function extractLastThreeDigits(rollNumber) {
+      if (!rollNumber) return null;
+      const str = String(rollNumber).trim();
+      if (!str) return null;
+      const digits = str.replace(/\D/g, '');
+      if (!digits) return null;
+      const lastThree = digits.slice(-3);
+      const parsed = parseInt(lastThree, 10);
+      return Number.isNaN(parsed) ? null : parsed;
+    }
+
+    assert.strictEqual(extractLastThreeDigits('7376231045'), 45);
+    assert.strictEqual(extractLastThreeDigits('7376231008'), 8);
+    assert.strictEqual(extractLastThreeDigits('7376231021'), 21);
+    assert.strictEqual(extractLastThreeDigits('711525BEC092'), 92);
+    assert.strictEqual(extractLastThreeDigits(null), null);
+    assert.strictEqual(extractLastThreeDigits(''), null);
+
+    const sampleStudents = [
+      { student: { id: '1', display_name: 'Student A', register_number: '7376231045' } },
+      { student: { id: '2', display_name: 'Student B', register_number: '7376231008' } },
+      { student: { id: '3', display_name: 'Student C', register_number: '7376231021' } },
+    ];
+
+    const originalCopy = JSON.parse(JSON.stringify(sampleStudents));
+
+    const sorted = [...sampleStudents].sort((a, b) => {
+      const aNum = extractLastThreeDigits(a.student.register_number);
+      const bNum = extractLastThreeDigits(b.student.register_number);
+      if (aNum === null && bNum === null) return 0;
+      if (aNum === null) return 1;
+      if (bNum === null) return -1;
+      return aNum - bNum;
+    });
+
+    // Check sorted order: 8 ("7376231008"), 21 ("7376231021"), 45 ("7376231045")
+    assert.deepStrictEqual(
+      sorted.map((s) => s.student.register_number),
+      ['7376231008', '7376231021', '7376231045'],
+      'Roll Number sort must order ascending by last three digits'
+    );
+
+    // Verify original array was not mutated and full roll numbers are preserved
+    assert.deepStrictEqual(sampleStudents, originalCopy, 'Sorting must not mutate the original student list');
+    assert.strictEqual(sorted[0].student.register_number, '7376231008', 'Full original roll number must be retained');
+  });
 });

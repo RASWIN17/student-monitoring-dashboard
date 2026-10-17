@@ -39,7 +39,23 @@ export type SortOption =
   | 'problems_asc'
   | 'rating_desc'
   | 'rating_asc'
+  | 'roll_number_asc'
   | 'name_asc';
+
+export function extractRollNumberSortValue(rollNumber: string | null | undefined): number | null {
+  if (!rollNumber) return null;
+  const str = String(rollNumber).trim();
+  if (!str) return null;
+
+  // Extract all digit characters from the roll number
+  const digits = str.replace(/\D/g, '');
+  if (!digits) return null;
+
+  // Extract only the last three digits for numeric comparison
+  const lastThree = digits.slice(-3);
+  const parsed = parseInt(lastThree, 10);
+  return Number.isNaN(parsed) ? null : parsed;
+}
 
 export function getCodeChefStars(rating: number | null): string {
   if (rating === null || rating === undefined || rating <= 0) return 'Unrated';
@@ -205,7 +221,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId: propClassro
     });
 
     // 3. Sort numerically
-    return searchFiltered.sort((a, b) => {
+    return [...searchFiltered].sort((a, b) => {
       const aSnap = platform === 'leetcode' ? a.leetcodeSnapshot : a.codechefSnapshot;
       const bSnap = platform === 'leetcode' ? b.leetcodeSnapshot : b.codechefSnapshot;
 
@@ -246,6 +262,27 @@ export function ClassroomStudentDetailsView({ platform, classroomId: propClassro
         const aVal = aRating != null ? Number(aRating) : 999999999;
         const bVal = bRating != null ? Number(bRating) : 999999999;
         return aVal - bVal;
+      }
+      if (sortOption === 'roll_number_asc' || (sortOption as string) === 'roll_number') {
+        const aRoll = a.student.register_number || (a.student as any).roll_number;
+        const bRoll = b.student.register_number || (b.student as any).roll_number;
+
+        const aNum = extractRollNumberSortValue(aRoll);
+        const bNum = extractRollNumberSortValue(bRoll);
+
+        if (aNum === null && bNum === null) {
+          return (a.student.display_name || '').localeCompare(b.student.display_name || '');
+        }
+        if (aNum === null) return 1;
+        if (bNum === null) return -1;
+
+        if (aNum !== bNum) {
+          return aNum - bNum;
+        }
+
+        const rollCompare = String(aRoll || '').localeCompare(String(bRoll || ''));
+        if (rollCompare !== 0) return rollCompare;
+        return (a.student.display_name || '').localeCompare(b.student.display_name || '');
       }
       if (sortOption === 'name_asc') {
         return (a.student.display_name || '').localeCompare(b.student.display_name || '');
@@ -549,7 +586,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId: propClassro
       <div className="bg-white rounded-2xl border border-[#e1eaf5] p-4 shadow-[0_2px_10px_rgba(30,64,175,0.03)] space-y-3">
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           {/* Search Box */}
-          <div className="relative flex-1">
+          <div className="relative flex-1 md:max-w-xs lg:max-w-sm">
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
@@ -568,7 +605,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId: propClassro
             </span>
             <button
               onClick={() => setSortOption('problems_desc')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                 sortOption === 'problems_desc'
                   ? 'bg-[#1769ff] text-white shadow-xs'
                   : 'bg-white border border-[#e1eaf5] text-[#475569] hover:bg-slate-50'
@@ -578,7 +615,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId: propClassro
             </button>
             <button
               onClick={() => setSortOption('problems_asc')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                 sortOption === 'problems_asc'
                   ? 'bg-[#1769ff] text-white shadow-xs'
                   : 'bg-white border border-[#e1eaf5] text-[#475569] hover:bg-slate-50'
@@ -588,7 +625,7 @@ export function ClassroomStudentDetailsView({ platform, classroomId: propClassro
             </button>
             <button
               onClick={() => setSortOption('rating_desc')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                 sortOption === 'rating_desc'
                   ? 'bg-[#1769ff] text-white shadow-xs'
                   : 'bg-white border border-[#e1eaf5] text-[#475569] hover:bg-slate-50'
@@ -598,13 +635,23 @@ export function ClassroomStudentDetailsView({ platform, classroomId: propClassro
             </button>
             <button
               onClick={() => setSortOption('rating_asc')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                 sortOption === 'rating_asc'
                   ? 'bg-[#1769ff] text-white shadow-xs'
                   : 'bg-white border border-[#e1eaf5] text-[#475569] hover:bg-slate-50'
               }`}
             >
               Lowest Rating
+            </button>
+            <button
+              onClick={() => setSortOption('roll_number_asc')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                sortOption === 'roll_number_asc'
+                  ? 'bg-[#1769ff] text-white shadow-xs'
+                  : 'bg-white border border-[#e1eaf5] text-[#475569] hover:bg-slate-50'
+              }`}
+            >
+              Roll Number
             </button>
           </div>
         </div>

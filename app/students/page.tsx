@@ -34,9 +34,9 @@ export default function StudentsLandingPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 pb-12 pt-6 sm:pt-10">
+    <div className="w-full min-h-[calc(100vh-140px)] flex items-center justify-center py-6 sm:py-8">
       {/* Two Platform Cards matching reference image */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-7 sm:gap-8 max-w-4xl mx-auto items-stretch">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-7 sm:gap-8 w-full max-w-4xl mx-auto items-stretch">
         {/* Card 1: LeetCode */}
         <Link
           href="/students/leetcode"
