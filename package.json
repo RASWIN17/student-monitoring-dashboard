@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node --test tests/system.test.mjs tests/task1_and_task2.test.mjs",
+    "test": "node --test tests/system.test.mjs tests/task1_and_task2.test.mjs tests/sidebar.test.mjs",
     "migrate:data": "node --env-file=.env.local scripts/migrate_sqlite_to_supabase.mjs",
     "worker": "node --env-file=.env.local scripts/scan_worker.mjs",
     "roles:list": "node --env-file=.env.local scripts/test_roles.mjs list",

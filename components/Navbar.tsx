@@ -17,9 +17,13 @@ import Link from 'next/link';
 export function Navbar({
   onDataRefreshed,
   onToggleMobileNav,
+  onToggleSidebar,
+  isSidebarOpen,
 }: {
   onDataRefreshed?: () => void;
   onToggleMobileNav?: () => void;
+  onToggleSidebar?: () => void;
+  isSidebarOpen?: boolean;
 }) {
   const { user, selectedClassroom, classrooms, setSelectedClassroom } = useAuth();
   const [isScanModalOpen, setIsScanModalOpen] = useState(false);
@@ -27,6 +31,8 @@ export function Navbar({
   const [joinCode, setJoinCode] = useState('');
   const [joinError, setJoinError] = useState<string | null>(null);
   const [joining, setJoining] = useState(false);
+
+  const handleToggle = onToggleSidebar || onToggleMobileNav;
 
   const isTeacher = user?.role === 'teacher' || user?.role === 'admin';
 
@@ -59,14 +65,16 @@ export function Navbar({
   return (
     <>
       <header className="min-h-[64px] sm:min-h-[72px] lg:h-[88px] bg-white border-b border-[#e1eaf5] px-3.5 sm:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-30 shadow-[0_2px_12px_rgba(30,64,175,0.03)] shrink-0 gap-2">
-        {/* Left Section: Mobile Menu Toggle, Classroom Selector & Timezone */}
+        {/* Left Section: Menu Toggle, Classroom Selector & Timezone */}
         <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-          {onToggleMobileNav && (
+          {handleToggle && (
             <button
               type="button"
-              onClick={onToggleMobileNav}
-              aria-label="Open mobile navigation"
-              className="lg:hidden p-2 -ml-1 text-slate-700 hover:text-blue-600 hover:bg-slate-100 rounded-xl transition shrink-0 cursor-pointer"
+              onClick={handleToggle}
+              aria-label={isSidebarOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-expanded={isSidebarOpen}
+              aria-controls="app-sidebar"
+              className="p-2 -ml-1 text-slate-700 hover:text-blue-600 hover:bg-slate-100 rounded-xl transition shrink-0 cursor-pointer"
             >
               <Menu className="w-5 h-5" />
             </button>

@@ -15,30 +15,40 @@ import {
 } from 'lucide-react';
 
 interface SidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
   mobileOpen?: boolean;
   onCloseMobile?: () => void;
 }
 
-export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
+export function Sidebar({
+  isOpen,
+  onClose,
+  mobileOpen = false,
+  onCloseMobile,
+}: SidebarProps) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
 
+  const isSidebarOpen = isOpen ?? mobileOpen;
+  const handleClose = onClose || onCloseMobile;
+
   const isTeacher = user?.role === 'teacher' || user?.role === 'admin';
 
-  // Keyboard accessibility: Close mobile drawer on Escape
+  // Keyboard accessibility: Close drawer on Escape
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && mobileOpen && onCloseMobile) {
-        onCloseMobile();
+      if (e.key === 'Escape' && isSidebarOpen && handleClose) {
+        handleClose();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [mobileOpen, onCloseMobile]);
+  }, [isSidebarOpen, handleClose]);
 
-  // Lock body scroll when mobile drawer is open
+  // Lock body scroll when drawer is open
   useEffect(() => {
-    if (mobileOpen) {
+    if (isSidebarOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -46,7 +56,7 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
     return () => {
       document.body.style.overflow = '';
     };
-  }, [mobileOpen]);
+  }, [isSidebarOpen]);
 
   const navItems = [
     { label: 'Classrooms', href: '/classrooms', icon: GraduationCap, roles: ['teacher', 'admin', 'student'] },
@@ -64,21 +74,24 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
 
   return (
     <>
-      {/* Mobile Backdrop Overlay */}
+      {/* Backdrop Overlay across all screen sizes */}
       <div
-        className={`fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 lg:hidden transition-opacity duration-300 ${
-          mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        className={`fixed inset-0 bg-slate-950/50 backdrop-blur-xs z-40 transition-opacity duration-300 ease-in-out ${
+          isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
-        onClick={onCloseMobile}
+        onClick={handleClose}
         aria-hidden="true"
       />
 
-      {/* Main Sidebar / Mobile Drawer */}
+      {/* Main Sidebar Drawer across all screen sizes */}
       <aside
+        id="app-sidebar"
+        aria-label="Main Navigation"
+        aria-hidden={!isSidebarOpen}
+        inert={!isSidebarOpen}
         className={`
-          fixed inset-y-0 left-0 z-50 w-[260px] max-w-[85vw] bg-gradient-to-b from-[#081226] via-[#0b1736] to-[#081226] text-white flex flex-col h-screen border-r border-[#152549] shrink-0 select-none transition-transform duration-300 ease-in-out
-          lg:static lg:w-[228px] lg:min-w-[228px] lg:translate-x-0 lg:z-40
-          ${mobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'}
+          fixed inset-y-0 left-0 z-50 w-[260px] sm:w-[270px] max-w-[85vw] bg-gradient-to-b from-[#081226] via-[#0b1736] to-[#081226] text-white flex flex-col h-screen border-r border-[#152549] shrink-0 select-none transition-transform duration-300 ease-in-out will-change-transform
+          ${isSidebarOpen ? 'translate-x-0 shadow-2xl pointer-events-auto' : '-translate-x-full shadow-none pointer-events-none'}
         `}
       >
         {/* Brand Header */}
@@ -92,12 +105,12 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
               <div className="text-xs text-[#8ea4c8] font-normal mt-0.5">Activity Monitor</div>
             </div>
           </div>
-          {onCloseMobile && (
+          {handleClose && (
             <button
               type="button"
-              onClick={onCloseMobile}
+              onClick={handleClose}
               aria-label="Close navigation"
-              className="lg:hidden p-1.5 rounded-lg text-[#8ea4c8] hover:text-white hover:bg-white/10 transition cursor-pointer"
+              className="p-1.5 rounded-lg text-[#8ea4c8] hover:text-white hover:bg-white/10 transition cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -147,7 +160,7 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
               key={item.label}
               href={item.href}
               onClick={() => {
-                if (onCloseMobile) onCloseMobile();
+                if (handleClose) handleClose();
               }}
               className={`flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                 isActive
@@ -167,7 +180,7 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
         {user ? (
           <button
             onClick={() => {
-              if (onCloseMobile) onCloseMobile();
+              if (handleClose) handleClose();
               logout();
             }}
             className="w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-[#94a3b8] hover:text-white hover:bg-white/[0.06] transition-colors cursor-pointer"
@@ -179,7 +192,7 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
           <Link
             href="/login"
             onClick={() => {
-              if (onCloseMobile) onCloseMobile();
+              if (handleClose) handleClose();
             }}
             className="w-full flex items-center justify-center py-2.5 px-4 rounded-xl bg-[#1769ff] text-white text-sm font-semibold hover:bg-blue-600 shadow-[0_4px_14px_rgba(23,105,255,0.35)] transition"
           >

@@ -7,6 +7,10 @@
   --background-rgb: 248, 250, 252;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   color: rgb(var(--foreground-rgb));
   background-color: rgb(var(--background-rgb));

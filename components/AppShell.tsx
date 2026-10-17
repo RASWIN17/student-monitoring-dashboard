@@ -11,11 +11,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, loading } = useAuth();
-  const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
-  // Close mobile navigation drawer whenever route/path changes
+  // Close navigation drawer whenever route/path changes
   useEffect(() => {
-    setMobileNavOpen(false);
+    setSidebarOpen(false);
   }, [pathname]);
 
   const isAuthPage = pathname === '/login' || pathname === '/register';
@@ -51,12 +51,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen overflow-hidden bg-[#F5F8FD]">
       <Sidebar
-        mobileOpen={mobileNavOpen}
-        onCloseMobile={() => setMobileNavOpen(false)}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        mobileOpen={sidebarOpen}
+        onCloseMobile={() => setSidebarOpen(false)}
       />
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-        <Navbar onToggleMobileNav={() => setMobileNavOpen((prev) => !prev)} />
-        <main className="flex-1 p-3.5 sm:p-5 md:p-6 lg:p-8 overflow-y-auto bg-[#F5F8FD]">
+        <Navbar
+          isSidebarOpen={sidebarOpen}
+          onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
+          onToggleMobileNav={() => setSidebarOpen((prev) => !prev)}
+        />
+        <main className="flex-1 p-3.5 sm:p-5 md:p-6 lg:p-8 overflow-y-auto bg-[#F5F8FD] scroll-smooth">
           {children}
         </main>
       </div>
