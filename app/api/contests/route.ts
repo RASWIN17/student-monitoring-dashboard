@@ -109,7 +109,7 @@ export async function GET(req: Request) {
           : [...upcomingAndLive, ...completed];
 
     const response = NextResponse.json({ contests: sortedContests });
-    response.headers.set('Cache-Control', 'private, s-maxage=30, stale-while-revalidate=120');
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     return response;
   } catch (err: any) {
     console.error('Error in /api/contests:', err);

@@ -63,7 +63,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       return NextResponse.json({ error: 'Contest analytics not found' }, { status: 404 });
     }
 
-    return NextResponse.json(analytics);
+    const response = NextResponse.json(analytics);
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    return response;
   } catch (err: any) {
     console.error(`[Contest Analytics Error in /api/contests/${id}]:`, err);
     return NextResponse.json({ error: 'Failed to fetch contest analytics. Please try again later.' }, { status: 500 });

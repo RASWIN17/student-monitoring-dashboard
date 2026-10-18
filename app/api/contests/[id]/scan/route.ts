@@ -38,7 +38,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
   try {
     const result = await ContestService.scanContest(id, classroomId || null);
-    return NextResponse.json(result);
+    const response = NextResponse.json(result);
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    return response;
   } catch (err: any) {
     console.error(`[Contest Scan Error in /api/contests/${id}/scan]:`, err);
     return NextResponse.json({ error: 'Failed to scan contest. Please try again later.' }, { status: 500 });

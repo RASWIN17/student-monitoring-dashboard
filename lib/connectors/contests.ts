@@ -9,6 +9,8 @@ import {
   saveContestRecord,
   getPlatformAccountsForStudent,
   getEnrolledStudents,
+  isContestRecordMatching,
+  computeContestStatus,
 } from '../db';
 
 export class ContestService {
@@ -264,27 +266,50 @@ export class ContestService {
     }
 
     const nowMs = Date.now();
+    const startMs = new Date(contest.start_time).getTime();
     const endMs = new Date(contest.end_time).getTime();
 
     // 1. Enforce that contest must be finished
     if (nowMs < endMs) {
+      const dynamicStatus = nowMs >= startMs ? 'live' : 'upcoming';
+      if (contest.status !== dynamicStatus) {
+        await updateContest(contest.id, { status: dynamicStatus });
+      }
       return {
         success: false,
-        message: 'Contest is still ongoing or upcoming. Results cannot be scanned until after contest end.',
+        message: dynamicStatus === 'live'
+          ? 'Contest is currently live. Official participation and rankings will be verified after the contest ends.'
+          : 'Contest is upcoming. Results cannot be scanned until after contest end.',
         scannedCount: 0,
         attendedCount: 0,
         pendingCount: 0,
       };
     }
 
-    // 2. Mark contest as scanning
+    // 2. Concurrency guard: avoid conflicting simultaneous scans
+    if (contest.scan_status === 'scanning' && contest.last_scanned_at) {
+      const lastScannedMs = new Date(contest.last_scanned_at).getTime();
+      if (nowMs - lastScannedMs < 15000) {
+        return {
+          success: true,
+          message: 'A scan is already currently in progress for this contest.',
+          scannedCount: 0,
+          attendedCount: 0,
+          pendingCount: 0,
+        };
+      }
+    }
+
+    // 3. Mark contest as completed and scanning
     await updateContest(contest.id, {
+      status: 'completed',
       scan_status: 'scanning',
+      last_scanned_at: new Date(nowMs).toISOString(),
       scan_message: 'Scan in progress: Verifying student participation against official platform records...',
     });
 
     try {
-      // 3. Find target students
+      // 4. Find target students
       let students: { id: string; display_name: string }[] = [];
       if (classroomId) {
         students = await getEnrolledStudents(classroomId);
@@ -296,6 +321,7 @@ export class ContestService {
 
       if (students.length === 0) {
         await updateContest(contest.id, {
+          status: 'completed',
           scan_status: 'completed',
           last_scanned_at: new Date().toISOString(),
           scan_message: 'No enrolled students found to scan for this classroom.',
@@ -303,7 +329,7 @@ export class ContestService {
         return { success: true, message: 'No enrolled students to scan', scannedCount: 0, attendedCount: 0, pendingCount: 0 };
       }
 
-      // 4. Collect linked accounts for this platform
+      // 5. Collect linked accounts for this platform
       const targetAccounts: { studentId: string; account: PlatformAccount }[] = [];
       for (const st of students) {
         const accs = await getPlatformAccountsForStudent(st.id);
@@ -315,6 +341,7 @@ export class ContestService {
 
       if (targetAccounts.length === 0) {
         await updateContest(contest.id, {
+          status: 'completed',
           scan_status: 'completed',
           last_scanned_at: new Date().toISOString(),
           scan_message: `No linked ${contest.platform === 'leetcode' ? 'LeetCode' : 'CodeChef'} accounts found in this classroom.`,
@@ -325,41 +352,69 @@ export class ContestService {
       let attendedCount = 0;
       let pendingCount = 0;
       let scannedCount = 0;
+      const hoursSinceEnd = (nowMs - endMs) / (1000 * 60 * 60);
 
       // Platform specific scanning logic
       if (contest.platform === 'leetcode') {
-        const contestStartSec = Math.floor(new Date(contest.start_time).getTime() / 1000);
-        const contestTitleNorm = contest.title.trim().toLowerCase();
-        const contestSlugNorm = contest.contest_code.trim().toLowerCase().replace(/-/g, ' ');
+        const contestStartSec = Math.floor(startMs / 1000);
+        const contestEndSec = Math.floor(endMs / 1000);
+
+        // Pre-check: Determine if official LeetCode ratings are published yet
+        let isRatingsPublished = hoursSinceEnd >= 72;
+        if (!isRatingsPublished) {
+          try {
+            const benchmarkRes = await LeetCodeConnector.fetchProfileData('SaveVMK');
+            if (benchmarkRes.success && benchmarkRes.data?.contestHistory) {
+              const benchmarkMatch = benchmarkRes.data.contestHistory.find((ch) =>
+                isContestRecordMatching({ contest_name: ch.title, platform_contest_id: ch.title }, contest) ||
+                Math.abs(ch.startTime - contestStartSec) <= 7200
+              );
+              if (benchmarkMatch) {
+                isRatingsPublished = true;
+              }
+            }
+          } catch {}
+        }
 
         for (const item of targetAccounts) {
           scannedCount++;
           const profileRes = await LeetCodeConnector.fetchProfileData(item.account.username);
 
           if (!profileRes.success || !profileRes.data) {
-            // Profile failed or unreachable -> mark pending verification
+            // Platform request failed or was rate limited
             pendingCount++;
+            await saveContestRecord({
+              platform_account_id: item.account.id,
+              platform_contest_id: contest.contest_code,
+              contest_name: contest.title,
+              contest_date: contest.start_time,
+              participation_status: 'pending_verification',
+              rank: null,
+              problems_solved: null,
+              total_problems: 4,
+              rating_after: null,
+              evidence_source: 'leetcode_profile_unreachable',
+              data_availability_status: 'platform_rate_limited_or_error',
+            });
             continue;
           }
 
           const data = profileRes.data;
           const contestHistory = data.contestHistory || [];
 
-          // Match student contest record
+          // 1. Check official contest rating history
           const matchedHistory = contestHistory.find((ch) => {
-            const titleNorm = ch.title.trim().toLowerCase();
             const timeDiff = Math.abs(ch.startTime - contestStartSec);
             return (
-              titleNorm === contestTitleNorm ||
-              titleNorm === contestSlugNorm ||
-              timeDiff <= 7200 ||
-              titleNorm.includes(contestTitleNorm)
+              isContestRecordMatching({ contest_name: ch.title, platform_contest_id: ch.title }, contest) ||
+              timeDiff <= 7200
             );
           });
 
           if (matchedHistory && matchedHistory.problemsSolved !== undefined) {
-            // Student attended!
+            // Student attended with official rating record!
             attendedCount++;
+            isRatingsPublished = true; // If any student has ratings, ratings are out!
             await saveContestRecord({
               platform_account_id: item.account.id,
               platform_contest_id: contest.contest_code,
@@ -373,50 +428,86 @@ export class ContestService {
               evidence_source: 'leetcode_user_contest_ranking_history',
               data_availability_status: 'complete',
             });
-          } else {
-            // Check if contest results have been published by LeetCode yet
-            // If the contest ended recently and nobody in the community has history yet, LeetCode ratings are pending
-            const hoursSinceEnd = (nowMs - endMs) / (1000 * 60 * 60);
+            continue;
+          }
 
-            // If LeetCode hasn't published ratings yet (ratings usually publish within 2-3 days for LeetCode)
-            // But if a student explicitly attended, their rating is computed. If student didn't attend and results are out:
-            if (hoursSinceEnd < 24) {
-              // Mark pending verification until official results are published
-              pendingCount++;
-              await saveContestRecord({
-                platform_account_id: item.account.id,
-                platform_contest_id: contest.contest_code,
-                contest_name: contest.title,
-                contest_date: contest.start_time,
-                participation_status: 'pending_verification',
-                rank: null,
-                problems_solved: null,
-                total_problems: 4,
-                rating_after: null,
-                evidence_source: 'leetcode_graphql_pending_check',
-                data_availability_status: 'pending_publication',
-              });
-            } else {
-              // Verified did not attend
-              await saveContestRecord({
-                platform_account_id: item.account.id,
-                platform_contest_id: contest.contest_code,
-                contest_name: contest.title,
-                contest_date: contest.start_time,
-                participation_status: 'not_attended',
-                rank: null,
-                problems_solved: 0,
-                total_problems: 4,
-                rating_after: null,
-                evidence_source: 'leetcode_verified_non_attendance',
-                data_availability_status: 'complete',
-              });
-            }
+          // 2. Check live recent submissions during contest window [startSec - 120, endSec + 120]
+          const recentSubs = data.recentSubmissions || [];
+          const contestSubs = recentSubs.filter((sub) => {
+            const ts = Number(sub.timestamp);
+            return ts >= (contestStartSec - 120) && ts <= (contestEndSec + 120);
+          });
+
+          if (contestSubs.length > 0) {
+            attendedCount++;
+            const acTitles = new Set(
+              contestSubs.filter((s) => s.statusDisplay === 'Accepted').map((s) => s.title)
+            );
+            await saveContestRecord({
+              platform_account_id: item.account.id,
+              platform_contest_id: contest.contest_code,
+              contest_name: contest.title,
+              contest_date: contest.start_time,
+              participation_status: 'attended',
+              rank: null,
+              problems_solved: acTitles.size,
+              total_problems: 4,
+              rating_after: null,
+              evidence_source: 'leetcode_live_submissions_contest_window',
+              data_availability_status: 'partial_live_submissions_verified',
+            });
+            continue;
+          }
+
+          // 3. Neither contestHistory nor live submissions found.
+          if (isRatingsPublished) {
+            // Official results are out and student did not participate
+            await saveContestRecord({
+              platform_account_id: item.account.id,
+              platform_contest_id: contest.contest_code,
+              contest_name: contest.title,
+              contest_date: contest.start_time,
+              participation_status: 'not_attended',
+              rank: null,
+              problems_solved: 0,
+              total_problems: 4,
+              rating_after: null,
+              evidence_source: 'leetcode_verified_non_attendance',
+              data_availability_status: 'complete',
+            });
+          } else {
+            // Official ratings pending publication on LeetCode
+            pendingCount++;
+            await saveContestRecord({
+              platform_account_id: item.account.id,
+              platform_contest_id: contest.contest_code,
+              contest_name: contest.title,
+              contest_date: contest.start_time,
+              participation_status: 'pending_verification',
+              rank: null,
+              problems_solved: null,
+              total_problems: 4,
+              rating_after: null,
+              evidence_source: 'leetcode_ratings_pending_publication',
+              data_availability_status: 'pending_publication',
+            });
           }
         }
       } else if (contest.platform === 'codechef') {
-        const contestCodeNorm = contest.contest_code.trim().toUpperCase();
-        const contestTitleNorm = contest.title.trim().toLowerCase();
+        // Pre-check: Check if CodeChef results are published
+        let isPublished = hoursSinceEnd >= 0.5;
+        if (!isPublished) {
+          try {
+            const ccContests = await this.fetchCodeChefContests();
+            const foundPast = ccContests.find((c) =>
+              c.status === 'completed' &&
+              isContestRecordMatching({ platform_contest_id: c.contest_code, contest_name: c.title }, contest)
+            );
+            if (foundPast) {
+              isPublished = true;
+            }
+          } catch {}
+        }
 
         for (const item of targetAccounts) {
           scannedCount++;
@@ -426,20 +517,32 @@ export class ContestService {
           const profileRes = await CodeChefConnector.fetchProfileData(item.account.username);
           if (!profileRes.success || !profileRes.data) {
             pendingCount++;
+            await saveContestRecord({
+              platform_account_id: item.account.id,
+              platform_contest_id: contest.contest_code,
+              contest_name: contest.title,
+              contest_date: contest.start_time,
+              participation_status: 'pending_verification',
+              rank: null,
+              problems_solved: null,
+              total_problems: null,
+              rating_after: null,
+              evidence_source: 'codechef_profile_unreachable',
+              data_availability_status: 'platform_rate_limited_or_error',
+            });
             continue;
           }
 
           const data = profileRes.data;
           const contestHistory = data.contestHistory || [];
 
-          const matchedHistory = contestHistory.find((ch) => {
-            const codeMatch = ch.code && ch.code.toUpperCase() === contestCodeNorm;
-            const nameMatch = ch.name && ch.name.toLowerCase().includes(contestTitleNorm);
-            return codeMatch || nameMatch;
-          });
+          const matchedHistory = contestHistory.find((ch) =>
+            isContestRecordMatching({ contest_name: ch.name, platform_contest_id: ch.code }, contest)
+          );
 
           if (matchedHistory) {
             attendedCount++;
+            isPublished = true;
             await saveContestRecord({
               platform_account_id: item.account.id,
               platform_contest_id: contest.contest_code,
@@ -447,30 +550,14 @@ export class ContestService {
               contest_date: contest.start_time,
               participation_status: 'attended',
               rank: matchedHistory.rank || null,
-              problems_solved: null, // CodeChef profile exposes rank/rating but not exact problem count
+              problems_solved: null,
               total_problems: null,
               rating_after: matchedHistory.rating || null,
               evidence_source: 'codechef_all_rating_blob',
               data_availability_status: 'partial_rank_rating_verified',
             });
           } else {
-            const hoursSinceEnd = (nowMs - endMs) / (1000 * 60 * 60);
-            if (hoursSinceEnd < 12) {
-              pendingCount++;
-              await saveContestRecord({
-                platform_account_id: item.account.id,
-                platform_contest_id: contest.contest_code,
-                contest_name: contest.title,
-                contest_date: contest.start_time,
-                participation_status: 'pending_verification',
-                rank: null,
-                problems_solved: null,
-                total_problems: null,
-                rating_after: null,
-                evidence_source: 'codechef_pending_check',
-                data_availability_status: 'pending_publication',
-              });
-            } else {
+            if (isPublished) {
               await saveContestRecord({
                 platform_account_id: item.account.id,
                 platform_contest_id: contest.contest_code,
@@ -484,19 +571,41 @@ export class ContestService {
                 evidence_source: 'codechef_verified_non_attendance',
                 data_availability_status: 'complete',
               });
+            } else {
+              pendingCount++;
+              await saveContestRecord({
+                platform_account_id: item.account.id,
+                platform_contest_id: contest.contest_code,
+                contest_name: contest.title,
+                contest_date: contest.start_time,
+                participation_status: 'pending_verification',
+                rank: null,
+                problems_solved: null,
+                total_problems: null,
+                rating_after: null,
+                evidence_source: 'codechef_ratings_processing',
+                data_availability_status: 'pending_publication',
+              });
             }
           }
         }
       }
 
-      // Check if we need to retry or mark complete
-      const isRetrying = pendingCount > 0 && attendedCount === 0;
+      const notAttendedCount = targetAccounts.length - attendedCount - pendingCount;
+      const isRetrying = pendingCount > 0 && attendedCount === 0 && notAttendedCount === 0;
       const finalScanStatus: ContestScanStatus = isRetrying ? 'retrying' : 'completed';
-      const scanMessage = isRetrying
-        ? `Scan finished. Platform results appear pending publication (${pendingCount} accounts pending verification). System will re-scan.`
-        : `Verified scan completed: ${attendedCount} attended, ${targetAccounts.length - attendedCount - pendingCount} not attended.`;
+
+      let scanMessage = '';
+      if (isRetrying) {
+        scanMessage = contest.platform === 'leetcode'
+          ? `Scan completed: Official LeetCode rankings are pending publication (ratings typically publish mid-week). System will auto-rescan.`
+          : `Scan completed: Official CodeChef rankings are still being processed by the platform. System will auto-rescan.`;
+      } else {
+        scanMessage = `Verified scan completed: ${attendedCount} attended, ${notAttendedCount} not attended${pendingCount > 0 ? `, ${pendingCount} pending publication` : ''}.`;
+      }
 
       await updateContest(contest.id, {
+        status: 'completed',
         scan_status: finalScanStatus,
         last_scanned_at: new Date().toISOString(),
         scan_message: scanMessage,
@@ -512,6 +621,7 @@ export class ContestService {
       };
     } catch (err: any) {
       await updateContest(contest.id, {
+        status: 'completed',
         scan_status: 'failed',
         scan_message: `Scan encountered an error: ${err?.message || 'Unknown error'}`,
       });

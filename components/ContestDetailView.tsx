@@ -109,7 +109,8 @@ export function ContestDetailView({ platform, contestId }: ContestDetailViewProp
     if (!force && !dataCache.get(cacheKey)) setLoading(true);
     try {
       const classroomParam = selectedClassroom ? `?classroomId=${selectedClassroom.id}` : '';
-      const res = await fetch(`/api/contests/${contestId}${classroomParam}`);
+      const cacheBuster = force ? `${classroomParam ? '&' : '?'}_t=${Date.now()}` : '';
+      const res = await fetch(`/api/contests/${contestId}${classroomParam}${cacheBuster}`);
       if (res.ok) {
         const json = await res.json();
         const loadedData: ContestDataCache = {
@@ -211,6 +212,8 @@ export function ContestDetailView({ platform, contestId }: ContestDetailViewProp
       const data = await res.json();
       if (res.ok) {
         setScanMessage(data.message || 'Scan completed successfully.');
+        dataCache.invalidate('contests:');
+        dataCache.invalidate(`contest:${platform}:${contestId}`);
         await fetchContestData(true);
         setShowRefreshPopup(true);
       } else {

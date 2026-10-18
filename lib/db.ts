@@ -8,6 +8,7 @@ import {
   DailyActivitySnapshot,
   ContestRecord,
   Contest,
+  ContestStatus,
   StudentContestAttendanceRow,
   ScanJob,
   ScanJobItem,
@@ -855,6 +856,107 @@ export async function upsertContest(contest: {
   return saved as Contest;
 }
 
+/**
+ * Accurately compute dynamic contest status based on UTC timestamps
+ */
+export function computeContestStatus(contest: { start_time: string; end_time: string; status?: string }): ContestStatus {
+  if (!contest.start_time || !contest.end_time) {
+    return (contest.status as ContestStatus) || 'upcoming';
+  }
+  const nowMs = Date.now();
+  const startMs = new Date(contest.start_time).getTime();
+  const endMs = new Date(contest.end_time).getTime();
+
+  if (nowMs < startMs) return 'upcoming';
+  if (nowMs < endMs) return 'live';
+  return 'completed';
+}
+
+/**
+ * Robust matcher between a contest record and a contest.
+ * Handles CodeChef division letters (START260 vs START260D), parenthetical text,
+ * LeetCode slugs, and titles.
+ */
+export function isContestRecordMatching(
+  r: { contest_name?: string | null; platform_contest_id?: string | null; contest_id?: string | null },
+  contest: { id?: string; title?: string; contest_code?: string; platform?: string }
+): boolean {
+  if (r.contest_id && contest.id && r.contest_id === contest.id) {
+    return true;
+  }
+
+  const contestCode = (contest.contest_code || '').trim().toLowerCase();
+  const recCode = (r.platform_contest_id || '').trim().toLowerCase();
+
+  // 1. Exact platform_contest_id match
+  if (contestCode && recCode && contestCode === recCode) {
+    return true;
+  }
+
+  // 2. CodeChef division code matching:
+  // e.g. record has START260D (or START260A/B/C) and contest has START260
+  if (contestCode && recCode) {
+    const normContestCode = contestCode.replace(/[a-d]$/i, '');
+    const normRecCode = recCode.replace(/[a-d]$/i, '');
+    if (normContestCode === normRecCode || recCode.startsWith(contestCode) || contestCode.startsWith(recCode)) {
+      return true;
+    }
+  }
+
+  // 3. Title / Name matching
+  const contestTitle = (contest.title || '').trim().toLowerCase();
+  const recName = (r.contest_name || '').trim().toLowerCase();
+
+  if (contestTitle && recName) {
+    if (contestTitle === recName) return true;
+
+    // Direct containment
+    if (recName.includes(contestTitle) || contestTitle.includes(recName)) {
+      return true;
+    }
+
+    // Strip parenthetical text, e.g. "Starters 260 (Rated till 5 Star)" vs "Starters 260 (Rated)"
+    const cleanTitle = contestTitle.replace(/\s*\([^)]*\)/g, '').trim();
+    const cleanRec = recName.replace(/\s*\([^)]*\)/g, '').trim();
+    if (cleanTitle && cleanRec && (cleanTitle === cleanRec || cleanTitle.includes(cleanRec) || cleanRec.includes(cleanTitle))) {
+      return true;
+    }
+
+    // Slug normalized comparison (remove dashes, underscores, spaces)
+    const slugTitle = contestTitle.replace(/[-_\s]+/g, '');
+    const slugRec = recName.replace(/[-_\s]+/g, '');
+    if (slugTitle && slugRec && (slugTitle === slugRec || slugTitle.includes(slugRec) || slugRec.includes(slugTitle))) {
+      return true;
+    }
+
+    // Number matching if both mention standard prefixes (e.g., starters 260, weekly contest 524)
+    const matchContestNum = contestTitle.match(/(?:starters|weekly\s*contest|biweekly\s*contest|starters\s*challenge)\s*(\d+)/i);
+    const matchRecNum = recName.match(/(?:starters|weekly\s*contest|biweekly\s*contest|starters\s*challenge)\s*(\d+)/i);
+    if (matchContestNum && matchRecNum && matchContestNum[1] === matchRecNum[1]) {
+      return true;
+    }
+  }
+
+  // 4. Cross match between platform_contest_id and contest title or slug
+  if (recCode && contestTitle) {
+    const slugRec = recCode.replace(/[-_\s]+/g, '');
+    const slugTitle = contestTitle.replace(/[-_\s]+/g, '');
+    if (slugRec && slugTitle && (slugRec === slugTitle || slugTitle.includes(slugRec) || slugRec.includes(slugTitle))) {
+      return true;
+    }
+  }
+
+  if (contestCode && recName) {
+    const slugContest = contestCode.replace(/[-_\s]+/g, '');
+    const slugRecName = recName.replace(/[-_\s]+/g, '');
+    if (slugContest && slugRecName && (slugContest === slugRecName || slugRecName.includes(slugContest) || slugContest.includes(slugRecName))) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 export async function getContestById(id: string): Promise<Contest | null> {
   const supabase = getSupabase();
   const { data, error } = await supabase
@@ -864,7 +966,18 @@ export async function getContestById(id: string): Promise<Contest | null> {
     .maybeSingle();
 
   if (error || !data) return null;
-  return data as Contest;
+  const contest = data as Contest;
+  const effectiveStatus = computeContestStatus(contest);
+  if (contest.status !== effectiveStatus) {
+    contest.status = effectiveStatus;
+    // Async update in database
+    supabase
+      .from('contests')
+      .update({ status: effectiveStatus, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .then();
+  }
+  return contest;
 }
 
 export async function getContests(filters?: {
@@ -887,19 +1000,39 @@ export async function getContests(filters?: {
     query = query.eq('platform', filters.platform);
   }
 
-  if (filters?.status && filters.status !== 'all') {
-    query = query.eq('status', filters.status);
-  }
-
   if (filters?.limit) {
-    query = query.limit(filters.limit);
+    query = query.limit(filters.limit * 2);
   } else {
-    query = query.limit(50);
+    query = query.limit(100);
   }
 
   const { data, error } = await query;
   if (error || !data) return [];
-  return data as Contest[];
+
+  const nowIso = new Date().toISOString();
+  const results: Contest[] = [];
+
+  for (const row of data as Contest[]) {
+    const effectiveStatus = computeContestStatus(row);
+    if (row.status !== effectiveStatus) {
+      row.status = effectiveStatus;
+      supabase
+        .from('contests')
+        .update({ status: effectiveStatus, updated_at: nowIso })
+        .eq('id', row.id)
+        .then();
+    }
+
+    if (filters?.status && filters.status !== 'all' && row.status !== filters.status) {
+      continue;
+    }
+    results.push(row);
+    if (filters?.limit && results.length >= filters.limit) {
+      break;
+    }
+  }
+
+  return results;
 }
 
 export async function updateContest(id: string, updates: Partial<Contest>): Promise<Contest | null> {
@@ -1001,16 +1134,12 @@ export async function getContestAnalyticsForClassroom(contestId: string, classro
 
   const contestRecordByAccount: Record<string, ContestRecord> = {};
   for (const r of (records || []) as ContestRecord[]) {
-    const matchName = r.contest_name && (
-      r.contest_name.toLowerCase() === contest.title.toLowerCase() ||
-      r.contest_name.toLowerCase().includes(contest.title.toLowerCase()) ||
-      contest.title.toLowerCase().includes(r.contest_name.toLowerCase())
-    );
-    const matchCode = r.platform_contest_id && (
-      r.platform_contest_id.toLowerCase() === contest.contest_code.toLowerCase()
-    );
-    if (matchName || matchCode) {
-      contestRecordByAccount[r.platform_account_id] = r;
+    if (isContestRecordMatching(r, contest)) {
+      const existing = contestRecordByAccount[r.platform_account_id];
+      // Always prefer 'attended' over 'pending_verification' or 'not_attended'
+      if (!existing || r.participation_status === 'attended' || existing.participation_status !== 'attended') {
+        contestRecordByAccount[r.platform_account_id] = r;
+      }
     }
   }
 
@@ -1024,6 +1153,8 @@ export async function getContestAnalyticsForClassroom(contestId: string, classro
   const attendedRows: StudentContestAttendanceRow[] = [];
   const notAttendedRows: StudentContestAttendanceRow[] = [];
   const pendingRows: StudentContestAttendanceRow[] = [];
+
+  const effectiveContestStatus = computeContestStatus(contest);
 
   for (const acc of accounts as PlatformAccount[]) {
     const st = studentMap[acc.student_id];
@@ -1045,7 +1176,9 @@ export async function getContestAnalyticsForClassroom(contestId: string, classro
       ratingAfter = cRec.rating_after ?? null;
     } else if (cRec && cRec.participation_status === 'pending_verification') {
       partStatus = 'pending_verification';
-    } else if (contest.status === 'upcoming' || contest.status === 'live') {
+    } else if (cRec && cRec.participation_status === 'not_attended') {
+      partStatus = 'not_attended';
+    } else if (effectiveContestStatus === 'upcoming' || effectiveContestStatus === 'live') {
       partStatus = 'pending_verification';
     } else if (contest.scan_status === 'retrying' || contest.scan_status === 'not_started' || contest.scan_status === 'scheduled') {
       partStatus = 'pending_verification';
@@ -1197,28 +1330,23 @@ export async function getBatchContestSummaryForClassroom(
       continue;
     }
 
-    const contestTitleLower = (contest.title || '').toLowerCase();
-    const contestCodeLower = (contest.contest_code || '').toLowerCase();
-
     // Index matching records for this contest by platform_account_id
     const contestRecordByAccount: Record<string, ContestRecord> = {};
     for (const r of allRecords) {
-      const matchName = r.contest_name && (
-        r.contest_name.toLowerCase() === contestTitleLower ||
-        r.contest_name.toLowerCase().includes(contestTitleLower) ||
-        contestTitleLower.includes(r.contest_name.toLowerCase())
-      );
-      const matchCode = r.platform_contest_id && (
-        r.platform_contest_id.toLowerCase() === contestCodeLower
-      );
-      if (matchName || matchCode) {
-        contestRecordByAccount[r.platform_account_id] = r;
+      if (isContestRecordMatching(r, contest)) {
+        const existing = contestRecordByAccount[r.platform_account_id];
+        // Always prefer 'attended' over 'pending_verification' or 'not_attended'
+        if (!existing || r.participation_status === 'attended' || existing.participation_status !== 'attended') {
+          contestRecordByAccount[r.platform_account_id] = r;
+        }
       }
     }
 
     let attendedCount = 0;
     let notAttendedCount = 0;
     let pendingCount = 0;
+
+    const effectiveContestStatus = computeContestStatus(contest);
 
     for (const acc of targetAccounts) {
       const cRec = contestRecordByAccount[acc.id] || null;
@@ -1228,7 +1356,9 @@ export async function getBatchContestSummaryForClassroom(
         partStatus = 'attended';
       } else if (cRec && cRec.participation_status === 'pending_verification') {
         partStatus = 'pending_verification';
-      } else if (contest.status === 'upcoming' || contest.status === 'live') {
+      } else if (cRec && cRec.participation_status === 'not_attended') {
+        partStatus = 'not_attended';
+      } else if (effectiveContestStatus === 'upcoming' || effectiveContestStatus === 'live') {
         partStatus = 'pending_verification';
       } else if (
         contest.scan_status === 'retrying' ||
